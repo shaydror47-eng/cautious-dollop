@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>כפתור משמרת</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@500;700;900&family=Heebo:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0b0d14;--text:#f4f6fb;--muted:#9aa3b5;--card:#141826;--line:rgba(255,255,255,.08);
+--accent:#f9763b;--accent2:#e8453c;--ok:#34d399}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Heebo',system-ui,sans-serif;min-height:100vh}
+.wrap{max-width:560px;margin:0 auto;padding:24px 16px 110px}
+h1{font-family:'Rubik';font-weight:900;font-size:30px;text-align:center;padding:14px 0 4px;
+ background:linear-gradient(92deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.sub{text-align:center;color:var(--muted);font-size:14px;margin-bottom:22px}
+.bigbtn{display:block;width:100%;border:none;cursor:pointer;color:#fff;font-family:'Rubik';font-weight:900;
+ font-size:30px;border-radius:26px;padding:38px 20px;transition:transform .15s;
+ box-shadow:0 14px 34px -12px rgba(233,69,60,.55)}
+.bigbtn:active{transform:scale(.97)}
+.bigbtn.start{background:linear-gradient(135deg,var(--accent),var(--accent2))}
+.bigbtn.stop{background:linear-gradient(135deg,#10b981,#047857);box-shadow:0 14px 34px -12px rgba(16,185,129,.5)}
+.clock{display:none;text-align:center;margin:22px 0 6px}
+.clock.on{display:block}
+.clock .t{font-family:'Rubik';font-weight:900;font-size:54px;letter-spacing:2px;font-variant-numeric:tabular-nums}
+.clock .s{color:var(--muted);font-size:13.5px;margin-top:2px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:18px;margin-top:18px}
+.card h2{font-family:'Rubik';font-weight:700;font-size:17px;margin-bottom:12px}
+.row{display:flex;gap:10px}
+.field{flex:1}
+.field label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
+.field input{width:100%;background:#0e1220;border:1px solid var(--line);border-radius:14px;color:var(--text);
+ font:700 22px 'Rubik';padding:13px;text-align:center;outline:none}
+.field input:focus{border-color:var(--accent)}
+.save{width:100%;margin-top:14px;border:none;cursor:pointer;color:#fff;font:900 19px 'Rubik';
+ background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:16px;padding:16px}
+#finish{display:none}
+#finish.on{display:block}
+.goal .bar{height:16px;background:#0e1220;border-radius:30px;overflow:hidden;border:1px solid var(--line)}
+.goal .fill{height:100%;border-radius:30px;background:linear-gradient(90deg,var(--accent),#10b981);
+ transition:width .6s ease;min-width:6px}
+.goal .nums{display:flex;justify-content:space-between;font-size:14px;margin-top:9px}
+.goal .nums b{font-family:'Rubik';font-size:17px}
+.hist{list-style:none}
+.hist li{display:flex;justify-content:space-between;align-items:center;padding:11px 4px;border-bottom:1px solid var(--line);font-size:14.5px}
+.hist li:last-child{border-bottom:none}
+.hist .d{color:var(--muted);font-size:13px}
+.hist .m{font-family:'Rubik';font-weight:700;color:var(--ok);font-size:16px}
+.empty{color:var(--muted);text-align:center;font-size:14px;padding:8px 0}
+.home{position:fixed;bottom:18px;left:18px;z-index:9;color:#fff;border:none;text-decoration:none;
+ background:linear-gradient(135deg,#8b5cf6,#6d28d9);border-radius:30px;padding:13px 20px;font:800 14.5px 'Heebo';
+ box-shadow:0 10px 24px rgba(109,40,217,.5);transition:transform .15s}
+.home:active{transform:scale(.93)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🛵 כפתור משמרת</h1>
+  <div class="sub">לחיצה אחת בהתחלה, לחיצה אחת בסוף — וזהו.</div>
+
+  <button class="bigbtn start" id="btn" onclick="toggleShift()">התחלתי משמרת</button>
+
+  <div class="clock" id="clock">
+    <div class="t" id="elapsed">00:00:00</div>
+    <div class="s">משמרת פעילה — בהצלחה! 💪</div>
+  </div>
+
+  <div class="card" id="finish">
+    <h2>איך היה? רושמים וסוגרים:</h2>
+    <div class="row">
+      <div class="field"><label>הרווחתי (₪)</label><input type="number" id="earn" inputmode="numeric" placeholder="0"></div>
+      <div class="field"><label>הזמנות</label><input type="number" id="orders" inputmode="numeric" placeholder="0"></div>
+    </div>
+    <button class="save" onclick="saveShift()">💾 שמור משמרת</button>
+  </div>
+
+  <div class="card goal">
+    <h2>📈 השבוע מול היעד (₪3,000)</h2>
+    <div class="bar"><div class="fill" id="fill" style="width:0%"></div></div>
+    <div class="nums"><span><b id="weekSum">₪0</b> השבוע</span><span id="weekPct">0%</span></div>
+  </div>
+
+  <div class="card">
+    <h2>🗓️ משמרות אחרונות</h2>
+    <ul class="hist" id="hist"><li class="empty">עוד אין משמרות — תלחץ על הכפתור למעלה ביציאה הבאה!</li></ul>
+  </div>
+</div>
+<a class="home" href="../index.html">🏠 הביתה</a>
+
+<script>
+const GOAL = 3000;
+const load = (k,d)=>{try{return JSON.parse(localStorage.getItem(k)) ?? d}catch(e){return d}};
+const save = (k,v)=>localStorage.setItem(k,JSON.stringify(v));
+let shifts = load('st_shifts',[]);
+let active = load('st_activeShift',null);
+let tick = null;
+
+function fmt(ms){
+  const s=Math.floor(ms/1000), h=Math.floor(s/3600), m=Math.floor(s%3600/60), x=s%60;
+  return [h,m,x].map(n=>String(n).padStart(2,'0')).join(':');
+}
+function weekStart(){ // שבוע עבודה ישראלי: מתחיל ביום ראשון
+  const d=new Date(); d.setHours(0,0,0,0); d.setDate(d.getDate()-d.getDay()); return d.getTime();
+}
+function render(){
+  const btn=document.getElementById('btn');
+  const clock=document.getElementById('clock');
+  const finish=document.getElementById('finish');
+  if(active){
+    btn.textContent='סיימתי משמרת ✅';
+    btn.className='bigbtn stop';
+    clock.classList.add('on');
+    finish.classList.add('on');
+    if(!tick) tick=setInterval(()=>{document.getElementById('elapsed').textContent=fmt(Date.now()-active.start)},1000);
+  } else {
+    btn.textContent='התחלתי משמרת';
+    btn.className='bigbtn start';
+    clock.classList.remove('on');
+    finish.classList.remove('on');
+    if(tick){clearInterval(tick);tick=null}
+  }
+  const ws=weekStart();
+  const week=shifts.filter(s=>s.end>=ws).reduce((a,s)=>a+(s.earnings||0),0);
+  const pct=Math.min(100,Math.round(week/GOAL*100));
+  document.getElementById('fill').style.width=pct+'%';
+  document.getElementById('weekSum').textContent='₪'+week.toLocaleString();
+  document.getElementById('weekPct').textContent=pct+'%' + (week>=GOAL?' 🎉 יעד הושג!':'');
+  const hist=document.getElementById('hist');
+  if(shifts.length){
+    hist.innerHTML=shifts.slice(-7).reverse().map(s=>{
+      const d=new Date(s.end);
+      const dur=fmt(s.end-s.start).slice(0,5);
+      return `<li><span><b>${d.getDate()}/${d.getMonth()+1}</b> <span class="d">· ${dur} שע' · ${s.orders||0} הזמנות</span></span><span class="m">₪${(s.earnings||0).toLocaleString()}</span></li>`;
+    }).join('');
+  }
+}
+function toggleShift(){
+  if(!active){
+    active={start:Date.now()};
+    save('st_activeShift',active);
+  } else {
+    document.getElementById('finish').scrollIntoView({behavior:'smooth'});
+  }
+  render();
+}
+function saveShift(){
+  if(!active) return;
+  const earn=parseInt(document.getElementById('earn').value)||0;
+  const orders=parseInt(document.getElementById('orders').value)||0;
+  shifts.push({start:active.start,end:Date.now(),earnings:earn,orders});
+  save('st_shifts',shifts);
+  active=null;
+  localStorage.removeItem('st_activeShift');
+  document.getElementById('earn').value='';
+  document.getElementById('orders').value='';
+  render();
+  alert('נשמר! ₪'+earn+' נוספו לשבוע. כל הכבוד! 💪');
+}
+render();
+</script>
+</body>
+</html>

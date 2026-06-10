@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>וולט · לוח שליטה</title>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#f4f6fb;--ink2:#c4cbda;--mute:#9aa3b5;
+  --paper:#0b0d14;--card:#141826;--line:rgba(255,255,255,.1);
+  --teal:#2dd4bf;--teal-d:#14b8a6;--teal-soft:rgba(45,212,191,.15);
+  --amber:#fbbf24;--amber-soft:rgba(251,191,36,.14);--up:#34d399;--down:#f87171;
+  --r:14px;--sh:0 1px 2px rgba(0,0,0,.3),0 8px 22px rgba(0,0,0,.35);
+  --hm0:#1a2030;--hm1:#173a3e;--hm2:#1d5c60;--hm3:#22898e;--hm4:#2dd4bf;--hm5:#5eead4;
+}
+*{box-sizing:border-box}html,body{margin:0}
+body{font-family:"Heebo",-apple-system,"Segoe UI",system-ui,"Arial Hebrew",Arial,sans-serif;
+  background:var(--paper);color:var(--ink);-webkit-font-smoothing:antialiased;font-feature-settings:"tnum" 1}
+.wrap{max-width:760px;margin:0 auto;padding:0 14px 96px}
+header.top{padding:16px 2px 4px}
+.brand{display:flex;align-items:center;gap:10px}
+.dot{width:11px;height:11px;border-radius:50%;background:var(--teal);box-shadow:0 0 0 4px var(--teal-soft)}
+.brand h1{font-size:18px;margin:0;font-weight:800;letter-spacing:-.2px}
+.brand .sub{font-size:12px;color:var(--mute);margin-top:1px;font-weight:600}
+/* month filter */
+.months{display:flex;gap:6px;overflow-x:auto;margin:12px -14px 0;padding:0 14px;scrollbar-width:none}
+.months::-webkit-scrollbar{display:none}
+.mchip{flex:0 0 auto;border:1px solid var(--line);background:var(--card);color:var(--ink2);
+  padding:7px 13px;border-radius:999px;font-size:12.5px;font-weight:700;cursor:pointer;white-space:nowrap}
+.mchip[aria-pressed="true"]{background:var(--teal);border-color:var(--teal);color:#fff}
+.mchip:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+/* sticky summary */
+.sticky{position:sticky;top:0;z-index:30;margin:10px -14px 0;padding:10px 14px;background:rgba(246,247,249,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.miniwk{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.miniwk .l{font-size:11px;color:var(--mute);font-weight:700}
+.miniwk .v{font-size:17px;font-weight:800}
+.miniwk .vs{font-size:12px;font-weight:700;color:var(--mute)}
+/* tabs */
+nav.tabs{display:flex;gap:6px;overflow-x:auto;padding:10px 0;margin:0 -14px;padding-inline:14px;scrollbar-width:none}
+nav.tabs::-webkit-scrollbar{display:none}
+.tab{flex:0 0 auto;border:1px solid var(--line);background:var(--card);color:var(--ink2);
+  padding:9px 14px;border-radius:999px;font-size:13.5px;font-weight:700;cursor:pointer;white-space:nowrap}
+.tab[aria-selected="true"]{background:var(--teal);color:#06302c;border-color:var(--teal)}
+.tab:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+section{display:none;animation:fade .25s ease}section.on{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh);padding:16px;margin:12px 0}
+.card h2{font-size:14px;margin:0 0 2px;font-weight:800}
+.card .hint{font-size:12px;color:var(--mute);margin:0 0 12px;font-weight:600}
+/* hero */
+.hero{background:linear-gradient(155deg,#0c8f9c,#075c66 90%);color:#fff;border:none;padding:20px 18px}
+.hero .lbl{font-size:12px;color:rgba(255,255,255,.8);font-weight:700}
+.hero .num{font-size:42px;font-weight:800;letter-spacing:-1.5px;line-height:1;margin-top:6px}
+.hero .row{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-top:14px}
+.hero .meta{font-size:12px;color:rgba(255,255,255,.82);font-weight:600;line-height:1.7}
+.hero svg{display:block}
+/* kpi */
+.kpis{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:13px 14px;box-shadow:var(--sh)}
+.kpi .l{font-size:11px;color:var(--mute);font-weight:700}
+.kpi .v{font-size:21px;font-weight:800;margin-top:4px;letter-spacing:-.4px}
+.kpi .v small{font-size:12px;color:var(--mute);font-weight:700}
+/* weekly chart */
+.wk-scroll{overflow-x:auto;scrollbar-width:thin;margin:0 -6px;padding:0 6px}
+.wk{display:flex;align-items:flex-end;gap:8px;height:168px;padding-top:6px;min-width:660px}
+.wk .col{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;justify-content:flex-end;min-width:56px}
+.wk .bar{width:70%;max-width:34px;background:var(--teal);border-radius:6px 6px 0 0;transition:height .5s}
+.wk .bar.gap{background:repeating-linear-gradient(45deg,#eceff3,#eceff3 5px,#e2e6ec 5px,#e2e6ec 10px);border:1px dashed #cdd3dc}
+.wk .cl{font-size:11px;color:var(--ink);font-weight:800;margin-top:2px}
+.wk .cl2{font-size:9px;color:var(--mute);font-weight:600}
+.wk .cv{font-size:10.5px;font-weight:800}
+.delta{display:inline-flex;align-items:center;gap:2px;font-weight:800;font-size:11.5px}
+.delta.u{color:var(--up)}.delta.d{color:var(--down)}
+/* bar list */
+.blist{display:flex;flex-direction:column;gap:9px}
+.brow{display:grid;grid-template-columns:74px 1fr auto;align-items:center;gap:10px}
+.brow .k{font-size:12.5px;font-weight:700;color:var(--ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.brow .track{height:22px;background:var(--paper);border-radius:7px;overflow:hidden}
+.brow .fill{height:100%;border-radius:7px;background:var(--teal);min-width:2px;transition:width .5s}
+.brow .fill.amber{background:var(--amber)}
+.brow .val{font-size:12.5px;font-weight:800;white-space:nowrap}
+.brow.best .k{color:var(--teal-d)}
+/* windows */
+.win{display:flex;flex-direction:column;gap:8px}
+.wrow{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 12px;border:1px solid var(--line);border-radius:11px;background:var(--paper)}
+.wrow.top{background:var(--teal-soft);border-color:#bfe6ea}
+.wrow .d{font-size:13.5px;font-weight:800}
+.wrow .t{font-size:12px;color:var(--ink2);font-weight:700}
+.wrow .a{font-size:14px;font-weight:800;color:var(--teal-d)}
+.rank{display:inline-block;width:20px;height:20px;border-radius:6px;background:var(--teal);color:#06302c;font-size:11px;font-weight:800;text-align:center;line-height:20px;margin-inline-start:8px}
+/* records */
+.recs{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.rec{background:var(--paper);border-radius:11px;padding:12px}
+.rec .l{font-size:11px;color:var(--mute);font-weight:700}
+.rec .v{font-size:18px;font-weight:800;margin-top:3px}
+.rec .s{font-size:11px;color:var(--mute);font-weight:600;margin-top:2px}
+/* heatmap */
+.hm-scroll{overflow-x:auto;scrollbar-width:thin}
+.hm{display:grid;gap:3px;min-width:560px;grid-template-columns:auto repeat(var(--cols),1fr)}
+.hm .hcell{font-size:9.5px;color:var(--mute);font-weight:700;text-align:center;padding:2px 0}
+.hm .rlab{font-size:11px;color:var(--ink2);font-weight:700;display:flex;align-items:center;padding-inline-end:6px;justify-content:flex-end}
+.hm .cell{aspect-ratio:1.6;border-radius:5px;background:var(--hm0);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800}
+.legend{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--mute);font-weight:700;margin-top:12px;justify-content:flex-end}
+.legend .sw{width:16px;height:11px;border-radius:3px}
+/* predictor */
+.field{margin:11px 0}.field label{display:block;font-size:12.5px;font-weight:700;color:var(--ink2);margin-bottom:7px}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg button{border:1px solid var(--line);background:var(--card);padding:8px 12px;border-radius:9px;font-size:13px;font-weight:700;color:var(--ink2);cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--teal);border-color:var(--teal);color:#fff}
+.seg button:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+input[type=range]{width:100%;accent-color:var(--teal)}
+.result{margin-top:14px;background:linear-gradient(160deg,#1b2740,#0e1726);color:#fff;border-radius:var(--r);padding:18px}
+.result .big{font-size:32px;font-weight:800;letter-spacing:-1px;line-height:1}
+.result .rng{font-size:13px;color:rgba(255,255,255,.75);font-weight:700;margin-top:6px}
+.result .meta{font-size:12px;color:rgba(255,255,255,.7);margin-top:10px;font-weight:600}
+.conf{display:inline-block;font-size:11px;font-weight:800;padding:3px 9px;border-radius:999px;margin-top:10px}
+.conf.lo{background:#5a2e2b;color:#ffc9c4}.conf.md{background:#5a4a26;color:#ffe2a8}.conf.hi{background:#1e4d35;color:#aef0c6}
+.phours{margin-top:12px;display:flex;flex-direction:column;gap:5px}
+.phr{display:grid;grid-template-columns:48px 1fr auto;gap:8px;align-items:center;font-size:11.5px}
+.phr .pk{color:var(--mute);font-weight:700}.phr .pv{font-weight:800}
+.phr .pn{font-weight:700;color:rgba(255,255,255,.5);font-size:10px}
+.pexp{font-size:12.5px;line-height:1.65;color:rgba(255,255,255,.88);font-weight:600;margin-top:10px}
+.pexp b{color:#7fe3ec}
+.pexp2{font-size:11.5px;color:rgba(255,255,255,.7);font-weight:700;margin-top:14px}
+.phr .ptrack{height:8px;background:rgba(255,255,255,.15);border-radius:5px;overflow:hidden}
+.phr .pfill{height:100%;background:#46d3df}
+/* goal */
+.goalbar{height:14px;background:var(--paper);border-radius:8px;overflow:hidden;margin-top:8px}
+.goalbar .gf{height:100%;background:var(--teal)}
+.gweeks{display:flex;gap:5px;flex-wrap:wrap;margin-top:12px}
+.gw{font-size:11px;font-weight:800;padding:5px 8px;border-radius:8px}
+.gw.hit{background:#e7f6ee;color:var(--up)}.gw.miss{background:#fbe9e7;color:var(--down)}
+/* inputs */
+input[type=number],input[type=text]{width:100%;border:1px solid var(--line);border-radius:11px;padding:11px;font-size:14px;background:var(--paper);font-family:inherit}
+textarea{width:100%;min-height:110px;border:1px solid var(--line);border-radius:11px;padding:11px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;resize:vertical;background:var(--paper)}
+.btn{appearance:none;border:none;border-radius:11px;padding:12px 16px;font-size:14px;font-weight:800;cursor:pointer}
+.btn.primary{background:var(--teal);color:#fff}.btn.ghost{background:var(--card);border:1px solid var(--line);color:var(--ink2)}
+.btn:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+.row-btns{display:flex;gap:9px;flex-wrap:wrap;margin-top:11px}
+.msg{font-size:12.5px;font-weight:700;margin-top:10px;padding:9px 11px;border-radius:9px}
+.msg.ok{background:#e7f6ee;color:var(--up)}.msg.warn{background:var(--amber-soft);color:var(--amber)}.msg.err{background:#fbe9e7;color:var(--down)}
+.health{display:flex;flex-direction:column;gap:8px;margin-top:6px}
+.hitem{display:flex;gap:9px;align-items:flex-start;font-size:12.5px;font-weight:600;padding:9px 11px;border-radius:9px;background:var(--paper)}
+.hitem .ic{font-weight:800}.hitem.good .ic{color:var(--up)}.hitem.warn{background:var(--amber-soft)}.hitem.warn .ic{color:var(--amber)}
+.foot{font-size:11px;color:var(--mute);text-align:center;margin-top:18px;font-weight:600;line-height:1.6}
+.empty{font-size:12.5px;color:var(--mute);font-weight:600;padding:8px 2px}
+/* insights */
+.insights{display:flex;flex-direction:column;gap:8px}
+.ins{display:flex;gap:10px;align-items:flex-start;font-size:13px;font-weight:600;line-height:1.5;padding:11px 12px;border-radius:11px;background:var(--paper)}
+.ins .ic{font-size:15px;line-height:1.2}
+.ins b{color:var(--teal-d);font-weight:800}
+/* cumulative + calendar */
+.cum-wrap{position:relative}
+.cal-scroll{overflow-x:auto;scrollbar-width:thin;padding-bottom:4px}
+.cal{display:flex;gap:3px;direction:ltr;justify-content:flex-end;min-width:max-content}
+.calcol{display:flex;flex-direction:column;gap:3px}
+.calc{width:14px;height:14px;border-radius:3px;background:var(--hm0)}
+.callab{font-size:9px;color:var(--mute);font-weight:700;height:14px;display:flex;align-items:center}
+.cmp-sel{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.cmp-sel select{flex:1;border:1px solid var(--line);border-radius:10px;padding:9px;font-size:13px;font-weight:700;background:var(--paper);font-family:inherit}
+.cmp-sel span{font-size:12px;color:var(--mute);font-weight:700}
+.cmp-grid{display:grid;grid-template-columns:1fr auto 1fr;gap:8px 12px;margin-top:12px;align-items:center}
+.cmp-grid .cl{font-size:11px;color:var(--mute);font-weight:700;grid-column:1/-1;margin-top:4px}
+.cmp-grid .a,.cmp-grid .b{font-size:17px;font-weight:800}
+.cmp-grid .d{font-size:12px;font-weight:800;text-align:center}
+.cmp-grid .d.u{color:var(--up)}.cmp-grid .d.d{color:var(--down)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* ===== NIGHT MODE ===== */
+:root{
+  --ink:#e9eef8;--ink2:#bccbe3;--mute:#8493aa;
+  --paper:#0b1322;--card:#111c30;--line:#243049;
+  --teal:#2bd4e6;--teal-d:#34c6d8;--teal-soft:#0f3340;
+  --amber:#f3b04a;--amber-soft:#2a2113;--up:#39c07a;--down:#ef6f63;
+  --hm0:#16212f;--hm1:#0f3a44;--hm2:#10626f;--hm3:#16a3b6;--hm4:#2bd4e6;--hm5:#82eeff;
+  --sh:0 1px 2px rgba(0,0,0,.45),0 12px 30px rgba(0,0,0,.4);
+}
+body{background:radial-gradient(1100px 460px at 50% -8%, #16243d, #0b1322 60%)!important;font-weight:500}
+.dot{box-shadow:0 0 0 4px var(--teal-soft),0 0 14px var(--teal)}
+.hero{background:linear-gradient(155deg,#0e8294,#06262f 92%)!important}
+.tab[aria-selected="true"]{background:var(--teal);color:#04222a;border-color:var(--teal)}
+.mchip[aria-pressed="true"]{background:var(--teal);border-color:var(--teal);color:#04222a}
+.seg button[aria-pressed="true"]{background:var(--teal);border-color:var(--teal);color:#04222a}
+.btn.primary{color:#04222a}
+.sticky{background:rgba(11,19,34,.92)!important}
+.wrow.top{background:#10333f!important;border-color:#1f5a68!important}
+.rank{background:var(--teal);color:#04222a}
+.result{background:linear-gradient(160deg,#102a3a,#0a1626)!important}
+input,textarea,select{background:#0e1a2c!important;color:var(--ink)!important;border-color:var(--line)!important}
+.gw.hit{background:#10331f;color:#7fe0a6}.gw.miss{background:#3a1714;color:#ff9a8e}
+.msg.ok{background:#10331f;color:#7fe0a6}.msg.warn{background:#332710;color:#f3c779}.msg.err{background:#3a1714;color:#ff9a8e}
+
+</style>
+</head>
+<body>
+<script>
+/* shim: window.storage backed by localStorage so the tool works on a real website */
+if(!window.storage){window.storage={
+ async get(k){const v=localStorage.getItem('st_'+k);if(v===null)throw new Error('not found');return{key:k,value:v};},
+ async set(k,v){localStorage.setItem('st_'+k,v);return{key:k,value:v};},
+ async delete(k){localStorage.removeItem('st_'+k);return{key:k,deleted:true};}
+};}
+</script>
+<div class="wrap">
+  <header class="top">
+    <div class="brand"><span class="dot"></span>
+      <div><h1>לוח השליטה — וולט</h1><div class="sub">שי דרור סגל · נס ציונה</div></div>
+    </div>
+    <div class="months" id="months"></div>
+  </header>
+
+  <div class="sticky"><div class="miniwk" id="miniwk"></div></div>
+
+  <nav class="tabs" role="tablist" id="tabs">
+    <button class="tab" role="tab" data-t="overview" aria-selected="true">סקירה</button>
+    <button class="tab" role="tab" data-t="trends">מגמות</button>
+    <button class="tab" role="tab" data-t="times">זמנים</button>
+    <button class="tab" role="tab" data-t="tips">טיפים</button>
+    <button class="tab" role="tab" data-t="places">מקומות</button>
+    <button class="tab" role="tab" data-t="predict">תחזית</button>
+    <button class="tab" role="tab" data-t="gaps">חורים</button>
+    <button class="tab" role="tab" data-t="data">נתונים</button>
+  </nav>
+
+  <section id="overview" class="on">
+    <div class="card insights-card" id="insightsCard"><h2>תובנות</h2><div class="insights" id="insights"></div></div>
+    <div class="card hero" id="hero"></div>
+    <div class="card"><h2>הכנסה לפי שבוע</h2>
+      <p class="hint">תווית גדולה = <b>תאריך תשלום</b> · מתחת = שבוע עבודה. מקווקו = שבוע חסר.</p>
+      <div class="wk-scroll"><div class="wk" id="wk"></div></div></div>
+    <div class="card"><h2>היעד השבועי</h2><div id="goalbox"></div></div>
+    <div class="card"><h2>שיאים</h2><p class="hint">כל הזמנים</p><div class="recs" id="recs"></div></div>
+  </section>
+
+  <section id="trends">
+    <div class="card"><h2>הצטברות הכנסה</h2><p class="hint">סך הכסף שנכנס לאורך הזמן</p>
+      <div id="cumchart"></div></div>
+    <div class="card"><h2>לוח שנה</h2><p class="hint">כל ריבוע = יום. כהה יותר = הרווחת יותר.</p>
+      <div class="cal-scroll"><div id="calendar"></div></div>
+      <div class="legend"><span>פחות</span><span class="sw" style="background:var(--hm1)"></span><span class="sw" style="background:var(--hm2)"></span><span class="sw" style="background:var(--hm3)"></span><span class="sw" style="background:var(--hm4)"></span><span class="sw" style="background:var(--hm5)"></span><span>יותר</span></div></div>
+    <div class="card"><h2>לפי חודש</h2><p class="hint">סך משלוחים + טיפים בכל חודש</p><div class="blist" id="bymonth"></div></div>
+    <div class="card"><h2>השוואת חודשים</h2><p class="hint">בחר שני חודשים להשוואה</p>
+      <div class="cmp-sel"><select id="cmpA"></select><span>מול</span><select id="cmpB"></select></div>
+      <div id="cmpResult"></div></div>
+  </section>
+
+  <section id="times">
+    <div class="card"><h2>מתי כדאי לצאת</h2>
+      <p class="hint">חלון 3 השעות הכי רווחי בכל יום, לפי ההיסטוריה. ממוין מהכי שווה.</p>
+      <div class="win" id="windows"></div></div>
+    <div class="card"><h2>ניתוח משמרת</h2><p class="hint">מוערך מזמני ההזמנות (לא כולל זמן מחובר בלי הזמנה).</p>
+      <div class="kpis" id="shiftkpi"></div>
+      <h2 style="margin-top:16px">₪ לשעת עבודה לפי יום</h2><div class="blist" id="shifthour"></div></div>
+    <div class="card"><h2>מפת חום</h2><p class="hint">הכנסה ממוצעת ליום × שעה. כהה = שווה יותר.</p>
+      <div class="hm-scroll"><div class="hm" id="hm"></div></div>
+      <div class="legend"><span>פחות</span><span class="sw" style="background:var(--hm1)"></span><span class="sw" style="background:var(--hm2)"></span><span class="sw" style="background:var(--hm3)"></span><span class="sw" style="background:var(--hm4)"></span><span class="sw" style="background:var(--hm5)"></span><span>יותר</span></div></div>
+    <div class="card"><h2>לפי יום בשבוע</h2><div class="blist" id="byday"></div></div>
+    <div class="card"><h2>לפי שעה</h2><div class="blist" id="byhour"></div></div>
+  </section>
+
+  <section id="tips">
+    <div class="kpis" id="tipkpi"></div>
+    <div class="card"><h2>טיפים לפי שעה</h2><div class="blist" id="tiphour"></div></div>
+    <div class="card"><h2>מי מטפים הכי הרבה</h2><div class="blist" id="tipvenue"></div></div>
+  </section>
+
+  <section id="places">
+    <div class="card"><h2>חיפוש בית עסק</h2><p class="hint">הקלד שם (למשל ג׳ירף) לראות סיכום</p>
+      <input type="text" id="vsearch" placeholder="חפש בית עסק...">
+      <div id="vresult"></div></div>
+    <div class="card"><h2>הזמנות מקובצות</h2><p class="hint">"מקובצת" = כמה מסעדות בנסיעה אחת (פסיק בשם).</p>
+      <div class="kpis" id="batchkpi"></div></div>
+    <div class="card"><h2>פיזור גודל הזמנה</h2><p class="hint">כמה הזמנות בכל טווח ₪</p><div class="blist" id="sizedist"></div><div class="empty" id="sizenote"></div></div>
+    <div class="card"><h2>אזורים</h2><p class="hint">מאיפה מגיע הכסף</p><div class="blist" id="areas"></div><div class="empty" id="areanote"></div></div>
+    <div class="card"><h2>הכי הרבה משלוחים</h2><div class="blist" id="venc"></div></div>
+    <div class="card"><h2>הכי הרבה כסף</h2><div class="blist" id="vena"></div></div>
+  </section>
+
+  <section id="predict">
+    <div class="card"><h2>כמה ארוויח?</h2>
+      <p class="hint">בחר יום ושעות. המספר הגדול = כמה תרוויח בערך באותו חלון, לפי הממוצע מהעבר.</p>
+      <div class="field"><label>יום</label><div class="seg" id="pday"></div></div>
+      <div class="field"><label>שעת התחלה: <b id="psl"></b></label><input type="range" id="pstart" min="6" max="22" value="11"></div>
+      <div class="field"><label>כמה שעות: <b id="pdl"></b></label><input type="range" id="pdur" min="1" max="12" value="6"></div>
+      <div class="result" id="presult"></div></div>
+  </section>
+
+  <section id="gaps">
+    <div class="card"><h2>איפה למערכת אין מידע</h2>
+      <p class="hint">כל ריבוע = יום × שעה. אדום = אין נתונים (המערכת מנחשת). ירוק = יש מספיק נתונים (המערכת יודעת). ככל שעבדת יותר בשעה הזו — היא בטוחה יותר.</p>
+      <div class="hm-scroll"><div class="hm" id="gapmap"></div></div>
+      <div class="legend"><span>אין נתונים</span><span class="sw" style="background:#3a1714"></span><span class="sw" style="background:#5a4520"></span><span class="sw" style="background:#10626f"></span><span class="sw" style="background:#16a3b6"></span><span class="sw" style="background:#39c07a"></span><span>הרבה נתונים</span></div></div>
+    <div class="card"><h2>חורים גדולים — אזורים שלמים ללא מידע</h2>
+      <p class="hint">תקופות שלמות שהמערכת לא מכירה בכלל</p>
+      <div class="blist" id="bigblind"></div></div>
+    <div class="card"><h2>כדאי לנסות — לסגור חורים בחוכמה</h2>
+      <p class="hint">שעות ריקות שצמודות לשעות שכבר עובדות טוב. אם תנסה אותן ותשלח לי את הדוח, המערכת תהיה חכמה יותר.</p>
+      <div class="blist" id="trygaps"></div></div>
+  </section>
+
+  <section id="data">
+    <div class="card"><h2>סטטוס הנתונים</h2><div class="health" id="dataStatus"></div></div>
+    <div class="card"><h2>עדכון שבועי</h2>
+      <p class="hint" style="line-height:1.7">כל דוח חדש מוזן דרך הצ'אט. אתה שולח PDF/סקרין, אני בודק מול הקבלה, מתקן, ומוציא קובץ עדכני. אין צורך בהעלאה כאן — הכל עובד דרכי.</p></div>
+    <div class="card"><h2>בריאות הנתונים</h2><div class="health" id="health"></div></div>
+  </section>
+
+  <div class="foot" id="foot"></div>
+</div>
+
+<script>
+const SEED = [{"doc":"116000001","date":"2026-03-18","time":"15:07:16","venue":"– deposit Gear","amount":-300.0,"type":"deposit","tip":0.0},{"doc":"116000001","date":"2026-03-18","time":"16:41:24","venue":"שווארמה שמש ויצמן | נס ציונה","amount":24.2,"type":"delivery","tip":8.47},{"doc":"116000001","date":"2026-03-18","time":"17:00:57","venue":"נייט קוקי 🍪 | נס ציונה","amount":28.51,"type":"delivery","tip":4.24},{"doc":"116000001","date":"2026-03-18","time":"19:56:12","venue":"– minutes 9 | 859 | Ziona Ness | Market Wolt Late: Restaurant","amount":7.0,"type":"comp","tip":0.0},{"doc":"116000001","date":"2026-03-18","time":"20:00:38","venue":"פטרה הלבנונית | נס ציונה","amount":36.61,"type":"delivery","tip":4.24},{"doc":"116000001","date":"2026-03-18","time":"20:21:53","venue":"מוצ'ה פיצה | רחובות, מוצ'ה פיצה | רחובות","amount":43.2,"type":"delivery","tip":8.47},{"doc":"116000001","date":"2026-03-18","time":"20:48:11","venue":"מי מה מו כשר | רחובות, אומה טומה, אומה טומה","amount":100.1,"type":"delivery","tip":8.47},{"doc":"116000001","date":"2026-03-18","time":"21:30:47","venue":"וולט מרקט | נס ציונה","amount":24.45,"type":"delivery","tip":0.0},{"doc":"116000001","date":"2026-03-18","time":"22:04:44","venue":"Ziona Ness Ishparo McDonald's®","amount":41.83,"type":"delivery","tip":4.24},{"doc":"116000001","date":"2026-03-19","time":"10:05:01","venue":"שגיא פירות וירקות","amount":43.68,"type":"delivery","tip":0.0},{"doc":"116000001","date":"2026-03-19","time":"10:33:52","venue":"רוני סנדוויץ׳","amount":23.04,"type":"delivery","tip":0.0},{"doc":"116000001","date":"2026-03-19","time":"11:06:57","venue":"וולט מרקט | ראשון מערב","amount":27.55,"type":"delivery","tip":12.71},{"doc":"116000001","date":"2026-03-19","time":"9:42:45","venue":"מסעדת אופה אופה | נס ציונה, וולט מרקט | נס ציונה","amount":42.57,"type":"delivery","tip":0.0},{"doc":"116000001","date":"2026-03-20","time":"16:40:48","venue":"וולט מרקט | נס ציונה, גולדה | נס ציונה","amount":68.28,"type":"delivery","tip":4.24},{"doc":"116000001","date":"2026-03-20","time":"17:21:29","venue":"ג'ו דלק | באר יעקב","amount":22.02,"type":"delivery","tip":0.0},{"doc":"116000001","date":"2026-03-20","time":"17:29:24","venue":"ג'ו דלק | באר יעקב","amount":19.5,"type":"delivery","tip":0.0},{"doc":"116000001","date":"2026-03-20","time":"17:45:48","venue":"וולט מרקט | נס ציונה","amount":41.13,"type":"delivery","tip":0.0},{"doc":"116000001","date":"2026-03-20","time":"17:53:17","venue":"וולט מרקט | נס ציונה","amount":19.5,"type":"delivery","tip":0.0},{"doc":"116000002","date":"2026-03-25","time":"14:04:03","venue":"מקדונלד׳ס קניותר נס ציונה הכשר","amount":31.31,"type":"delivery","tip":0.0},{"doc":"116000002","date":"2026-03-25","time":"14:27:52","venue":"שווארמה שמש ויצמן | נס ציונה","amount":20.78,"type":"delivery","tip":4.24},{"doc":"116000002","date":"2026-03-25","time":"14:43:55","venue":"M32 | נס ציונה","amount":15.0,"type":"delivery","tip":0.0},{"doc":"116000002","date":"2026-03-26","time":"18:13:18","venue":"Ziona Ness | Hut Pizza","amount":21.67,"type":"delivery","tip":0.0},{"doc":"116000002","date":"2026-03-26","time":"18:32:34","venue":"ויקטורי | נס ציונה","amount":31.83,"type":"delivery","tip":0.0},{"doc":"116000002","date":"2026-03-26","time":"19:17:58","venue":"בוטיק סנטרל | נס ציונה","amount":19.5,"type":"delivery","tip":0.0},{"doc":"116000002","date":"2026-03-26","time":"19:30:00","venue":"מקדונלד׳ס קניותר נס ציונה הכשר","amount":22.29,"type":"delivery","tip":0.0},{"doc":"116000002","date":"2026-03-26","time":"19:34:56","venue":"מקדונלד׳ס קניותר נס ציונה הכשר","amount":19.5,"type":"delivery","tip":8.47},{"doc":"116000002","date":"2026-03-26","time":"20:24:41","venue":"שווארמה שמש ישפרו סנטר | נס ציונה","amount":19.5,"type":"delivery","tip":0.0},{"doc":"116000002","date":"2026-03-26","time":"20:43:40","venue":"החצר האסייתית","amount":26.05,"type":"delivery","tip":0.0},{"doc":"116000002","date":"2026-03-26","time":"20:47:19","venue":"החצר האסייתית","amount":19.5,"type":"delivery","tip":4.24},{"doc":"116000002","date":"2026-03-26","time":"21:00:03","venue":"מקדונלד'ס ישפרו נס ציונה","amount":37.58,"type":"delivery","tip":0.0},{"doc":"116000002","date":"2026-03-26","time":"21:19:49","venue":"הסושיה | נס ציונה - רחובות","amount":19.5,"type":"delivery","tip":4.24},{"doc":"116000002","date":"2026-03-26","time":"21:23:18","venue":"לנדוור | נס ציונה","amount":19.5,"type":"delivery","tip":4.24},{"doc":"116000002","date":"2026-03-26","time":"21:23:44","venue":"לנדוור | נס ציונה","amount":21.45,"type":"delivery","tip":0.0},{"doc":"116000002","date":"2026-03-26","time":"21:36:01","venue":"החצר האסייתית","amount":19.5,"type":"delivery","tip":4.24},{"doc":"116000002","date":"2026-03-28","time":"14:21:30","venue":"– minutes 27 | 599 | Ziona Ness | M32 Late: Restaurant","amount":22.0,"type":"comp","tip":0.0},{"doc":"116000002","date":"2026-03-28","time":"16:48:17","venue":"M32 | נס ציונה","amount":19.71,"type":"delivery","tip":0.0},{"doc":"116000002","date":"2026-03-28","time":"18:02:29","venue":"דלי קרים | נס ציונה","amount":51.73,"type":"delivery","tip":0.0},{"doc":"116000002","date":"2026-03-28","time":"18:28:10","venue":"מקדונלד׳ס נרקיסים","amount":57.27,"type":"delivery","tip":0.0},{"doc":"116000002","date":"2026-03-30","time":"16:21:04","venue":"בורגראנץ׳ | נס ציונה","amount":42.8,"type":"delivery","tip":4.24},{"doc":"116000002","date":"2026-03-30","time":"16:38:18","venue":"הפי מרקט | באר יעקב","amount":26.85,"type":"delivery","tip":0.0},{"doc":"116000002","date":"2026-03-31","time":"18:51:16","venue":"Ziona Ness | Hut Pizza","amount":42.17,"type":"delivery","tip":0.0},{"doc":"116000002","date":"2026-03-31","time":"19:24:07","venue":"Ziona Ness Ishparo McDonald's®","amount":30.73,"type":"delivery","tip":0.0},{"doc":"116000002","date":"2026-03-31","time":"19:46:04","venue":"לנדוור | נס ציונה","amount":24.23,"type":"delivery","tip":4.24},{"doc":"116000002","date":"2026-03-31","time":"19:46:38","venue":"am:pm | נס ציונה","amount":20.25,"type":"delivery","tip":0.0},{"doc":"116000003","date":"2026-04-01","time":"12:09:54","venue":"וולט מרקט | נס ציונה","amount":20.25,"type":"delivery","tip":4.24},{"doc":"116000003","date":"2026-04-02","time":"11:37:24","venue":"פיאטו","amount":26.05,"type":"delivery","tip":8.47},{"doc":"116000003","date":"2026-04-02","time":"11:37:45","venue":"זאזו","amount":18.0,"type":"delivery","tip":0.0},{"doc":"116000003","date":"2026-04-02","time":"11:46:17","venue":"זאזו","amount":25.2,"type":"delivery","tip":0.0},{"doc":"116000003","date":"2026-04-02","time":"12:10:19","venue":"וולט מרקט | רחובות","amount":21.4,"type":"delivery","tip":0.0},{"doc":"116000003","date":"2026-04-02","time":"12:41:30","venue":"אוטלו | רחובות","amount":34.45,"type":"delivery","tip":0.0},{"doc":"116000003","date":"2026-04-02","time":"18:31:25","venue":"ג׳פניקה | רחובות","amount":44.06,"type":"delivery","tip":0.0},{"doc":"116000003","date":"2026-04-02","time":"19:12:09","venue":"M32 | נס ציונה","amount":75.48,"type":"delivery","tip":8.47},{"doc":"116000003","date":"2026-04-02","time":"19:12:20","venue":"וולט מרקט | נס ציונה","amount":23.75,"type":"delivery","tip":0.0},{"doc":"116000003","date":"2026-04-02","time":"21:05:35","venue":"Ziona Ness | Giraffe","amount":70.98,"type":"delivery","tip":16.95},{"doc":"116000003","date":"2026-04-02","time":"21:05:49","venue":"ג׳ירף | נס ציונה","amount":27.25,"type":"delivery","tip":0.0},{"doc":"116000003","date":"2026-04-02","time":"21:09:11","venue":"גולדה | נס ציונה","amount":29.42,"type":"delivery","tip":0.0},{"doc":"116000003","date":"2026-04-02","time":"22:16:06","venue":"וולט מרקט | נס ציונה","amount":24.46,"type":"delivery","tip":8.47},{"doc":"116000003","date":"2026-04-02","time":"22:16:13","venue":"וולט מרקט | נס ציונה","amount":32.4,"type":"delivery","tip":0.0},{"doc":"116000003","date":"2026-04-02","time":"22:17:31","venue":"וולט מרקט | נס ציונה","amount":26.25,"type":"delivery","tip":0.0},{"doc":"116000003","date":"2026-04-02","time":"22:26:54","venue":"הבית של פיסטוק | נס ציונה","amount":26.25,"type":"delivery","tip":0.0},{"doc":"116000003","date":"2026-04-02","time":"23:09:44","venue":"– unreachable Customer","amount":12.0,"type":"comp","tip":0.0},{"doc":"116000003","date":"2026-04-04","time":"11:44:23","venue":"וולט מרקט | נס ציונה","amount":18.0,"type":"delivery","tip":8.47},{"doc":"116000003","date":"2026-04-04","time":"12:42:49","venue":"ג׳ירף | נס ציונה","amount":29.85,"type":"delivery","tip":4.24},{"doc":"116000003","date":"2026-04-04","time":"12:53:25","venue":"נונומימי | נס ציונה","amount":28.0,"type":"delivery","tip":4.24},{"doc":"116000003","date":"2026-04-04","time":"12:53:37","venue":"נונומימי | נס ציונה","amount":19.7,"type":"delivery","tip":0.0},{"doc":"116000003","date":"2026-04-04","time":"17:04:37","venue":"גולדה | נס ציונה","amount":18.0,"type":"delivery","tip":0.0},{"doc":"116000003","date":"2026-04-04","time":"20:13:05","venue":"קפה ציונה","amount":19.5,"type":"delivery","tip":8.47},{"doc":"116000003","date":"2026-04-04","time":"20:22:43","venue":"לנדוור | נס ציונה","amount":20.25,"type":"delivery","tip":4.24},{"doc":"116000003","date":"2026-04-04","time":"20:51:13","venue":"גולדה | נס ציונה","amount":30.32,"type":"delivery","tip":0.0},{"doc":"116000003","date":"2026-04-04","time":"21:40:42","venue":"קפה ציונה","amount":20.44,"type":"delivery","tip":0.0},{"doc":"116000003","date":"2026-04-04","time":"21:53:07","venue":"דלי קרים | נס ציונה","amount":20.09,"type":"delivery","tip":4.24},{"doc":"116000003","date":"2026-04-04","time":"21:54:09","venue":"לנדוור | נס ציונה","amount":19.5,"type":"delivery","tip":8.47},{"doc":"116000003","date":"2026-04-04","time":"21:57:21","venue":"הסושיה | נס ציונה - רחובות","amount":19.5,"type":"delivery","tip":0.0},{"doc":"116000003","date":"2026-04-04","time":"22:08:29","venue":"הבית של פיסטוק | נס ציונה","amount":19.5,"type":"delivery","tip":12.71},{"doc":"116000003","date":"2026-04-04","time":"22:18:23","venue":"הסושיה | נס ציונה - רחובות","amount":21.98,"type":"delivery","tip":0.0},{"doc":"116000003","date":"2026-04-04","time":"22:30:15","venue":"נונומימי | נס ציונה","amount":26.18,"type":"delivery","tip":4.24},{"doc":"116000003","date":"2026-04-04","time":"22:38:56","venue":"ריבר סושי בר | רחובות","amount":23.73,"type":"delivery","tip":0.0},{"doc":"116000003","date":"2026-04-05","time":"20:33:58","venue":"וולט מרקט | נס ציונה","amount":18.0,"type":"delivery","tip":12.71},{"doc":"116000003","date":"2026-04-05","time":"20:53:22","venue":"מקדונלד'ס ישפרו נס ציונה","amount":59.73,"type":"delivery","tip":0.0},{"doc":"116000003","date":"2026-04-05","time":"21:41:09","venue":"מקדונלד׳ס גדרה הכשר","amount":27.6,"type":"delivery","tip":0.0},{"doc":"116000004","date":"2026-04-08","time":"16:30:17","venue":"הסושיה | נס ציונה - רחובות","amount":18.0,"type":"delivery","tip":0.0},{"doc":"116000004","date":"2026-04-08","time":"17:14:14","venue":"מקדונלד'ס ישפרו נס ציונה","amount":21.58,"type":"delivery","tip":0.0},{"doc":"116000004","date":"2026-04-08","time":"17:29:17","venue":"נייט קוקי 🍪 | נס ציונה","amount":19.04,"type":"delivery","tip":0.0},{"doc":"116000004","date":"2026-04-08","time":"17:42:30","venue":"וולט מרקט | נס ציונה","amount":20.22,"type":"delivery","tip":0.0},{"doc":"116000004","date":"2026-04-13","time":"14:17:59","venue":"מקדונלד׳ס קניותר נס ציונה הכשר","amount":21.69,"type":"delivery","tip":0.0},{"doc":"116000004","date":"2026-04-15","time":"12:11:57","venue":"טומי בייגלס","amount":18.75,"type":"delivery","tip":0.0},{"doc":"116000004","date":"2026-04-15","time":"12:23:42","venue":"גולדה | נס ציונה","amount":18.75,"type":"delivery","tip":0.0},{"doc":"116000004","date":"2026-04-15","time":"14:51:48","venue":"ריבר סושי בר | רחובות, ג׳פניקה | רחובות","amount":52.97,"type":"delivery","tip":0.0},{"doc":"116000004","date":"2026-04-15","time":"14:54:01","venue":"ג׳פניקה | רחובות","amount":18.75,"type":"delivery","tip":0.0},{"doc":"116000004","date":"2026-04-15","time":"20:34:11","venue":"– issue related Venue","amount":10.0,"type":"comp","tip":0.0},{"doc":"116000004","date":"2026-04-15","time":"20:40:57","venue":"שווארמה שמש ישפרו סנטר | נס ציונה","amount":21.52,"type":"delivery","tip":0.0},{"doc":"116000004","date":"2026-04-15","time":"21:05:30","venue":"גולדה | נס ציונה","amount":19.09,"type":"delivery","tip":0.0},{"doc":"116000004","date":"2026-04-15","time":"21:22:17","venue":"שווארמה שמש ישפרו סנטר | נס ציונה","amount":18.0,"type":"delivery","tip":0.0},{"doc":"116000004","date":"2026-04-15","time":"21:30:08","venue":"שווארמה שמש ישפרו סנטר | נס ציונה","amount":18.0,"type":"delivery","tip":0.0},{"doc":"116000005","date":"2026-04-16","time":"12:13:00","venue":"החצר האסייתית","amount":24.36,"type":"delivery","tip":0.0},{"doc":"116000005","date":"2026-04-16","time":"14:13:40","venue":"מקדונלד׳ס קניותר נס ציונה הכשר, מקדונלד׳ס קניותר נס ציונה הכשר","amount":40.2,"type":"delivery","tip":12.71},{"doc":"116000005","date":"2026-04-16","time":"15:55:08","venue":"בורגר סטיישן | נס ציונה","amount":47.85,"type":"delivery","tip":0.0},{"doc":"116000005","date":"2026-04-16","time":"20:29:17","venue":"וולט מרקט | נס ציונה, וולט מרקט | נס ציונה","amount":32.67,"type":"delivery","tip":0.0},{"doc":"116000005","date":"2026-04-16","time":"20:57:33","venue":"וולט מרקט | נס ציונה","amount":18.04,"type":"delivery","tip":0.0},{"doc":"116000005","date":"2026-04-16","time":"21:11:04","venue":"וולט מרקט | נס ציונה","amount":25.18,"type":"delivery","tip":0.0},{"doc":"116000005","date":"2026-04-16","time":"21:52:51","venue":"פיצה 194","amount":28.45,"type":"delivery","tip":8.47},{"doc":"116000005","date":"2026-04-16","time":"21:53:28","venue":"פיצה 194","amount":19.5,"type":"delivery","tip":0.0},{"doc":"116000005","date":"2026-04-16","time":"22:17:22","venue":"פיצה פרגו | רחובות","amount":23.59,"type":"delivery","tip":0.0},{"doc":"116000005","date":"2026-04-16","time":"22:59:55","venue":"ג׳פניקה | רחובות, ג׳פניקה | רחובות","amount":53.92,"type":"delivery","tip":0.0},{"doc":"116000005","date":"2026-04-17","time":"14:46:21","venue":"וולט מרקט | נס ציונה, וולט מרקט | נס ציונה","amount":41.28,"type":"delivery","tip":0.0},{"doc":"116000005","date":"2026-04-17","time":"15:31:32","venue":"וולט מרקט | נס ציונה","amount":20.63,"type":"delivery","tip":0.0},{"doc":"116000005","date":"2026-04-17","time":"15:35:15","venue":"וולט מרקט | נס ציונה","amount":19.5,"type":"delivery","tip":0.0},{"doc":"116000005","date":"2026-04-17","time":"15:44:39","venue":"דלי קרים | נס ציונה","amount":20.09,"type":"delivery","tip":0.0},{"doc":"116000005","date":"2026-04-17","time":"16:48:56","venue":"וולט מרקט | נס ציונה","amount":21.72,"type":"delivery","tip":0.0},{"doc":"116000005","date":"2026-04-17","time":"16:52:39","venue":"הבית של פיסטוק | נס ציונה","amount":19.5,"type":"delivery","tip":0.0},{"doc":"116000005","date":"2026-04-17","time":"17:35:53","venue":"Ziona Ness | Hut Pizza","amount":24.21,"type":"delivery","tip":0.0},{"doc":"116000005","date":"2026-04-17","time":"17:40:13","venue":"גולדה | נס ציונה","amount":19.5,"type":"delivery","tip":0.0},{"doc":"116000005","date":"2026-04-18","time":"14:34:36","venue":"גולדה | נס ציונה, M32 | נס ציונה","amount":49.36,"type":"delivery","tip":0.0},{"doc":"116000005","date":"2026-04-18","time":"15:51:45","venue":"וולט מרקט | נס ציונה","amount":43.29,"type":"delivery","tip":8.47},{"doc":"116000005","date":"2026-04-18","time":"18:26:05","venue":"Ziona Ness | Hut Pizza","amount":19.5,"type":"delivery","tip":0.0},{"doc":"116000005","date":"2026-04-18","time":"18:56:03","venue":"פיצה האט | נס ציונה","amount":45.03,"type":"delivery","tip":8.47},{"doc":"116000005","date":"2026-04-18","time":"19:32:15","venue":"קפה ציונה","amount":22.55,"type":"delivery","tip":8.47},{"doc":"116000005","date":"2026-04-18","time":"21:11:29","venue":"וולט מרקט | נס ציונה","amount":21.17,"type":"delivery","tip":0.0},{"doc":"116000005","date":"2026-04-18","time":"22:27:32","venue":"אהרל׳ה טוסט נקניק","amount":19.5,"type":"delivery","tip":0.0},{"doc":"116000005","date":"2026-04-18","time":"22:40:08","venue":"קטיף דניאל | כשר","amount":39.98,"type":"delivery","tip":0.0},{"doc":"116000005","date":"2026-04-18","time":"23:36:16","venue":"פיצה רוזינה","amount":19.5,"type":"delivery","tip":0.0},{"doc":"116000005","date":"2026-04-19","time":"12:58:25","venue":"M32 | נס ציונה, M32 | נס ציונה","amount":25.27,"type":"delivery","tip":0.0},{"doc":"116000005","date":"2026-04-19","time":"19:17:59","venue":"Ziona Ness | Hut Pizza","amount":15.42,"type":"delivery","tip":0.0},{"doc":"116000005","date":"2026-04-19","time":"19:38:59","venue":"ג׳ירף | נס ציונה, ג׳ירף | נס ציונה, ג׳ירף | נס ציונה","amount":65.44,"type":"delivery","tip":0.0},{"doc":"116000005","date":"2026-04-19","time":"20:22:15","venue":"התורכי | רחובות, התורכי | רחובות, התורכי | רחובות","amount":51.48,"type":"delivery","tip":4.24},{"doc":"116000005","date":"2026-04-19","time":"20:46:29","venue":"פיצה האט | נס ציונה","amount":41.13,"type":"delivery","tip":0.0},{"doc":"116000005","date":"2026-04-19","time":"21:16:44","venue":"סאנקיס | Sunkiss","amount":62.47,"type":"delivery","tip":4.24},{"doc":"116000005","date":"2026-04-21","time":"16:00:53","venue":"וולט מרקט | נס ציונה, וולט מרקט | נס ציונה","amount":45.13,"type":"delivery","tip":12.71},{"doc":"116000005","date":"2026-04-21","time":"16:46:31","venue":"וולט מרקט | נס ציונה","amount":44.42,"type":"delivery","tip":0.0},{"doc":"116000005","date":"2026-04-21","time":"19:55:41","venue":"החצר האסייתית","amount":18.75,"type":"delivery","tip":0.0},{"doc":"116000005","date":"2026-04-21","time":"20:14:16","venue":"הסושיה | נס ציונה - רחובות, הסושיה | נס ציונה - רחובות","amount":65.02,"type":"delivery","tip":4.24},{"doc":"116000005","date":"2026-04-21","time":"20:14:46","venue":"טיב טעם | רחובות","amount":20.25,"type":"delivery","tip":0.0},{"doc":"116000005","date":"2026-04-21","time":"21:59:08","venue":"Ziona Ness | Hut Pizza ,| Ziona Ness | Hut Pizza","amount":53.71,"type":"delivery","tip":0.0},{"doc":"116000005","date":"2026-04-21","time":"22:31:05","venue":"הבית של פיסטוק | נס ציונה","amount":21.87,"type":"delivery","tip":0.0},{"doc":"116000005","date":"2026-04-21","time":"22:45:50","venue":"פיצה שמש | נס ציונה","amount":27.43,"type":"delivery","tip":2.82},{"doc":"116000005","date":"2026-04-21","time":"22:52:54","venue":"דלי קרים | נס ציונה","amount":32.77,"type":"delivery","tip":0.0},{"doc":"116000005","date":"2026-04-21","time":"22:56:09","venue":"דלי קרים | נס ציונה","amount":20.25,"type":"delivery","tip":4.24},{"doc":"116000005","date":"2026-04-21","time":"23:27:53","venue":"ג׳פניקה | רחובות, ג׳פניקה | רחובות, ג׳פניקה | רחובות","amount":79.86,"type":"delivery","tip":0.0},{"doc":"116000005","date":"2026-04-22","time":"12:47:48","venue":"ויקטורי | רחובות","amount":45.18,"type":"delivery","tip":0.0},{"doc":"116000005","date":"2026-04-22","time":"17:40:33","venue":"בורגר סטיישן | נס ציונה","amount":20.68,"type":"delivery","tip":4.24},{"doc":"116000005","date":"2026-04-22","time":"18:01:53","venue":"ג׳פניקה | רחובות, ג׳פניקה | רחובות","amount":42.26,"type":"delivery","tip":0.0},{"doc":"116000005","date":"2026-04-22","time":"9:43:21","venue":"וולט מרקט | נס ציונה","amount":18.0,"type":"delivery","tip":0.0},{"doc":"116000005","date":"2026-04-22","time":"9:48:45","venue":"וולט מרקט | נס ציונה","amount":18.0,"type":"delivery","tip":0.0},{"doc":"116000006","date":"2026-04-23","time":"19:23:26","venue":"פיצה פרגו | נס ציונה","amount":17.68,"type":"delivery","tip":0.0},{"doc":"116000006","date":"2026-04-23","time":"19:46:56","venue":"פיצה גרליק | נס ציונה, פיצה פרגו | נס ציונה","amount":37.52,"type":"delivery","tip":4.24},{"doc":"116000006","date":"2026-04-23","time":"20:07:39","venue":"ג׳ירף | נס ציונה","amount":20.97,"type":"delivery","tip":0.0},{"doc":"116000006","date":"2026-04-23","time":"20:12:52","venue":"ג׳ירף | נס ציונה, ג׳ירף | נס ציונה","amount":49.56,"type":"delivery","tip":4.24},{"doc":"116000006","date":"2026-04-23","time":"21:29:20","venue":"החצר האסייתית, פיצה שמש | נס ציונה","amount":31.32,"type":"delivery","tip":12.71},{"doc":"116000006","date":"2026-04-23","time":"21:29:31","venue":"החצר האסייתית","amount":48.82,"type":"delivery","tip":0.0},{"doc":"116000006","date":"2026-04-23","time":"21:38:11","venue":"אהרל׳ה טוסט נקניק","amount":18.0,"type":"delivery","tip":0.0},{"doc":"116000006","date":"2026-04-23","time":"22:17:23","venue":"פיצה פרגו | נס ציונה, M32 | נס ציונה","amount":53.83,"type":"delivery","tip":4.24},{"doc":"116000006","date":"2026-04-23","time":"22:48:36","venue":"ג׳פניקה | רחובות","amount":24.52,"type":"delivery","tip":0.0},{"doc":"116000006","date":"2026-04-23","time":"22:53:33","venue":"ג׳פניקה | רחובות","amount":27.93,"type":"delivery","tip":4.24},{"doc":"116000006","date":"2026-04-25","time":"17:41:54","venue":"הבית של פיסטוק | נס ציונה","amount":24.86,"type":"delivery","tip":0.0},{"doc":"116000006","date":"2026-04-25","time":"18:06:55","venue":"גולדה | רחובות פארק המדע","amount":79.17,"type":"delivery","tip":0.0},{"doc":"116000006","date":"2026-04-25","time":"18:29:07","venue":"Yavne | Pizza Domino's","amount":26.41,"type":"delivery","tip":0.0},{"doc":"116000006","date":"2026-04-25","time":"18:57:55","venue":"ג׳ירף | נס ציונה","amount":18.75,"type":"delivery","tip":0.0},{"doc":"116000006","date":"2026-04-25","time":"18:59:22","venue":"נונומימי | נס ציונה, נונומימי | נס ציונה","amount":66.45,"type":"delivery","tip":0.0},{"doc":"116000006","date":"2026-04-25","time":"19:47:29","venue":"דלי קרים | נס ציונה","amount":28.09,"type":"delivery","tip":0.0},{"doc":"116000006","date":"2026-04-25","time":"20:14:37","venue":"וולט מרקט | נס ציונה, וולט מרקט | נס ציונה, וולט מרקט | נס ציונה","amount":59.33,"type":"delivery","tip":0.0},{"doc":"116000006","date":"2026-04-25","time":"20:59:52","venue":"פיצה פרגו | נס ציונה","amount":19.5,"type":"delivery","tip":0.0},{"doc":"116000006","date":"2026-04-25","time":"21:03:33","venue":"פיצה פרגו | נס ציונה, M32 | נס ציונה","amount":47.16,"type":"delivery","tip":0.0},{"doc":"116000006","date":"2026-04-25","time":"22:31:37","venue":"פיצה רוזינה","amount":19.5,"type":"delivery","tip":4.24},{"doc":"116000006","date":"2026-04-26","time":"14:13:36","venue":"ג׳ירף | נס ציונה","amount":22.43,"type":"delivery","tip":0.0},{"doc":"116000006","date":"2026-04-26","time":"14:30:13","venue":"ג׳ירף | נס ציונה","amount":15.0,"type":"delivery","tip":8.47},{"doc":"116000006","date":"2026-04-26","time":"15:01:15","venue":"פוקי בר | נס ציונה","amount":16.08,"type":"delivery","tip":0.0},{"doc":"116000006","date":"2026-04-26","time":"15:15:06","venue":"וולט מרקט | נס ציונה","amount":16.01,"type":"delivery","tip":0.0},{"doc":"116000006","date":"2026-04-26","time":"15:22:40","venue":"וולט מרקט | נס ציונה","amount":15.0,"type":"delivery","tip":8.47},{"doc":"116000006","date":"2026-04-26","time":"19:17:27","venue":"וולט מרקט | נס ציונה","amount":17.22,"type":"delivery","tip":0.0},{"doc":"116000006","date":"2026-04-26","time":"19:40:21","venue":"החצר האסייתית","amount":16.08,"type":"delivery","tip":0.0},{"doc":"116000006","date":"2026-04-26","time":"20:00:25","venue":"קפה ציונה","amount":18.0,"type":"delivery","tip":0.0},{"doc":"116000006","date":"2026-04-26","time":"20:18:11","venue":"נייט קוקי 🍪 | נס ציונה","amount":15.0,"type":"delivery","tip":0.0},{"doc":"116000006","date":"2026-04-26","time":"20:28:43","venue":"נייט קוקי 🍪 | נס ציונה, קפה ציונה","amount":38.39,"type":"delivery","tip":12.71},{"doc":"116000006","date":"2026-04-26","time":"21:23:07","venue":"וולט מרקט | נס ציונה","amount":15.0,"type":"delivery","tip":0.0},{"doc":"116000006","date":"2026-04-26","time":"21:29:08","venue":"וולט מרקט | נס ציונה, וולט מרקט | נס ציונה","amount":31.22,"type":"delivery","tip":4.24},{"doc":"116000006","date":"2026-04-26","time":"22:13:13","venue":"דלי קרים | נס ציונה, דלי קרים | נס ציונה","amount":34.02,"type":"delivery","tip":4.24},{"doc":"116000006","date":"2026-04-27","time":"14:52:49","venue":"פיצה האט | נס ציונה","amount":21.55,"type":"delivery","tip":0.0},{"doc":"116000006","date":"2026-04-27","time":"15:18:22","venue":"קפה ללוש | נס ציונה","amount":15.0,"type":"delivery","tip":8.47},{"doc":"116000006","date":"2026-04-27","time":"15:18:57","venue":"קפה ללוש | נס ציונה","amount":26.62,"type":"delivery","tip":0.0},{"doc":"116000006","date":"2026-04-27","time":"15:46:13","venue":"טיב טעם | רחובות","amount":38.05,"type":"delivery","tip":0.0},{"doc":"116000006","date":"2026-04-27","time":"15:53:15","venue":"– minutes 13 | 489 | Rehovot - Ziona Ness | Hasushia Late: Restaurant","amount":7.0,"type":"comp","tip":0.0},{"doc":"116000006","date":"2026-04-27","time":"16:02:22","venue":"נונומימי | נס ציונה","amount":16.31,"type":"delivery","tip":0.0},{"doc":"116000006","date":"2026-04-27","time":"16:16:53","venue":"שווארמה שמש ויצמן | נס ציונה","amount":17.17,"type":"delivery","tip":0.0},{"doc":"116000006","date":"2026-04-27","time":"16:19:35","venue":"גולדה | נס ציונה","amount":15.0,"type":"delivery","tip":0.0},{"doc":"116000006","date":"2026-04-27","time":"17:30:24","venue":"מקדונלד׳ס קניותר נס ציונה הכשר","amount":17.58,"type":"delivery","tip":4.24},{"doc":"116000006","date":"2026-04-27","time":"18:08:48","venue":"מקדונלד'ס ישפרו נס ציונה","amount":18.86,"type":"delivery","tip":4.24},{"doc":"116000006","date":"2026-04-27","time":"18:19:32","venue":"מקדונלד׳ס קניותר נס ציונה הכשר","amount":15.16,"type":"delivery","tip":0.0},{"doc":"116000006","date":"2026-04-27","time":"18:33:26","venue":"הסושיה | נס ציונה - רחובות","amount":15.0,"type":"delivery","tip":0.0},{"doc":"116000006","date":"2026-04-27","time":"19:10:12","venue":"מקדונלד׳ס קניותר נס ציונה הכשר","amount":15.0,"type":"delivery","tip":8.47},{"doc":"116000006","date":"2026-04-27","time":"19:36:05","venue":"ג׳פניקה | רחובות","amount":29.39,"type":"delivery","tip":0.0},{"doc":"116000006","date":"2026-04-27","time":"19:48:52","venue":"וולט מרקט | נס ציונה","amount":16.15,"type":"delivery","tip":0.0},{"doc":"116000006","date":"2026-04-27","time":"19:57:42","venue":"וולט מרקט | נס ציונה","amount":15.0,"type":"delivery","tip":4.24},{"doc":"116000006","date":"2026-04-28","time":"17:07:25","venue":"פיצה האט | נס ציונה","amount":16.2,"type":"delivery","tip":8.47},{"doc":"116000006","date":"2026-04-28","time":"17:12:10","venue":"– single | mixup | arrival | 521# Ziona Ness | Landwer","amount":10.0,"type":"delivery","tip":0.0},{"doc":"116000006","date":"2026-04-28","time":"17:19:46","venue":"וולט מרקט | נס ציונה","amount":15.0,"type":"delivery","tip":0.0},{"doc":"116000006","date":"2026-04-28","time":"17:29:51","venue":"וולט מרקט | נס ציונה","amount":16.71,"type":"delivery","tip":0.0},{"doc":"116000006","date":"2026-04-28","time":"17:37:20","venue":"ג׳ירף | נס ציונה","amount":17.97,"type":"delivery","tip":0.0},{"doc":"116000006","date":"2026-04-28","time":"18:30:13","venue":"פיצה האט | נס ציונה, וולט מרקט | נס ציונה","amount":25.68,"type":"delivery","tip":0.0},{"doc":"116000006","date":"2026-04-28","time":"19:28:23","venue":"עוף נס ציונה","amount":15.0,"type":"delivery","tip":0.0},{"doc":"116000006","date":"2026-04-28","time":"20:00:40","venue":"– minutes 9 | 174 | Ziona Ness | Station Burger Late: Restaurant","amount":7.0,"type":"comp","tip":0.0},{"doc":"116000006","date":"2026-04-28","time":"20:43:46","venue":"M32 | נס ציונה","amount":26.29,"type":"delivery","tip":0.0},{"doc":"116000006","date":"2026-04-28","time":"20:51:31","venue":"וולט מרקט | נס ציונה, דלי קרים | נס ציונה","amount":52.76,"type":"delivery","tip":0.0},{"doc":"116000006","date":"2026-04-28","time":"22:39:09","venue":"פיצה רוזינה","amount":21.66,"type":"delivery","tip":4.24},{"doc":"116000006","date":"2026-04-28","time":"22:47:59","venue":"בורגר סטיישן | נס ציונה","amount":21.73,"type":"delivery","tip":0.0},{"doc":"116000006","date":"2026-04-28","time":"23:13:09","venue":"הבית של פיסטוק | נס ציונה, פיצה רוזינה","amount":36.03,"type":"delivery","tip":0.0},{"doc":"116000006","date":"2026-04-29","time":"20:36:14","venue":"מקדונלד'ס ישפרו נס ציונה","amount":22.66,"type":"delivery","tip":0.0},{"doc":"116000006","date":"2026-04-29","time":"20:59:02","venue":"לנדוור | נס ציונה","amount":18.0,"type":"delivery","tip":0.0},{"doc":"116000006","date":"2026-04-29","time":"21:15:44","venue":"בורגר סטיישן | נס ציונה","amount":18.0,"type":"delivery","tip":4.24},{"doc":"116000006","date":"2026-04-29","time":"21:23:32","venue":"נייט קוקי 🍪 | נס ציונה","amount":18.0,"type":"delivery","tip":0.0},{"doc":"116000006","date":"2026-04-29","time":"21:34:03","venue":"קפה ללוש | נס ציונה","amount":23.04,"type":"delivery","tip":0.0},{"doc":"116000006","date":"2026-04-30","time":"17:06:55","venue":"אצל ברכה","amount":15.74,"type":"delivery","tip":0.0},{"doc":"116000006","date":"2026-04-30","time":"17:30:03","venue":"מימי ואזה פרחים | נס ציונה","amount":36.62,"type":"delivery","tip":0.0},{"doc":"116000006","date":"2026-04-30","time":"17:49:04","venue":"פיצה פרגו | רחובות","amount":15.0,"type":"delivery","tip":0.0},{"date":"2026-04-30","time":"19:16:09","venue":"Restaurant Late: Giraffe | Ness Ziona | 951 | 14 minutes","amount":12.0,"type":"comp","tip":8.47,"doc":"116000007"},{"doc":"116000006","date":"2026-04-30","time":"19:18:52","venue":"גולדה | נס ציונה, פיצה האט | נס ציונה","amount":38.72,"type":"delivery","tip":0.0},{"doc":"116000006","date":"2026-04-30","time":"19:21:16","venue":"נייט קוקי 🍪 | נס ציונה","amount":15.0,"type":"delivery","tip":0.0},{"doc":"116000006","date":"2026-04-30","time":"20:09:17","venue":"נייט קוקי 🍪 | נס ציונה","amount":19.04,"type":"delivery","tip":0.0},{"doc":"116000006","date":"2026-04-30","time":"20:40:13","venue":"דלי קרים | נס ציונה","amount":19.28,"type":"delivery","tip":0.0},{"doc":"116000006","date":"2026-04-30","time":"20:53:32","venue":"ג׳ירף | נס ציונה","amount":24.42,"type":"delivery","tip":0.0},{"doc":"116000006","date":"2026-04-30","time":"21:08:10","venue":"M32 | נס ציונה","amount":19.8,"type":"delivery","tip":0.0},{"doc":"116000006","date":"2026-04-30","time":"21:14:03","venue":"פיצה קזו","amount":21.31,"type":"delivery","tip":0.0},{"doc":"116000006","date":"2026-04-30","time":"21:25:45","venue":"נייט קוקי 🍪 | נס ציונה","amount":18.0,"type":"delivery","tip":0.0},{"doc":"116000006","date":"2026-04-30","time":"21:42:31","venue":"החצר האסייתית, הבית של פיסטוק | נס ציונה","amount":67.59,"type":"delivery","tip":0.0},{"doc":"116000006","date":"2026-04-30","time":"21:59:16","venue":"ג׳ירף | נס ציונה","amount":23.0,"type":"delivery","tip":0.0},{"date":"2026-05-01","time":"19:25:14","venue":"ג׳ירף | נס ציונה, נונומימי | נס ציונה, נונומימי | נס ציונה","amount":86.42,"type":"delivery","tip":0.0,"doc":"116000007"},{"date":"2026-05-02","time":"19:51:25","venue":"הבית של פיסטוק | נס ציונה","amount":19.5,"type":"delivery","tip":0.0,"doc":"116000007"},{"date":"2026-05-02","time":"20:14:30","venue":"נייט קוקי 🍪 | נס ציונה","amount":40.74,"type":"delivery","tip":0.0,"doc":"116000007"},{"date":"2026-05-02","time":"20:21:21","venue":"קפה ציונה","amount":19.5,"type":"delivery","tip":0.0,"doc":"116000007"},{"date":"2026-05-02","time":"21:02:05","venue":"החצר האסייתית, גולדה | נס ציונה","amount":66.83,"type":"delivery","tip":0.0,"doc":"116000007"},{"date":"2026-05-02","time":"21:09:43","venue":"דלי קרים | נס ציונה","amount":19.5,"type":"delivery","tip":8.47,"doc":"116000007"},{"date":"2026-05-03","time":"13:58:40","venue":"חומוס נורדאו","amount":17.87,"type":"delivery","tip":0.0,"doc":"116000007"},{"date":"2026-05-03","time":"14:07:32","venue":"פיצה קזו","amount":18.31,"type":"delivery","tip":0.0,"doc":"116000007"},{"date":"2026-05-03","time":"14:10:48","venue":"טורטיקו","amount":15.0,"type":"delivery","tip":0.0,"doc":"116000007"},{"date":"2026-05-03","time":"15:42:02","venue":"החצר האסייתית, נייט קוקי 🍪 | נס ציונה","amount":54.22,"type":"delivery","tip":0.0,"doc":"116000007"},{"date":"2026-05-03","time":"16:20:48","venue":"גולדה | נס ציונה","amount":15.3,"type":"delivery","tip":0.0,"doc":"116000007"},{"date":"2026-05-03","time":"20:16:15","venue":"נונומימי | נס ציונה, ג׳ירף | נס ציונה","amount":46.75,"type":"delivery","tip":0.0,"doc":"116000007"},{"date":"2026-05-03","time":"20:29:16","venue":"קפה ללוש | נס ציונה","amount":15.0,"type":"delivery","tip":8.47,"doc":"116000007"},{"date":"2026-05-05","time":"18:35:05","venue":"מקדונלד'ס ישפרו נס ציונה","amount":23.49,"type":"delivery","tip":4.24,"doc":"116000007"},{"date":"2026-05-05","time":"18:41:41","venue":"32M | נס ציונה","amount":26.3,"type":"delivery","tip":0.0,"doc":"116000007"},{"date":"2026-05-05","time":"18:48:35","venue":"32M | נס ציונה","amount":18.0,"type":"delivery","tip":0.0,"doc":"116000007"},{"date":"2026-05-05","time":"19:22:16","venue":"ג׳פניקה | רחובות, BBB | רחובות","amount":44.04,"type":"delivery","tip":0.0,"doc":"116000007"},{"date":"2026-05-05","time":"19:26:57","venue":"טיב טעם | רחובות","amount":18.0,"type":"delivery","tip":0.0,"doc":"116000007"},{"date":"2026-05-05","time":"19:56:26","venue":"פיצה רוזינה","amount":20.01,"type":"delivery","tip":0.0,"doc":"116000007"},{"date":"2026-05-05","time":"20:04:59","venue":"הבית של פיסטוק | נס ציונה","amount":18.0,"type":"delivery","tip":0.0,"doc":"116000007"},{"date":"2026-05-05","time":"20:22:25","venue":"32M | נס ציונה","amount":18.0,"type":"delivery","tip":0.0,"doc":"116000007"},{"date":"2026-05-05","time":"20:35:41","venue":"טורטיקו","amount":21.18,"type":"delivery","tip":0.0,"doc":"116000007"},{"date":"2026-05-05","time":"20:56:24","venue":"ג׳ירף | נס ציונה","amount":70.44,"type":"delivery","tip":4.24,"doc":"116000007"},{"date":"2026-05-05","time":"21:35:53","venue":"הסושיה | נס ציונה - רחובות","amount":18.0,"type":"delivery","tip":4.24,"doc":"116000007"},{"date":"2026-05-05","time":"21:47:27","venue":"Giraffe | Ness Ziona","amount":21.36,"type":"delivery","tip":8.47,"doc":"116000007"},{"date":"2026-05-05","time":"21:47:46","venue":"Giraffe | Ness Ziona","amount":22.02,"type":"delivery","tip":0.0,"doc":"116000007"},{"date":"2026-05-05","time":"21:49:36","venue":"החצר האסייתית","amount":18.0,"type":"delivery","tip":0.0,"doc":"116000007"},{"date":"2026-05-05","time":"22:23:54","venue":"וולט מרקט | נס ציונה","amount":18.07,"type":"delivery","tip":0.0,"doc":"116000007"},{"date":"2026-05-05","time":"22:33:30","venue":"הבית של פיסטוק | נס ציונה","amount":18.0,"type":"delivery","tip":4.24,"doc":"116000007"},{"date":"2026-05-05","time":"22:37:27","venue":"בורגר סטיישן | נס ציונה","amount":20.02,"type":"delivery","tip":0.0,"doc":"116000007"},{"date":"2026-05-06","time":"11:05:46","venue":"ז׳וז׳ו | נס ציונה","amount":17.83,"type":"delivery","tip":4.24,"doc":"116000007"},{"date":"2026-05-06","time":"11:06:01","venue":"פוקי בר | נס ציונה","amount":19.49,"type":"delivery","tip":0.0,"doc":"116000007"},{"date":"2026-05-06","time":"11:34:19","venue":"קצפת | רחובות, סיציליאנו | רחובות","amount":56.6,"type":"delivery","tip":0.0,"doc":"116000007"},{"date":"2026-05-06","time":"13:43:43","venue":"הום סנטר | נס ציונה, שווארמה שמש ישפרו סנטר | נס ציונה","amount":69.4,"type":"delivery","tip":0.0,"doc":"116000007"},{"date":"2026-05-06","time":"14:18:19","venue":"rebar | Ness Ziona","amount":15.0,"type":"delivery","tip":0.0,"doc":"116000007"},{"date":"2026-05-06","time":"14:25:58","venue":"McDonald's® Kenyoter Kosher","amount":19.49,"type":"delivery","tip":0.0,"doc":"116000007"},{"date":"2026-05-06","time":"14:27:08","venue":"בוטיק סנטרל | נס ציונה","amount":22.5,"type":"delivery","tip":0.0,"doc":"116000007"},{"date":"2026-05-06","time":"14:39:12","venue":"חומוס נורדאו","amount":15.0,"type":"delivery","tip":0.0,"doc":"116000007"},{"date":"2026-05-06","time":"15:07:38","venue":"Pizza Hut | Ness Ziona","amount":18.67,"type":"delivery","tip":0.0,"doc":"116000007"},{"date":"2026-05-06","time":"15:32:40","venue":"הגראז׳ | ראשון לציון, הגראז׳ | ראשון לציון","amount":37.27,"type":"delivery","tip":12.72,"doc":"116000007"},{"date":"2026-05-07","time":"17:42:02","venue":"פיצה רוזינה, נייט קוקי 🍪 | נס ציונה","amount":44.31,"type":"delivery","tip":0.0,"doc":"116000007"},{"date":"2026-05-07","time":"18:09:00","venue":"סוויט טיים | קניותר","amount":52.53,"type":"delivery","tip":0.0,"doc":"116000007"},{"date":"2026-05-07","time":"18:19:45","venue":"גוד פארם | נס ציונה","amount":31.35,"type":"delivery","tip":0.0,"doc":"116000007"},{"date":"2026-05-07","time":"19:06:37","venue":"Pizza Hut | Ness Ziona","amount":18.0,"type":"delivery","tip":0.0,"doc":"116000007"},{"doc":"116000008","date":"2026-05-10","time":"11:29:46","venue":"הבית של פיסטוק | נס ציונה","amount":15.0,"type":"delivery","tip":0.0},{"doc":"116000008","date":"2026-05-10","time":"11:35:59","venue":"חומוס נורדאו","amount":15.0,"type":"delivery","tip":0.0},{"doc":"116000008","date":"2026-05-10","time":"11:46:05","venue":"בורגראנץ׳ | נס ציונה","amount":15.47,"type":"delivery","tip":0.0},{"doc":"116000008","date":"2026-05-10","time":"12:03:59","venue":"גוד פארם | נס ציונה","amount":32.62,"type":"delivery","tip":12.71},{"doc":"116000008","date":"2026-05-10","time":"12:04:10","venue":"גוד פארם | נס ציונה","amount":15.0,"type":"delivery","tip":0.0},{"doc":"116000008","date":"2026-05-10","time":"12:45:29","venue":"שניצליה | נס ציונה","amount":17.56,"type":"delivery","tip":0.0},{"doc":"116000008","date":"2026-05-10","time":"12:56:17","venue":"פיצה פרמז׳נו | נס ציונה","amount":32.24,"type":"delivery","tip":0.0},{"doc":"116000008","date":"2026-05-10","time":"13:18:54","venue":"שווארמה שמש ישפרו סנטר | נס ציונה","amount":18.42,"type":"delivery","tip":0.0},{"doc":"116000008","date":"2026-05-10","time":"14:56:21","venue":"וולט מרקט | נס ציונה","amount":33.86,"type":"delivery","tip":0.0},{"doc":"116000008","date":"2026-05-10","time":"15:04:25","venue":"פאנס | נס ציונה | כשר","amount":15.0,"type":"delivery","tip":0.0},{"doc":"116000008","date":"2026-05-10","time":"15:09:03","venue":"M32 | נס ציונה","amount":15.0,"type":"delivery","tip":0.0},{"doc":"116000008","date":"2026-05-10","time":"15:28:02","venue":"Ziona Ness | rebar","amount":22.98,"type":"delivery","tip":0.0},{"doc":"116000008","date":"2026-05-10","time":"15:52:07","venue":"לנדוור | נס ציונה","amount":15.0,"type":"delivery","tip":0.0},{"doc":"116000008","date":"2026-05-11","time":"11:53:05","venue":"טומי בייגלס","amount":15.0,"type":"delivery","tip":0.0},{"doc":"116000008","date":"2026-05-11","time":"12:09:43","venue":"M32 | נס ציונה","amount":34.14,"type":"delivery","tip":0.0},{"doc":"116000008","date":"2026-05-11","time":"12:31:05","venue":"גוד פארם | נס ציונה","amount":16.06,"type":"delivery","tip":0.0},{"doc":"116000008","date":"2026-05-11","time":"12:47:41","venue":"טומי בייגלס","amount":27.53,"type":"delivery","tip":0.0},{"doc":"116000008","date":"2026-05-11","time":"13:05:45","venue":"בוכרי בייקרי","amount":31.24,"type":"delivery","tip":0.0},{"doc":"116000008","date":"2026-05-11","time":"13:27:26","venue":"פוקי בר | נס ציונה","amount":33.26,"type":"delivery","tip":0.0},{"doc":"116000008","date":"2026-05-11","time":"13:58:03","venue":"שווארמה שמש ויצמן | נס ציונה","amount":15.0,"type":"delivery","tip":0.0},{"doc":"116000008","date":"2026-05-11","time":"14:06:29","venue":"am:pm | נס ציונה","amount":15.64,"type":"delivery","tip":0.0},{"doc":"116000008","date":"2026-05-11","time":"14:19:15","venue":"חומוס נורדאו","amount":47.8,"type":"delivery","tip":0.0},{"doc":"116000008","date":"2026-05-11","time":"14:34:09","venue":"קפה ולב","amount":23.06,"type":"delivery","tip":0.0},{"doc":"116000008","date":"2026-05-11","time":"14:58:43","venue":"לנדוור | נס ציונה","amount":17.59,"type":"delivery","tip":0.0},{"doc":"116000008","date":"2026-05-11","time":"15:14:09","venue":"מקדונלד'ס ישפרו נס ציונה","amount":17.42,"type":"delivery","tip":0.0},{"doc":"116000008","date":"2026-05-11","time":"17:50:22","venue":"וולט מרקט | נס ציונה","amount":23.24,"type":"delivery","tip":0.0},{"doc":"116000008","date":"2026-05-11","time":"18:11:28","venue":"אושי אושי | נס ציונה","amount":26.83,"type":"delivery","tip":0.0},{"doc":"116000008","date":"2026-05-11","time":"18:21:22","venue":"שווארמה שמש ישפרו סנטר | נס ציונה","amount":15.0,"type":"delivery","tip":12.71},{"doc":"116000008","date":"2026-05-11","time":"18:42:51","venue":"לנדוור | נס ציונה, am:pm | נס ציונה","amount":26.39,"type":"delivery","tip":0.0},{"doc":"116000008","date":"2026-05-11","time":"19:03:00","venue":"פיצה האט | נס ציונה","amount":35.89,"type":"delivery","tip":0.0},{"doc":"116000008","date":"2026-05-12","time":"12:36:47","venue":"עוף נס ציונה","amount":22.13,"type":"delivery","tip":0.0},{"doc":"116000008","date":"2026-05-12","time":"12:55:36","venue":"חומוס נורדאו, חומוס נורדאו","amount":27.61,"type":"delivery","tip":0.0},{"doc":"116000008","date":"2026-05-12","time":"13:07:31","venue":"חומוס אליהו | נס ציונה, פוקי בר | נס ציונה","amount":42.3,"type":"delivery","tip":0.0},{"doc":"116000008","date":"2026-05-12","time":"14:19:06","venue":"פיצה רוזינה, קפה ללוש | נס ציונה","amount":52.02,"type":"delivery","tip":4.24},{"doc":"116000008","date":"2026-05-12","time":"14:35:21","venue":"M32 | נס ציונה","amount":15.0,"type":"delivery","tip":8.47},{"doc":"116000008","date":"2026-05-12","time":"15:13:20","venue":"Ziona Ness Ishparo McDonald's®","amount":16.14,"type":"delivery","tip":0.0},{"doc":"116000008","date":"2026-05-12","time":"15:21:24","venue":"הום סנטר | נס ציונה","amount":28.3,"type":"delivery","tip":0.0},{"doc":"116000008","date":"2026-05-12","time":"15:22:31","venue":"שווארמה שמש ישפרו סנטר | נס ציונה","amount":15.0,"type":"delivery","tip":0.0},{"doc":"116000008","date":"2026-05-12","time":"16:12:31","venue":"ג׳ירף | נס ציונה, ג׳ירף | נס ציונה","amount":60.67,"type":"delivery","tip":4.24},{"doc":"116000008","date":"2026-05-12","time":"17:00:06","venue":"אצל ברכה","amount":37.6,"type":"delivery","tip":0.0},{"doc":"116000008","date":"2026-05-12","time":"18:11:28","venue":"Ziona Ness Ishparo McDonald's®","amount":18.39,"type":"delivery","tip":4.24},{"doc":"116000008","date":"2026-05-12","time":"18:34:43","venue":"ויקטורי | רחובות, ויקטורי | רחובות, רוסט צ׳יקן","amount":54.99,"type":"delivery","tip":12.71},{"doc":"116000008","date":"2026-05-12","time":"19:18:31","venue":"וולט מרקט | נס ציונה","amount":20.0,"type":"delivery","tip":0.0},{"doc":"116000008","date":"2026-05-13","time":"12:54:57","venue":"M32 | נס ציונה","amount":15.0,"type":"delivery","tip":0.0},{"doc":"116000008","date":"2026-05-13","time":"13:06:21","venue":"M32 | נס ציונה","amount":24.33,"type":"delivery","tip":0.0},{"doc":"116000008","date":"2026-05-13","time":"13:22:07","venue":"החצר האסייתית","amount":15.0,"type":"delivery","tip":0.0},{"doc":"116000008","date":"2026-05-13","time":"13:33:46","venue":"שניצליה | נס ציונה","amount":19.49,"type":"delivery","tip":4.24},{"doc":"116000008","date":"2026-05-13","time":"14:53:37","venue":"שווארמה שמש ויצמן | נס ציונה","amount":15.0,"type":"delivery","tip":8.47},{"doc":"116000008","date":"2026-05-13","time":"15:08:13","venue":"בורגר סטיישן | נס ציונה","amount":21.21,"type":"delivery","tip":0.0},{"doc":"116000008","date":"2026-05-13","time":"15:20:30","venue":"מקדונלד׳ס קניותר נס ציונה הכשר","amount":19.9,"type":"delivery","tip":0.0},{"doc":"116000008","date":"2026-05-13","time":"15:36:36","venue":"טיב טעם | רחובות","amount":26.39,"type":"delivery","tip":0.0},{"doc":"116000008","date":"2026-05-13","time":"17:18:12","venue":"הסושיה | נס ציונה - רחובות","amount":16.34,"type":"delivery","tip":0.0},{"doc":"116000008","date":"2026-05-13","time":"17:37:06","venue":"גוד פארם | נס ציונה","amount":29.21,"type":"delivery","tip":0.0},{"doc":"116000008","date":"2026-05-14","time":"13:11:52","venue":"וולט מרקט | נס ציונה","amount":35.57,"type":"delivery","tip":0.0},{"doc":"116000008","date":"2026-05-14","time":"13:44:30","venue":"עוף נס ציונה","amount":31.27,"type":"delivery","tip":0.0},{"doc":"116000008","date":"2026-05-14","time":"14:56:30","venue":"רולדין | נס ציונה","amount":49.89,"type":"delivery","tip":4.24},{"doc":"116000008","date":"2026-05-14","time":"15:32:15","venue":"קפה ציונה","amount":15.0,"type":"delivery","tip":0.0},{"doc":"116000008","date":"2026-05-14","time":"16:23:19","venue":"דלי קרים | נס ציונה, שווארמה שמש ויצמן | נס ציונה","amount":37.7,"type":"delivery","tip":8.47},{"doc":"116000008","date":"2026-05-14","time":"17:08:15","venue":"שווארמה שמש ויצמן | נס ציונה","amount":21.74,"type":"delivery","tip":0.0},{"doc":"116000008","date":"2026-05-14","time":"17:31:34","venue":"וולט מרקט | נס ציונה, וולט מרקט | נס ציונה","amount":48.49,"type":"delivery","tip":0.0},{"doc":"116000008","date":"2026-05-14","time":"17:32:42","venue":"וולט מרקט | נס ציונה","amount":22.5,"type":"delivery","tip":0.0},{"doc":"116000008","date":"2026-05-15","time":"11:31:45","venue":"שווארמה שמש ישפרו סנטר | נס ציונה, דרך היין | נס ציונה","amount":53.14,"type":"delivery","tip":4.24},{"doc":"116000008","date":"2026-05-15","time":"16:23:23","venue":"וולט מרקט | נס ציונה","amount":20.1,"type":"delivery","tip":0.0},{"doc":"116000008","date":"2026-05-15","time":"16:32:24","venue":"וולט מרקט | נס ציונה","amount":20.6,"type":"delivery","tip":0.0},{"doc":"116000008","date":"2026-05-15","time":"16:48:31","venue":"וולט מרקט | נס ציונה, וולט מרקט | נס ציונה","amount":47.67,"type":"delivery","tip":0.0},{"doc":"116000008","date":"2026-05-15","time":"17:21:37","venue":"הבית של פיסטוק | נס ציונה","amount":18.54,"type":"delivery","tip":4.24},{"doc":"116000008","date":"2026-05-15","time":"17:30:04","venue":"דלי קרים | נס ציונה","amount":18.0,"type":"delivery","tip":0.0},{"doc":"116000008","date":"2026-05-15","time":"19:47:28","venue":"גולדה | נס ציונה","amount":18.0,"type":"delivery","tip":0.0},{"doc":"116000008","date":"2026-05-15","time":"20:02:32","venue":"וולט מרקט | נס ציונה, וולט מרקט | נס ציונה","amount":47.64,"type":"delivery","tip":8.47},{"doc":"116000008","date":"2026-05-15","time":"20:09:46","venue":"פיצה האט | נס ציונה","amount":20.25,"type":"delivery","tip":0.0},{"doc":"116000009","date":"2026-05-16","time":"18:48:15","venue":"מקדונלד'ס ישפרו נס ציונה","amount":24.6,"type":"delivery","tip":0.0},{"doc":"116000009","date":"2026-05-16","time":"18:57:35","venue":"מקדונלד'ס ישפרו נס ציונה","amount":18.0,"type":"delivery","tip":8.47},{"doc":"116000009","date":"2026-05-16","time":"19:18:45","venue":"נייט קוקי 🍪 | נס ציונה, הבית של פיסטוק | נס ציונה","amount":69.84,"type":"delivery","tip":0.0},{"doc":"116000009","date":"2026-05-16","time":"19:27:58","venue":"ג׳ירף | נס ציונה","amount":29.07,"type":"delivery","tip":0.0},{"doc":"116000009","date":"2026-05-16","time":"20:11:11","venue":"מקדונלד'ס ישפרו נס ציונה, מקדונלד'ס ישפרו נס ציונה","amount":37.34,"type":"delivery","tip":12.71},{"doc":"116000009","date":"2026-05-17","time":"11:28:02","venue":"וולט מרקט | נס ציונה","amount":20.52,"type":"delivery","tip":0.0},{"doc":"116000009","date":"2026-05-17","time":"11:35:03","venue":"וולט מרקט | נס ציונה","amount":15.0,"type":"delivery","tip":0.0},{"doc":"116000009","date":"2026-05-17","time":"11:59:21","venue":"נייט קוקי 🍪 | נס ציונה","amount":25.08,"type":"delivery","tip":0.0},{"doc":"116000009","date":"2026-05-17","time":"12:00:22","venue":"חומוס נורדאו","amount":15.0,"type":"delivery","tip":0.0},{"doc":"116000009","date":"2026-05-17","time":"12:19:49","venue":"הלחמע","amount":18.48,"type":"delivery","tip":4.24},{"doc":"116000009","date":"2026-05-17","time":"12:54:35","venue":"עוף נס ציונה","amount":15.7,"type":"delivery","tip":0.0},{"doc":"116000009","date":"2026-05-17","time":"20:16:33","venue":"M32 | נס ציונה, M32 | נס ציונה, M32 | נס ציונה","amount":91.68,"type":"delivery","tip":0.0},{"doc":"116000009","date":"2026-05-18","time":"13:00:03","venue":"שווארמה שמש ויצמן | נס ציונה, שניצליה | נס ציונה","amount":27.44,"type":"delivery","tip":16.95},{"doc":"116000009","date":"2026-05-18","time":"13:11:55","venue":"הסושיה | נס ציונה - רחובות","amount":15.0,"type":"delivery","tip":0.0},{"doc":"116000009","date":"2026-05-18","time":"13:19:35","venue":"החצר האסייתית, החצר האסייתית","amount":37.32,"type":"delivery","tip":0.0},{"doc":"116000009","date":"2026-05-18","time":"13:46:54","venue":"וולט מרקט | נס ציונה, וולט מרקט | נס ציונה, שווארמה שמש ויצמן | נס ציונה","amount":43.18,"type":"delivery","tip":0.0},{"doc":"116000009","date":"2026-05-18","time":"17:50:55","venue":"מימי ואזה פרחים | נס ציונה","amount":54.87,"type":"delivery","tip":0.0},{"doc":"116000009","date":"2026-05-18","time":"18:29:46","venue":"הגראז׳ | ראשון לציון","amount":24.27,"type":"delivery","tip":8.47},{"doc":"116000009","date":"2026-05-19","time":"14:30:21","venue":"M32 | נס ציונה","amount":35.34,"type":"delivery","tip":0.0},{"doc":"116000009","date":"2026-05-19","time":"15:49:44","venue":"וולט מרקט | נס ציונה","amount":17.45,"type":"delivery","tip":0.0},{"doc":"116000009","date":"2026-05-19","time":"16:10:40","venue":"וולט מרקט | נס ציונה","amount":16.14,"type":"delivery","tip":4.24},{"doc":"116000009","date":"2026-05-19","time":"16:44:31","venue":"דלי קרים | נס ציונה","amount":24.15,"type":"delivery","tip":8.47},{"doc":"116000009","date":"2026-05-19","time":"16:56:46","venue":"נונו | נס ציונה","amount":15.0,"type":"delivery","tip":0.0},{"doc":"116000009","date":"2026-05-19","time":"17:05:17","venue":"שניצליה | נס ציונה","amount":17.41,"type":"delivery","tip":0.0},{"doc":"116000009","date":"2026-05-19","time":"17:41:14","venue":"גולדה | נס ציונה, דלי קרים | נס ציונה","amount":31.19,"type":"delivery","tip":0.0},{"doc":"116000009","date":"2026-05-19","time":"17:47:37","venue":"הסושיה | נס ציונה - רחובות","amount":15.0,"type":"delivery","tip":0.0},{"doc":"116000009","date":"2026-05-19","time":"19:20:18","venue":"ג׳פניקה | רחובות, ג׳פניקה | רחובות","amount":43.28,"type":"delivery","tip":0.0},{"doc":"116000009","date":"2026-05-19","time":"20:53:31","venue":"Ziona Ness | Hut Pizza","amount":35.26,"type":"delivery","tip":0.0},{"doc":"116000009","date":"2026-05-19","time":"21:04:40","venue":"פיצה קזו, M32 | נס ציונה","amount":57.61,"type":"delivery","tip":0.0},{"doc":"116000009","date":"2026-05-19","time":"21:37:23","venue":"החצר האסייתית","amount":46.51,"type":"delivery","tip":0.0},{"doc":"116000009","date":"2026-05-21","time":"12:04:40","venue":"וולט מרקט | נס ציונה","amount":38.95,"type":"delivery","tip":8.47},{"doc":"116000009","date":"2026-05-21","time":"12:28:48","venue":"M32 | נס ציונה","amount":41.9,"type":"delivery","tip":4.24},{"doc":"116000009","date":"2026-05-21","time":"13:45:51","venue":"פיצה האט | נס ציונה","amount":18.75,"type":"delivery","tip":0.0},{"doc":"116000009","date":"2026-05-21","time":"14:50:46","venue":"וולט מרקט | נס ציונה","amount":24.32,"type":"delivery","tip":8.47},{"doc":"116000010","date":"2026-05-21","time":"9:04:40","venue":"– minutes 18 | 604 | Ziona Ness | Market Wolt Late: Restaurant","amount":12.0,"type":"comp","tip":0.0},{"doc":"116000009","date":"2026-05-22","time":"14:39:35","venue":"וולט מרקט | נס ציונה","amount":27.23,"type":"delivery","tip":0.0},{"doc":"116000009","date":"2026-05-22","time":"15:14:42","venue":"גולדה | נס ציונה, גולדה | נס ציונה","amount":59.77,"type":"delivery","tip":0.0},{"doc":"116000010","date":"2026-05-27","time":"10:02:04","venue":"וולט מרקט | נס ציונה","amount":18.75,"type":"delivery","tip":0.0},{"doc":"116000010","date":"2026-05-27","time":"10:16:36","venue":"מימי ואזה פרחים | נס ציונה","amount":45.06,"type":"delivery","tip":0.0},{"doc":"116000010","date":"2026-05-27","time":"11:40:28","venue":"הבית של פיסטוק | נס ציונה","amount":86.98,"type":"delivery","tip":0.0},{"doc":"116000010","date":"2026-05-27","time":"11:45:49","venue":"שווארמה שמש ויצמן | נס ציונה","amount":24.75,"type":"delivery","tip":0.0},{"doc":"116000010","date":"2026-05-27","time":"8:46:22","venue":"מימי | נס ציונה","amount":23.85,"type":"delivery","tip":8.47},{"doc":"116000010","date":"2026-05-27","time":"9:02:16","venue":"Market Mini Yellow | גילי","amount":30.31,"type":"delivery","tip":0.0},{"doc":"116000010","date":"2026-05-28","time":"11:31:03","venue":"טומי בייגלס","amount":48.03,"type":"delivery","tip":0.0},{"doc":"116000010","date":"2026-05-28","time":"11:41:58","venue":"הטמבוריה | נס ציונה","amount":24.73,"type":"delivery","tip":4.24},{"doc":"116000010","date":"2026-05-28","time":"11:47:23","venue":"מימי | נס ציונה","amount":23.75,"type":"delivery","tip":8.47},{"doc":"116000010","date":"2026-05-28","time":"12:05:51","venue":"חומוס בראשית","amount":18.75,"type":"delivery","tip":0.0},{"doc":"116000010","date":"2026-05-28","time":"12:45:13","venue":"שווארמה שמש ישפרו סנטר | נס ציונה","amount":43.56,"type":"delivery","tip":0.0},{"doc":"116000010","date":"2026-05-28","time":"12:51:09","venue":"שווארמה שמש ויצמן | נס ציונה","amount":18.75,"type":"delivery","tip":0.0},{"doc":"116000010","date":"2026-05-28","time":"14:18:04","venue":"קאבום","amount":31.2,"type":"delivery","tip":0.0},{"doc":"116000010","date":"2026-05-28","time":"14:41:18","venue":"שניצליה | נס ציונה","amount":44.03,"type":"delivery","tip":0.0},{"doc":"116000010","date":"2026-05-28","time":"15:06:04","venue":"לנדוור | נס ציונה","amount":20.61,"type":"delivery","tip":0.0},{"doc":"116000010","date":"2026-05-28","time":"15:24:26","venue":"מקדונלד׳ס קניותר נס ציונה הכשר, מקדונלד׳ס קניותר נס ציונה הכשר","amount":62.86,"type":"delivery","tip":8.47},{"doc":"116000010","date":"2026-05-28","time":"16:03:40","venue":"וולט מרקט | נס ציונה","amount":29.5,"type":"delivery","tip":0.0},{"doc":"116000010","date":"2026-05-29","time":"20:53:22","venue":"וולט מרקט | נס ציונה, וולט מרקט | נס ציונה, וולט מרקט | נס ציונה","amount":90.51,"type":"delivery","tip":8.47},{"doc":"116000010","date":"2026-05-29","time":"21:58:44","venue":"גולדה | נס ציונה","amount":20.25,"type":"delivery","tip":8.47},{"doc":"116000010","date":"2026-05-29","time":"21:59:13","venue":"גולדה | נס ציונה, M32 | נס ציונה","amount":50.82,"type":"delivery","tip":0.0},{"doc":"116000010","date":"2026-05-30","time":"16:51:24","venue":"– minutes 11 | 35022514 | | Ziona Ness | Hut Pizza Late: Restaurant","amount":7.0,"type":"comp","tip":0.0},{"doc":"116000010","date":"2026-05-30","time":"17:48:23","venue":"קפה ללוש | נס ציונה, נייט קוקי 🍪 | נס ציונה","amount":68.86,"type":"delivery","tip":0.0},{"doc":"116000010","date":"2026-05-30","time":"18:47:22","venue":"וולט מרקט | נס ציונה","amount":19.82,"type":"delivery","tip":8.47},{"doc":"116000010","date":"2026-05-30","time":"18:47:29","venue":"וולט מרקט | נס ציונה","amount":19.5,"type":"delivery","tip":0.0},{"doc":"116000010","date":"2026-05-30","time":"19:39:10","venue":"גולדה | נס ציונה","amount":35.64,"type":"delivery","tip":4.24},{"doc":"116000010","date":"2026-05-30","time":"20:00:57","venue":"ויצמן 22, ויצמן 22","amount":33.58,"type":"delivery","tip":0.0},{"doc":"116000010","date":"2026-05-31","time":"16:01:26","venue":"ג׳ירף | נס ציונה","amount":74.8,"type":"delivery","tip":0.0},{"doc":"116000010","date":"2026-05-31","time":"16:50:59","venue":"לנדוור | נס ציונה","amount":45.33,"type":"delivery","tip":0.0},{"doc":"116000010","date":"2026-05-31","time":"16:54:47","venue":"לנדוור | נס ציונה","amount":15.0,"type":"delivery","tip":0.0},{"doc":"116000010","date":"2026-05-31","time":"17:40:30","venue":"לנדוור | נס ציונה","amount":34.3,"type":"delivery","tip":8.47},{"doc":"116000010","date":"2026-05-31","time":"20:13:52","venue":"Ziona Ness | Hut Pizza","amount":41.18,"type":"delivery","tip":0.0},{"doc":"116000010","date":"2026-05-31","time":"20:41:36","venue":"וולט מרקט | נס ציונה, וולט מרקט | נס ציונה","amount":66.8,"type":"delivery","tip":0.0},{"doc":"116000010","date":"2026-05-31","time":"20:44:55","venue":"M32 | נס ציונה","amount":20.36,"type":"delivery","tip":8.47},{"doc":"116000011","date":"2026-06-01","time":"11:16:31","venue":"שווארמה שמש ישפרו סנטר | נס ציונה","amount":18.72,"type":"delivery","tip":0.0},{"doc":"116000011","date":"2026-06-01","time":"11:31:43","venue":"וולט מרקט | נס ציונה","amount":18.6,"type":"delivery","tip":8.47},{"doc":"116000011","date":"2026-06-01","time":"11:44:36","venue":"ג׳ירף | נס ציונה","amount":49.26,"type":"delivery","tip":0.0},{"doc":"116000011","date":"2026-06-01","time":"12:14:03","venue":"טומי בייגלס","amount":65.48,"type":"delivery","tip":0.0},{"doc":"116000011","date":"2026-06-01","time":"12:14:39","venue":"גולדה | נס ציונה","amount":18.0,"type":"delivery","tip":0.0},{"doc":"116000011","date":"2026-06-01","time":"13:02:44","venue":"חומוס נורדאו","amount":24.39,"type":"delivery","tip":0.0},{"doc":"116000011","date":"2026-06-01","time":"13:38:36","venue":"am:pm | נס ציונה","amount":19.28,"type":"delivery","tip":0.0},{"doc":"116000011","date":"2026-06-01","time":"13:56:35","venue":"פיצה פרמז׳נו | נס ציונה","amount":28.88,"type":"delivery","tip":0.0},{"doc":"116000011","date":"2026-06-01","time":"14:26:05","venue":"וולט מרקט | נס ציונה","amount":23.38,"type":"delivery","tip":0.0},{"doc":"116000011","date":"2026-06-01","time":"14:34:10","venue":"שווארמה שמש ויצמן | נס ציונה","amount":15.0,"type":"delivery","tip":0.0},{"doc":"116000011","date":"2026-06-01","time":"14:42:13","venue":"am:pm | נס ציונה","amount":15.0,"type":"delivery","tip":0.0},{"doc":"116000011","date":"2026-06-02","time":"19:00:04","venue":"אופיס דיפו | נס ציונה","amount":38.66,"type":"delivery","tip":0.0},{"doc":"116000011","date":"2026-06-02","time":"19:32:38","venue":"שווארמה שמש ויצמן | נס ציונה","amount":33.6,"type":"delivery","tip":0.0},{"doc":"116000011","date":"2026-06-02","time":"20:12:59","venue":"ג׳ירף | נס ציונה","amount":42.14,"type":"delivery","tip":0.0},{"doc":"116000011","date":"2026-06-02","time":"20:20:50","venue":"ג׳ירף | נס ציונה","amount":18.0,"type":"delivery","tip":0.0},{"doc":"116000011","date":"2026-06-03","time":"14:08:00","venue":"ג׳ירף | נס ציונה","amount":18.04,"type":"delivery","tip":8.47},{"doc":"116000011","date":"2026-06-03","time":"14:08:08","venue":"ג׳ירף | נס ציונה","amount":17.15,"type":"delivery","tip":0.0},{"doc":"116000011","date":"2026-06-03","time":"14:14:33","venue":"קרפור | נס ציונה","amount":15.0,"type":"delivery","tip":0.0},{"doc":"116000011","date":"2026-06-03","time":"14:42:41","venue":"טרנזיט | באר יעקב","amount":15.61,"type":"delivery","tip":0.0},{"doc":"116000011","date":"2026-06-03","time":"15:06:01","venue":"טומי בייגלס","amount":23.85,"type":"delivery","tip":0.0},{"doc":"116000011","date":"2026-06-03","time":"15:33:12","venue":"am:pm | נס ציונה","amount":41.66,"type":"delivery","tip":0.0},{"doc":"116000011","date":"2026-06-03","time":"19:03:42","venue":"הבית של פיסטוק | נס ציונה","amount":18.51,"type":"delivery","tip":4.24},{"doc":"116000011","date":"2026-06-03","time":"19:13:12","venue":"החצר האסייתית, פיצה רוזינה","amount":29.75,"type":"delivery","tip":0.0},{"doc":"116000011","date":"2026-06-03","time":"19:40:11","venue":"באן-דיט, מוצ'ה פיצה | רחובות","amount":42.55,"type":"delivery","tip":0.0},{"doc":"116000011","date":"2026-06-03","time":"21:06:45","venue":"החצר האסייתית, החצר האסייתית, החצר האסייתית","amount":62.42,"type":"delivery","tip":12.71},{"doc":"116000011","date":"2026-06-04","time":"12:07:42","venue":"– minutes 12 | 1406 | Roladin Late: Restaurant","amount":7.0,"type":"comp","tip":0.0},{"doc":"116000011","date":"2026-06-04","time":"13:10:21","venue":"פוקי 25","amount":28.74,"type":"delivery","tip":8.47},{"doc":"116000011","date":"2026-06-04","time":"13:51:45","venue":"חומוס נורדאו","amount":18.0,"type":"delivery","tip":4.24},{"doc":"116000011","date":"2026-06-04","time":"13:57:42","venue":"החצר האסייתית","amount":22.82,"type":"delivery","tip":0.0},{"doc":"116000011","date":"2026-06-04","time":"14:19:58","venue":"שווארמה שמש ויצמן | נס ציונה","amount":17.08,"type":"delivery","tip":0.0},{"doc":"116000011","date":"2026-06-04","time":"14:32:44","venue":"לנדוור | נס ציונה","amount":15.0,"type":"delivery","tip":0.0},{"doc":"116000011","date":"2026-06-04","time":"14:36:25","venue":"לנדוור | נס ציונה","amount":15.0,"type":"delivery","tip":4.24},{"doc":"116000011","date":"2026-06-04","time":"14:50:38","venue":"שווארמה שמש ישפרו סנטר | נס ציונה","amount":18.42,"type":"delivery","tip":0.0},{"doc":"116000011","date":"2026-06-04","time":"14:54:41","venue":"Roladin","amount":18.0,"type":"delivery","tip":0.0},{"doc":"116000011","date":"2026-06-04","time":"15:23:17","venue":"ג׳ירף | נס ציונה","amount":72.1,"type":"delivery","tip":8.47},{"doc":"116000011","date":"2026-06-04","time":"17:33:43","venue":"מקדונלד'ס ישפרו נס ציונה, מקדונלד'ס ישפרו נס ציונה","amount":30.37,"type":"delivery","tip":0.0},{"doc":"116000011","date":"2026-06-04","time":"17:57:18","venue":"– issue related Venue","amount":10.0,"type":"comp","tip":0.0},{"doc":"116000011","date":"2026-06-04","time":"18:27:47","venue":"וולט מרקט | נס ציונה","amount":36.44,"type":"delivery","tip":0.0},{"doc":"116000011","date":"2026-06-04","time":"19:05:34","venue":"שופרסל | נס ציונה","amount":47.52,"type":"delivery","tip":0.0},{"doc":"116000011","date":"2026-06-04","time":"19:30:58","venue":"קיטשן בראסרי | נס ציונה","amount":46.1,"type":"delivery","tip":0.0},{"doc":"116000011","date":"2026-06-04","time":"21:11:49","venue":"וולט מרקט | נס ציונה","amount":23.0,"type":"delivery","tip":0.0},{"doc":"116000011","date":"2026-06-04","time":"21:32:41","venue":"אושי אושי | נס ציונה","amount":22.4,"type":"delivery","tip":4.24},{"doc":"116000011","date":"2026-06-04","time":"21:51:40","venue":"ג׳ירף | נס ציונה","amount":21.53,"type":"delivery","tip":8.47},{"doc":"116000011","date":"2026-06-04","time":"22:04:50","venue":"קפה ציונה","amount":20.0,"type":"delivery","tip":0.0},{"doc":"116000011","date":"2026-06-04","time":"22:15:00","venue":"פוקי בר | נס ציונה","amount":46.2,"type":"delivery","tip":0.0},{"doc":"116000011","date":"2026-06-04","time":"22:18:57","venue":"החצר האסייתית","amount":18.0,"type":"delivery","tip":0.0},{"doc":"116000011","date":"2026-06-04","time":"22:25:39","venue":"קפה ציונה","amount":18.0,"type":"delivery","tip":0.0},{"doc":"116000011","date":"2026-06-04","time":"22:54:58","venue":"החצר האסייתית","amount":19.04,"type":"delivery","tip":0.0},{"doc":"116000011","date":"2026-06-04","time":"23:17:08","venue":"M32 | נס ציונה","amount":20.06,"type":"delivery","tip":8.47},{"doc":"116000011","date":"2026-06-05","time":"15:17:03","venue":"פטרה הלבנונית | נס ציונה","amount":18.0,"type":"delivery","tip":0.0},{"doc":"116000011","date":"2026-06-05","time":"15:42:11","venue":"הסושיה | נס ציונה - רחובות","amount":18.0,"type":"delivery","tip":4.24},{"doc":"116000011","date":"2026-06-05","time":"15:52:27","venue":"נונו | נס ציונה, מימי ואזה פרחים | נס ציונה","amount":50.72,"type":"delivery","tip":4.24},{"doc":"116000011","date":"2026-06-05","time":"16:26:03","venue":"M32 | נס ציונה","amount":23.1,"type":"delivery","tip":0.0},{"doc":"116000011","date":"2026-06-05","time":"16:29:40","venue":"M32 | נס ציונה, M32 | נס ציונה","amount":39.12,"type":"delivery","tip":0.0},{"doc":"116000011","date":"2026-06-05","time":"17:04:18","venue":"ג׳ירף | נס ציונה, נונו | נס ציונה","amount":63.86,"type":"delivery","tip":0.0},{"doc":"116000011","date":"2026-06-05","time":"17:05:47","venue":"וולט מרקט | נס ציונה","amount":18.0,"type":"delivery","tip":0.0},{"doc":"116000011","date":"2026-06-06","time":"17:33:09","venue":"גולדה | נס ציונה, גולדה | נס ציונה","amount":54.53,"type":"delivery","tip":4.24},{"doc":"116000011","date":"2026-06-06","time":"17:33:52","venue":"גולדה | נס ציונה","amount":19.6,"type":"delivery","tip":8.47},{"doc":"116000011","date":"2026-06-06","time":"19:24:09","venue":"זו ארץ זו | נס ציונה","amount":53.48,"type":"delivery","tip":0.0},{"doc":"116000011","date":"2026-06-06","time":"19:31:09","venue":"גולדה | נס ציונה","amount":18.75,"type":"delivery","tip":0.0},{"doc":"116000011","date":"2026-06-06","time":"19:54:16","venue":"קפה ציונה","amount":18.75,"type":"delivery","tip":0.0},{"doc":"116000011","date":"2026-06-06","time":"20:03:43","venue":"גולדה | נס ציונה","amount":27.54,"type":"delivery","tip":0.0},{"doc":"116000011","date":"2026-06-06","time":"20:28:40","venue":"מקדונלד'ס ישפרו נס ציונה","amount":29.25,"type":"delivery","tip":0.0},{"doc":"116000011","date":"2026-06-06","time":"20:44:09","venue":"ג׳ירף | נס ציונה, ג׳ירף | נס ציונה","amount":53.29,"type":"delivery","tip":8.47},{"doc":"116000011","date":"2026-06-06","time":"20:56:20","venue":"– late Venue","amount":10.0,"type":"delivery","tip":0.0},{"doc":"116000011","date":"2026-06-06","time":"21:16:26","venue":"נייט קוקי 🍪 | נס ציונה, פיצה שמש | נס ציונה","amount":52.51,"type":"delivery","tip":8.47},{"doc":"116000011","date":"2026-06-07","time":"18:20:53","venue":"וולט מרקט | נס ציונה","amount":21.15,"type":"delivery","tip":0.0},{"doc":"116000011","date":"2026-06-07","time":"18:56:24","venue":"שניצליה | נס ציונה","amount":15.0,"type":"delivery","tip":0.0},{"doc":"116000011","date":"2026-06-07","time":"18:57:48","venue":"שווארמה שמש ויצמן | נס ציונה","amount":27.0,"type":"delivery","tip":0.0},{"doc":"116000011","date":"2026-06-07","time":"19:19:15","venue":"החצר האסייתית","amount":15.04,"type":"delivery","tip":0.0},{"doc":"116000011","date":"2026-06-07","time":"19:35:52","venue":"M32 | נס ציונה","amount":24.97,"type":"delivery","tip":0.0},{"doc":"116000011","date":"2026-06-07","time":"19:59:41","venue":"וולט מרקט | נס ציונה","amount":15.0,"type":"delivery","tip":0.0}];
+const CYCLES = [["116000001", "16.03", "22.03", "23.03"], ["116000002", "23.03", "31.03", "01.04"], ["116000003", "01.04", "07.04", "09.04"], ["116000004", "08.04", "15.04", "16.04"], ["116000005", "16.04", "22.04", "23.04"], ["116000006", "23.04", "30.04", "03.05"], ["116000007", "01.05", "07.05", "10.05"], ["116000008", "08.05", "15.05", "17.05"], ["116000009", "16.05", "22.05", "24.05"], ["116000010", "23.05", "31.05", "01.06"], ["116000011", "01.06", "07.06", "08.06"]];
+const DOW=["ראשון","שני","שלישי","רביעי","חמישי","שישי","שבת"];
+const MON={ "03":"מרץ","04":"אפריל","05":"מאי","06":"יוני" };
+const KEY="wolt_dashboard_v1", GKEY="wolt_goal_v1";
+let DATA=[], FILTER="all", GOAL=null;
+let pDay=(new Date()).getDay();
+
+async function load(){ try{const r=await window.storage.get(KEY); if(r&&r.value)return JSON.parse(r.value);}catch(e){} await save(SEED); return SEED.slice(); }
+async function save(d){ try{await window.storage.set(KEY,JSON.stringify(d));}catch(e){} }
+async function loadGoal(){ try{const r=await window.storage.get(GKEY); if(r&&r.value)return JSON.parse(r.value);}catch(e){} return null; }
+async function saveGoal(g){ try{await window.storage.set(GKEY,JSON.stringify(g));}catch(e){} }
+
+const ils=n=>"₪"+Math.round(n).toLocaleString("he-IL");
+const ils1=n=>"₪"+n.toLocaleString("he-IL",{maximumFractionDigits:1});
+const isEarn=r=>r.type==="delivery"||r.type==="comp";
+const dow=iso=>new Date(iso+"T00:00:00").getDay();
+const hour=t=>parseInt(t.split(":")[0],10);
+const V=()=>FILTER==="all"?DATA:DATA.filter(r=>r.date.slice(0,7)==="2026-"+FILTER);
+const primary=v=>(v||"").split(",")[0].split("|")[0].trim();
+const short=s=>s.length>18?s.slice(0,18)+"…":s;
+function area(v){const s=v||"";
+  if(/באר יעקב/.test(s))return"באר יעקב"; if(/ראשון/.test(s))return"ראשון לציון";
+  if(/יבנה|Yavne/i.test(s))return"יבנה"; if(/גדרה/.test(s))return"גדרה";
+  if(/ציונה|Ziona/i.test(s))return"נס ציונה"; if(/רחובות|פארק המדע/.test(s))return"רחובות"; return null;}
+
+function totals(rows){let inc=0,tips=0,n=0;rows.forEach(r=>{if(r.type==="deposit")return;inc+=r.amount;tips+=r.tip||0;if(r.type==="delivery")n++;});return{inc,tips,n,gross:inc+tips};}
+function byDoc(){const m={};DATA.forEach(r=>{if(r.type==="deposit")return;(m[r.doc]=m[r.doc]||{inc:0,tips:0,n:0});m[r.doc].inc+=r.amount;m[r.doc].tips+=r.tip||0;if(r.type==="delivery")m[r.doc].n++;});return m;}
+function activeDatesByDow(rows){const s={};for(let i=0;i<7;i++)s[i]=new Set();rows.forEach(r=>{if(isEarn(r))s[dow(r.date)].add(r.date);});return s;}
+
+function barList(el,rows,fmt,amber){const max=Math.max(...rows.map(r=>r.v),1);el.innerHTML="";
+  if(!rows.length){el.innerHTML='<div class="empty">אין נתונים בטווח הזה.</div>';return;}
+  rows.forEach((r,i)=>el.insertAdjacentHTML("beforeend",
+    `<div class="brow ${i===0?'best':''}"><div class="k" title="${r.k}">${r.k}</div>`+
+    `<div class="track"><div class="fill ${amber?'amber':''}" style="width:${r.v/max*100}%"></div></div>`+
+    `<div class="val">${fmt(r.v)}</div></div>`));}
+
+/* hero + mini summary */
+function sparkline(vals){if(vals.length<2)return"";const w=150,h=44,mx=Math.max(...vals),mn=Math.min(...vals);
+  const pts=vals.map((v,i)=>{const x=i/(vals.length-1)*w;const y=h-4-((v-mn)/((mx-mn)||1))*(h-8);return x.toFixed(1)+","+y.toFixed(1);}).join(" ");
+  return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}"><polyline points="${pts}" fill="none" stroke="rgba(255,255,255,.9)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;}
+function renderHero(){
+  const t=totals(V());const bd=byDoc();
+  const weekVals=CYCLES.filter(c=>bd[c[0]]&&(FILTER==="all"||true)).map(c=>bd[c[0]].inc+bd[c[0]].tips);
+  const flabel=FILTER==="all"?"כל התקופה":MON[FILTER]+" 2026";
+  document.getElementById("hero").innerHTML=
+    `<div class="lbl">סך ברוטו · ${flabel}</div><div class="num">${ils(t.gross)}</div>`+
+    `<div class="row"><div class="meta">${t.n} משלוחים · ${ils(t.tips)} טיפים<br>ממוצע ${ils1(t.n?t.inc/t.n:0)} למשלוח</div>`+
+    `<div>${FILTER==="all"?sparkline(weekVals):""}</div></div>`;
+}
+function renderMini(){
+  const bd=byDoc();const docs=CYCLES.filter(c=>bd[c[0]]);
+  const last=docs[docs.length-1],prev=docs[docs.length-2];
+  const lt=last?bd[last[0]].inc+bd[last[0]].tips:0, pt=prev?bd[prev[0]].inc+bd[prev[0]].tips:0;
+  const ch=pt?((lt-pt)/pt*100):0;
+  document.getElementById("miniwk").innerHTML=
+    `<div><div class="l">השבוע האחרון (שולם ${last?last[3]:'-'})</div><div class="v">${ils(lt)}</div></div>`+
+    `<div style="text-align:left"><span class="delta ${ch>=0?'u':'d'}">${ch>=0?'▲':'▼'} ${Math.abs(ch).toFixed(0)}%</span><div class="vs">מול ${ils(pt)}</div></div>`;
+}
+
+function renderWeekly(){
+  const bd=byDoc();
+  const base=CYCLES.map(c=>({label:c[3],cyc:c[1]+"–"+c[2],doc:c[0],total:bd[c[0]]?bd[c[0]].inc+bd[c[0]].tips:0,has:!!bd[c[0]]}));
+  const seq=base.slice();
+  const max=Math.max(...seq.map(w=>w.total),1);const wk=document.getElementById("wk");wk.innerHTML="";
+  seq.forEach((w,i)=>{let d="";if(w.has){const prev=seq.slice(0,i).reverse().find(x=>x.has);
+    if(prev){const ch=(w.total-prev.total)/prev.total*100;d=`<span class="delta ${ch>=0?'u':'d'}">${ch>=0?'▲':'▼'}${Math.abs(ch).toFixed(0)}%</span>`;}}
+    wk.insertAdjacentHTML("beforeend",`<div class="col"><div class="cv">${w.gap?'—':ils(w.total)}</div>`+
+      `<div class="bar ${w.gap?'gap':''}" style="height:${w.gap?44:Math.max(6,w.total/max*120)}px"></div>`+
+      `<div class="cl">${w.label}</div><div class="cl2">${w.cyc}</div>${d}</div>`);});
+}
+
+function renderGoal(){
+  const box=document.getElementById("goalbox");const bd=byDoc();
+  const weeks=CYCLES.filter(c=>bd[c[0]]).map(c=>({pay:c[3],total:bd[c[0]].inc+bd[c[0]].tips}));
+  if(!GOAL){box.innerHTML=`<div class="empty">לא הוגדר יעד. קבע אותו בלשונית "נתונים".</div>`;return;}
+  const avg=weeks.reduce((a,w)=>a+w.total,0)/weeks.length;
+  const hit=weeks.filter(w=>w.total>=GOAL).length;
+  box.innerHTML=`<div style="display:flex;justify-content:space-between;font-size:13px;font-weight:800"><span>ממוצע שבועי</span><span>${ils(avg)} / ${ils(GOAL)}</span></div>`+
+    `<div class="goalbar"><div class="gf" style="width:${Math.min(100,avg/GOAL*100)}%"></div></div>`+
+    `<div class="hint" style="margin-top:10px">${hit} מתוך ${weeks.length} שבועות עברו את היעד</div>`+
+    `<div class="gweeks">`+weeks.map(w=>`<span class="gw ${w.total>=GOAL?'hit':'miss'}">${w.pay} ${w.total>=GOAL?'✓':'✗'}</span>`).join("")+`</div>`;
+}
+
+function renderMonths(){
+  const m={};DATA.forEach(r=>{if(r.type==="deposit")return;const k=r.date.slice(5,7);(m[k]=m[k]||0);m[k]+=r.amount+(r.tip||0);});
+  barList(document.getElementById("bymonth"),Object.keys(m).sort().map(k=>({k:MON[k]||k,v:m[k]})),ils);
+}
+function renderRecs(){
+  const byDate={},byHr={};let bigOrder={amount:0};
+  DATA.forEach(r=>{if(!isEarn(r))return;byDate[r.date]=(byDate[r.date]||0)+r.amount;byHr[hour(r.time)]=(byHr[hour(r.time)]||0)+r.amount;if(r.type==="delivery"&&r.amount>bigOrder.amount)bigOrder=r;});
+  const bd=byDoc();const wks=CYCLES.filter(c=>bd[c[0]]).map(c=>({pay:c[3],t:bd[c[0]].inc+bd[c[0]].tips}));
+  const bestWk=wks.reduce((a,b)=>b.t>a.t?b:a,{t:0});
+  const bestDay=Object.keys(byDate).reduce((a,d)=>byDate[d]>(byDate[a]||0)?d:a,Object.keys(byDate)[0]);
+  const bestHr=Object.keys(byHr).reduce((a,h)=>byHr[h]>byHr[a]?h:a,Object.keys(byHr)[0]);
+  const days=Object.keys(byDate).length;
+  const ddmm=d=>d.slice(8)+"."+d.slice(5,7);
+  document.getElementById("recs").innerHTML=
+    `<div class="rec"><div class="l">היום הכי טוב</div><div class="v">${ils(byDate[bestDay])}</div><div class="s">${ddmm(bestDay)}</div></div>`+
+    `<div class="rec"><div class="l">השבוע הכי טוב</div><div class="v">${ils(bestWk.t)}</div><div class="s">שולם ${bestWk.pay}</div></div>`+
+    `<div class="rec"><div class="l">השעה הכי חזקה</div><div class="v">${bestHr}:00</div><div class="s">סה״כ ${ils(byHr[bestHr])}</div></div>`+
+    `<div class="rec"><div class="l">ימי עבודה</div><div class="v">${days}</div><div class="s">ההזמנה הגדולה ${ils(bigOrder.amount)}</div></div>`;
+}
+
+/* TIMES */
+function hourBuckets(rows){const active=activeDatesByDow(rows);const grid={};
+  rows.forEach(r=>{if(!isEarn(r))return;grid[dow(r.date)+"_"+hour(r.time)]=(grid[dow(r.date)+"_"+hour(r.time)]||0)+r.amount;});
+  const avg={};for(let dw=0;dw<7;dw++){const days=active[dw].size||1;for(let h=8;h<=23;h++)avg[dw+"_"+h]=(grid[dw+"_"+h]||0)/days;}
+  return{avg,active};}
+function renderWindows(){
+  const rows=V();const{avg,active}=hourBuckets(rows);const out=[];
+  for(let dw=0;dw<7;dw++){if(active[dw].size===0)continue;let best={sum:0,start:11};
+    for(let s=8;s<=21;s++){let sum=0;for(let h=s;h<s+3;h++)sum+=avg[dw+"_"+h]||0;if(sum>best.sum)best={sum,start:s};}
+    out.push({dw,start:best.start,sum:best.sum,n:active[dw].size});}
+  out.sort((a,b)=>b.sum-a.sum);
+  const el=document.getElementById("windows");
+  if(!out.length){el.innerHTML='<div class="empty">אין נתונים בטווח הזה.</div>';return;}
+  el.innerHTML=out.map((w,i)=>`<div class="wrow ${i===0?'top':''}"><div><span class="d">${DOW[w.dw]}</span>`+
+    `<span class="rank">${i+1}</span></div><div class="t">${w.start}:00–${w.start+3}:00</div>`+
+    `<div class="a">~${ils(w.sum)}<div class="t" style="font-weight:600;color:var(--mute)">${w.n} ימים</div></div></div>`).join("");
+}
+function renderHeatmap(){
+  const rows=V();const hours=[];for(let h=8;h<=23;h++)hours.push(h);
+  const{avg,active}=hourBuckets(rows);let mx=0;Object.values(avg).forEach(v=>{if(v>mx)mx=v;});
+  const hm=document.getElementById("hm");hm.style.setProperty("--cols",hours.length);
+  let html=`<div class="hcell"></div>`+hours.map(h=>`<div class="hcell">${h}</div>`).join("");
+  for(let dw=0;dw<7;dw++){if(active[dw].size===0)continue;html+=`<div class="rlab">${DOW[dw]}</div>`;
+    hours.forEach(h=>{const v=avg[dw+"_"+h]||0,f=mx?v/mx:0;let bg="var(--hm0)";
+      if(f>0&&f<=.12)bg="var(--hm1)";else if(f<=.3)bg="var(--hm2)";else if(f<=.55)bg="var(--hm3)";else if(f<=.8)bg="var(--hm4)";else if(f>.8)bg="var(--hm5)";
+      html+=`<div class="cell" title="${DOW[dw]} ${h}:00 · ${ils1(v)}/יום" style="background:${bg};color:${f>.55?'#eafafb':'#0c4f56'}">${v>=8?Math.round(v):''}</div>`;});}
+  hm.innerHTML=html;
+}
+function renderTimes(){
+  renderWindows();renderHeatmap();const rows=V();renderShift(rows);
+  const ds={};rows.forEach(r=>{if(isEarn(r))ds[dow(r.date)]=(ds[dow(r.date)]||0)+r.amount;});
+  barList(document.getElementById("byday"),Object.keys(ds).map(d=>({k:DOW[d],v:ds[d]})).sort((a,b)=>b.v-a.v),ils);
+  const hs={};rows.forEach(r=>{if(isEarn(r))hs[hour(r.time)]=(hs[hour(r.time)]||0)+r.amount;});
+  barList(document.getElementById("byhour"),Object.keys(hs).map(h=>({k:h+":00",v:hs[h]})).sort((a,b)=>b.v-a.v).slice(0,10),ils);
+}
+
+/* TIPS */
+function renderTips(){
+  const rows=V();const t=totals(rows);const k=document.getElementById("tipkpi");k.innerHTML="";
+  const tipped=rows.filter(r=>r.type==="delivery"&&(r.tip||0)>0).length;
+  [["סך טיפים",ils(t.tips)],["% הזמנות עם טיפ",(t.n?(tipped/t.n*100):0).toFixed(0)+"%"],
+   ["טיפ ממוצע (כשיש)",ils1(tipped?t.tips/tipped:0)],["טיפ ממוצע למשלוח",ils1(t.n?t.tips/t.n:0)]
+  ].forEach(([l,v])=>k.insertAdjacentHTML("beforeend",`<div class="kpi"><div class="l">${l}</div><div class="v">${v}</div></div>`));
+  const th={};rows.forEach(r=>{if(r.tip)th[hour(r.time)]=(th[hour(r.time)]||0)+r.tip;});
+  barList(document.getElementById("tiphour"),Object.keys(th).map(h=>({k:h+":00",v:th[h]})).sort((a,b)=>b.v-a.v).slice(0,8),ils,true);
+  const tv={};rows.forEach(r=>{if(r.tip){const v=primary(r.venue);tv[v]=(tv[v]||0)+r.tip;}});
+  barList(document.getElementById("tipvenue"),Object.keys(tv).map(v=>({k:short(v),v:tv[v]})).sort((a,b)=>b.v-a.v).slice(0,8),ils,true);
+}
+
+/* PLACES */
+function renderPlaces(){
+  const rows=V();const c={},a={};
+  rows.forEach(r=>{if(r.type!=="delivery")return;const v=primary(r.venue);if(!v)return;c[v]=(c[v]||0)+1;a[v]=(a[v]||0)+r.amount;});
+  barList(document.getElementById("venc"),Object.keys(c).map(v=>({k:short(v),v:c[v]})).sort((x,y)=>y.v-x.v).slice(0,10),n=>n+"×");
+  barList(document.getElementById("vena"),Object.keys(a).map(v=>({k:short(v),v:a[v]})).sort((x,y)=>y.v-x.v).slice(0,10),ils);
+  // areas
+  const ar={};let unknown=0,tot=0;rows.forEach(r=>{if(r.type!=="delivery")return;tot++;const z=area(r.venue);if(z)ar[z]=(ar[z]||0)+r.amount;else unknown++;});
+  barList(document.getElementById("areas"),Object.keys(ar).map(z=>({k:z,v:ar[z]})).sort((x,y)=>y.v-x.v),ils);
+  document.getElementById("areanote").textContent=tot?`${Math.round(unknown/tot*100)}% מהמשלוחים בלי תיוג אזור (עסקים מקומיים ללא ציון עיר).`:"";
+  renderVSearch();renderBatched(rows);renderSizeDist(rows);
+}
+function renderVSearch(){
+  const q=(document.getElementById("vsearch").value||"").trim();const box=document.getElementById("vresult");
+  if(!q){box.innerHTML="";return;}
+  const rows=V().filter(r=>r.type==="delivery"&&(r.venue||"").includes(q));
+  if(!rows.length){box.innerHTML=`<div class="empty">לא נמצא "${q}" בטווח הזה.</div>`;return;}
+  const amt=rows.reduce((a,r)=>a+r.amount,0),tip=rows.reduce((a,r)=>a+(r.tip||0),0);
+  box.innerHTML=`<div class="recs" style="margin-top:12px">`+
+    `<div class="rec"><div class="l">משלוחים</div><div class="v">${rows.length}</div></div>`+
+    `<div class="rec"><div class="l">סך הכנסה</div><div class="v">${ils(amt)}</div></div>`+
+    `<div class="rec"><div class="l">ממוצע</div><div class="v">${ils1(amt/rows.length)}</div></div>`+
+    `<div class="rec"><div class="l">טיפים</div><div class="v">${ils(tip)}</div></div></div>`;
+}
+
+/* ===== NEW: insights, trends, shift, batched, size ===== */
+function pad(n){return(n<10?"0":"")+n;}
+function isoOf(d){return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());}
+function dailyGross(rows){const m={};rows.forEach(r=>{if(r.type==="deposit")return;m[r.date]=(m[r.date]||0)+r.amount+(r.tip||0);});return m;}
+
+function shiftStats(rows){
+  const byd={};rows.forEach(r=>{if(!isEarn(r))return;const sec=(()=>{const p=r.time.split(":");return +p[0]*3600+ +p[1]*60+(+p[2]||0);})();
+    (byd[r.date]=byd[r.date]||{min:1e9,max:-1,earn:0,cnt:0,dw:dow(r.date)});const o=byd[r.date];o.min=Math.min(o.min,sec);o.max=Math.max(o.max,sec);o.earn+=r.amount;o.cnt++;});
+  const days=Object.values(byd);if(!days.length)return null;
+  let span=0,earn=0,firstH=0,lastH=0;const perDow={};
+  days.forEach(o=>{const sp=Math.max((o.max-o.min)/3600,0.25);span+=sp;earn+=o.earn;firstH+=o.min/3600;lastH+=o.max/3600;
+    (perDow[o.dw]=perDow[o.dw]||{earn:0,span:0});perDow[o.dw].earn+=o.earn;perDow[o.dw].span+=sp;});
+  const n=days.length;
+  return{n,avgSpan:span/n,rate:earn/span,firstH:firstH/n,lastH:lastH/n,perDow};
+}
+function hm2(h){const hh=Math.floor(h),mm=Math.round((h-hh)*60);return pad(hh)+":"+pad(mm);}
+function renderShift(rows){
+  const s=shiftStats(rows);const k=document.getElementById("shiftkpi");
+  if(!s){k.innerHTML='<div class="empty">אין נתונים בטווח הזה.</div>';document.getElementById("shifthour").innerHTML="";return;}
+  k.innerHTML=[["₪ לשעת עבודה",ils(s.rate),"מוערך"],["אורך משמרת ממוצע",s.avgSpan.toFixed(1)+" ש'",""],
+    ["שעת התחלה ממוצעת",hm2(s.firstH),""],["שעת סיום ממוצעת",hm2(s.lastH),""]]
+    .map(([l,v,sm])=>`<div class="kpi"><div class="l">${l}</div><div class="v">${v} ${sm?`<small>${sm}</small>`:""}</div></div>`).join("");
+  const rows2=Object.keys(s.perDow).map(d=>({k:DOW[d],v:s.perDow[d].span?s.perDow[d].earn/s.perDow[d].span:0})).sort((a,b)=>b.v-a.v);
+  barList(document.getElementById("shifthour"),rows2,ils);
+}
+function renderBatched(rows){
+  let bc=0,bs=0,sc=0,ss=0;rows.forEach(r=>{if(r.type!=="delivery")return;const batched=(r.venue||"").includes(",");
+    if(batched){bc++;bs+=r.amount;}else{sc++;ss+=r.amount;}});
+  const avgB=bc?bs/bc:0,avgS=sc?ss/sc:0;const fac=avgS?(avgB/avgS):0;
+  document.getElementById("batchkpi").innerHTML=
+    [["הזמנות מקובצות",bc+"",sc+bc?Math.round(bc/(sc+bc)*100)+"% מהכל":""],["ממוצע מקובצת",ils1(avgB),""],
+     ["ממוצע בודדת",ils1(avgS),""],["מקובצת שווה",fac?("×"+fac.toFixed(1)):"-","מבודדת"]]
+    .map(([l,v,sm])=>`<div class="kpi"><div class="l">${l}</div><div class="v">${v} ${sm?`<small>${sm}</small>`:""}</div></div>`).join("");
+}
+function renderSizeDist(rows){
+  const buckets=[["עד ₪20",0,20],["₪20–30",20,30],["₪30–40",30,40],["₪40–60",40,60],["₪60+",60,1e9]];
+  const cnt=buckets.map(()=>0);const amts=[];
+  rows.forEach(r=>{if(r.type!=="delivery")return;amts.push(r.amount);buckets.forEach((b,i)=>{if(r.amount>=b[1]&&r.amount<b[2])cnt[i]++;});});
+  barList(document.getElementById("sizedist"),buckets.map((b,i)=>({k:b[0],v:cnt[i]})),n=>n+"×");
+  amts.sort((a,b)=>a-b);const med=amts.length?amts[Math.floor(amts.length/2)]:0;
+  document.getElementById("sizenote").textContent=amts.length?`חציון ההזמנה: ${ils1(med)} · ${amts.length} משלוחים`:"";
+}
+function renderInsights(){
+  const rows=V();const out=[];const t=totals(rows);
+  if(!t.n){document.getElementById("insights").innerHTML='<div class="empty">אין נתונים בטווח הזה.</div>';return;}
+  // best weekday by avg per active day
+  const act=activeDatesByDow(rows);const dEarn={};rows.forEach(r=>{if(isEarn(r))dEarn[dow(r.date)]=(dEarn[dow(r.date)]||0)+r.amount;});
+  let bD=-1,bV=0;for(let d=0;d<7;d++){if(!act[d].size)continue;const v=dEarn[d]/act[d].size;if(v>bV){bV=v;bD=d;}}
+  if(bD>=0)out.push(["🔥",`היום הכי חזק שלך: <b>${DOW[bD]}</b> — בערך ${ils(bV)} ביום עבודה.`]);
+  // top window
+  const{avg,active}=hourBuckets(rows);let win={s:0};for(let d=0;d<7;d++){if(!active[d].size)continue;for(let st=8;st<=21;st++){let su=0;for(let h=st;h<st+3;h++)su+=avg[d+"_"+h]||0;if(su>win.s)win={s:su,d,st};}}
+  if(win.s)out.push(["⏰",`החלון הכי רווחי: <b>${DOW[win.d]} ${win.st}:00–${win.st+3}:00</b> (~${ils(win.s)}).`]);
+  // power hours share
+  const hr={};rows.forEach(r=>{if(isEarn(r))hr[hour(r.time)]=(hr[hour(r.time)]||0)+r.amount;});
+  const top3=Object.entries(hr).sort((a,b)=>b[1]-a[1]).slice(0,3);const share=t.inc?top3.reduce((a,x)=>a+x[1],0)/t.inc*100:0;
+  if(top3.length)out.push(["⚡",`3 השעות החזקות (${top3.map(x=>x[0]+":00").join(", ")}) = <b>${share.toFixed(0)}%</b> מההכנסה.`]);
+  // batched
+  let bc=0,bs=0,sc=0,ss=0;rows.forEach(r=>{if(r.type!=="delivery")return;if((r.venue||"").includes(",")){bc++;bs+=r.amount;}else{sc++;ss+=r.amount;}});
+  if(bc&&sc)out.push(["📦",`הזמנה מקובצת שווה <b>×${(bs/bc/(ss/sc)).toFixed(1)}</b> מבודדת (₪${(bs/bc).toFixed(0)} מול ₪${(ss/sc).toFixed(0)}).`]);
+  // shift rate
+  const sh=shiftStats(rows);if(sh)out.push(["💸",`קצב מוערך: <b>${ils(sh.rate)} לשעת עבודה</b>, משמרת ממוצעת ${sh.avgSpan.toFixed(1)} ש'.`]);
+  document.getElementById("insights").innerHTML=out.slice(0,5).map(([ic,tx])=>`<div class="ins"><span class="ic">${ic}</span><span>${tx}</span></div>`).join("");
+}
+function renderCumulative(){
+  const rows=V();const m=dailyGross(rows);const dates=Object.keys(m).sort();
+  const box=document.getElementById("cumchart");
+  if(dates.length<2){box.innerHTML='<div class="empty">אין מספיק נתונים בטווח הזה.</div>';return;}
+  let run=0;const pts=dates.map((d,i)=>{run+=m[d];return{x:i,y:run,d};});const total=run;
+  const W=320,H=140,P=4;const mx=total;const n=dates.length;
+  const X=i=>P+i/(n-1)*(W-2*P);const Y=v=>H-P-(v/mx)*(H-2*P-12);
+  const line=pts.map(p=>X(p.x).toFixed(1)+","+Y(p.y).toFixed(1)).join(" ");
+  const area=`${X(0)},${H-P} ${line} ${X(n-1)},${H-P}`;
+  box.innerHTML=`<svg viewBox="0 0 ${W} ${H}" width="100%" style="display:block">
+    <defs><linearGradient id="cg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--teal)" stop-opacity=".28"/><stop offset="1" stop-color="var(--teal)" stop-opacity="0"/></linearGradient></defs>
+    <polygon points="${area}" fill="url(#cg)"/>
+    <polyline points="${line}" fill="none" stroke="var(--teal)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+    <circle cx="${X(n-1)}" cy="${Y(total)}" r="3.5" fill="var(--teal-d)"/>
+    <text x="${X(n-1)}" y="${Y(total)-7}" text-anchor="end" font-size="13" font-weight="800" fill="var(--ink)">${ils(total)}</text>
+  </svg>`;
+}
+function renderCalendar(){
+  const rows=V();const m=dailyGross(rows);const dates=Object.keys(m);
+  const box=document.getElementById("calendar");
+  if(!dates.length){box.innerHTML='<div class="empty">אין נתונים בטווח הזה.</div>';return;}
+  const all=rows.filter(r=>r.type!=="deposit").map(r=>r.date).sort();
+  const min=new Date(all[0]+"T00:00:00"),max=new Date(all[all.length-1]+"T00:00:00");
+  const start=new Date(min);start.setDate(start.getDate()-start.getDay());
+  let mx=0;Object.values(m).forEach(v=>{if(v>mx)mx=v;});
+  const cols=[];let cur=new Date(start);
+  while(cur<=max){const col=[];for(let i=0;i<7;i++){const iso=isoOf(cur);const inRange=cur>=min&&cur<=max;const v=m[iso]||0;col.push({iso,v,inRange});cur.setDate(cur.getDate()+1);}cols.push(col);}
+  const color=v=>{if(!v)return"var(--hm0)";const f=v/mx;if(f<=.12)return"var(--hm1)";if(f<=.3)return"var(--hm2)";if(f<=.55)return"var(--hm3)";if(f<=.8)return"var(--hm4)";return"var(--hm5)";};
+  // weekday label column (Sun..Sat) on the LTR-right side
+  const labs=DOW.map(d=>`<div class="callab">${d[0]}</div>`).join("");
+  const grid=cols.map(col=>`<div class="calcol">`+col.map(c=>`<div class="calc" title="${c.iso} · ${c.inRange?ils(c.v):'—'}" style="background:${c.inRange?color(c.v):'transparent'}"></div>`).join("")+`</div>`).join("");
+  box.innerHTML=`<div class="cal">${grid}<div class="calcol">${labs}</div></div>`;
+}
+function renderCompare(){
+  const a=document.getElementById("cmpA").value,b=document.getElementById("cmpB").value;
+  const ra=DATA.filter(r=>r.date.slice(0,7)==="2026-"+a),rb=DATA.filter(r=>r.date.slice(0,7)==="2026-"+b);
+  const ta=totals(ra),tb=totals(rb);
+  const row=(label,va,vb,fmt)=>{const d=vb?((va-vb)/vb*100):0;return`<div class="cl">${label}</div>`+
+    `<div class="a">${fmt(va)}</div><div class="d ${va>=vb?'u':'d'}">${va>=vb?'▲':'▼'}${Math.abs(d).toFixed(0)}%</div><div class="b">${fmt(vb)}</div>`;};
+  document.getElementById("cmpResult").innerHTML=
+    `<div style="display:flex;justify-content:space-between;font-size:12px;font-weight:800;color:var(--mute);margin-top:8px"><span>${MON[a]}</span><span>${MON[b]}</span></div>`+
+    `<div class="cmp-grid">`+
+    row("ברוטו",ta.gross,tb.gross,ils)+row("משלוחים",ta.n,tb.n,n=>n+"")+
+    row("ממוצע למשלוח",ta.n?ta.inc/ta.n:0,tb.n?tb.inc/tb.n:0,ils1)+row("טיפים",ta.tips,tb.tips,ils)+
+    `</div>`;
+}
+function setupCompare(){
+  const set=[...new Set(DATA.map(r=>r.date.slice(5,7)))].sort();
+  const opts=set.map(m=>`<option value="${m}">${MON[m]||m}</option>`).join("");
+  const A=document.getElementById("cmpA"),B=document.getElementById("cmpB");
+  A.innerHTML=opts;B.innerHTML=opts;
+  if(set.length>=2){A.value=set[set.length-2];B.value=set[set.length-1];}
+  A.onchange=renderCompare;B.onchange=renderCompare;renderCompare();
+}
+
+
+function renderPredictUI(){const seg=document.getElementById("pday");seg.innerHTML="";
+  DOW.forEach((d,i)=>{const b=document.createElement("button");b.textContent=d;b.setAttribute("aria-pressed",i===pDay);b.onclick=()=>{pDay=i;syncP();};seg.appendChild(b);});
+  document.getElementById("pstart").oninput=syncP;document.getElementById("pdur").oninput=syncP;syncP();}
+function syncP(){[...document.getElementById("pday").children].forEach((b,i)=>b.setAttribute("aria-pressed",i===pDay));
+  const start=+document.getElementById("pstart").value,dur=+document.getElementById("pdur").value;
+  document.getElementById("psl").textContent=start+":00";document.getElementById("pdl").textContent=dur+" שעות";predict(pDay,start,dur);}
+function predict(dw,start,dur){
+  const dates=new Set();DATA.forEach(r=>{if(isEarn(r)&&dow(r.date)===dw)dates.add(r.date);});const N=dates.size;
+  const pdh={};DATA.forEach(r=>{if(!isEarn(r)||dow(r.date)!==dw)return;pdh[r.date+"_"+hour(r.time)]=(pdh[r.date+"_"+hour(r.time)]||0)+r.amount;});
+  const hrs=[];for(let h=start;h<start+dur;h++)hrs.push(h%24);
+  let mean=0;const per=[];const dt={};
+  hrs.forEach(h=>{let s=0,act=0;dates.forEach(d=>{const v=pdh[d+"_"+h]||0;s+=v;if(v>0)act++;});const m=N?s/N:0;mean+=m;per.push({h,m,act});});
+  dates.forEach(d=>{let s=0;hrs.forEach(h=>s+=pdh[d+"_"+h]||0);dt[d]=s;});
+  const vals=Object.values(dt),lo=vals.length?Math.min(...vals):0,hi=vals.length?Math.max(...vals):0;
+  const conf=N>=4?["hi","ביטחון גבוה"]:N>=2?["md","ביטחון בינוני"]:["lo","ביטחון נמוך"];
+  const mxh=Math.max(...per.map(p=>p.m),1);
+  const end=(start+dur)%24;
+  document.getElementById("presult").innerHTML=
+    `<div style="font-size:12px;color:rgba(255,255,255,.7);font-weight:700">צפי הכנסה כוללת · ${DOW[dw]} ${start}:00–${end}:00</div>`+
+    `<div class="big">${ils(mean)}</div>`+
+    `<div class="pexp">ככה ביום ${DOW[dw]} ממוצע הכנסת בערך <b>${ils(mean)}</b> בין ${start}:00 ל‑${end}:00. כל שורה למטה = ממוצע ל<b>שעת שעון</b> אחת (לא לדקה), וחיבור כולן = המספר הגדול.</div>`+
+    `<div class="rng">בפועל בימי ${DOW[dw]} זה נע בין ${ils(lo)} ל‑${ils(hi)}.</div>`+
+    `<span class="conf ${conf[0]}">${conf[1]} · מבוסס על ${N} ימי ${DOW[dw]}</span>`+
+    `<div class="pexp2">ממוצע לכל שעה · מימין כמה ימי ${DOW[dw]} באמת עבדת בה (מתוך ${N}):</div>`+
+    `<div class="phours">`+per.map(p=>`<div class="phr"><span class="pk">${p.h}–${(p.h+1)%24}</span><div class="ptrack"><div class="pfill" style="width:${p.m/mxh*100}%"></div></div><span class="pv">${ils1(p.m)} <span class="pn">${p.act}/${N}</span></span></div>`).join("")+`</div>`+
+    (N<2?`<div class="meta">מעט נתונים על היום הזה — התחזית גסה.</div>`:"");
+}
+
+/* DATA */
+function rowKey(r){return r.date+"|"+r.time+"|"+r.venue+"|"+r.amount;}
+async function importBlock(){const box=document.getElementById("imp"),msg=document.getElementById("impMsg");
+  let rows;try{rows=JSON.parse(box.value);if(!Array.isArray(rows))throw 0;}catch(e){msg.innerHTML=`<div class="msg err">הבלוק לא תקין. הדבק את ה‑JSON שקיבלת ממני.</div>`;return;}
+  const have=new Set(DATA.map(rowKey));let add=0,dup=0;
+  rows.forEach(r=>{if(!r.date||!r.time||r.amount==null)return;r.type=r.type||"delivery";r.tip=r.tip||0;if(have.has(rowKey(r)))dup++;else{DATA.push(r);have.add(rowKey(r));add++;}});
+  await save(DATA);box.value="";msg.innerHTML=`<div class="msg ok">נוספו ${add} שורות · ${dup} כפילויות דולגו · נשמר.</div>`;renderAll();}
+function exportAll(){document.getElementById("imp").value=JSON.stringify(DATA);document.getElementById("impMsg").innerHTML=`<div class="msg ok">כל הנתונים בתיבה — העתק ושמור לגיבוי.</div>`;}
+async function resetAll(){DATA=SEED.slice();await save(DATA);document.getElementById("impMsg").innerHTML=`<div class="msg warn">אופס לנתוני המקור.</div>`;renderAll();}
+function renderDataStatus(){var el=document.getElementById("dataStatus");if(!el)return;var t=totals(DATA);var docs=Object.keys(byDoc()).length;el.innerHTML='<div class="hitem good"><span class="ic">✓</span><span><b>'+DATA.filter(function(r){return r.type==="delivery"}).length+'</b> משלוחים · <b>'+docs+'</b> דוחות · סך הכל <b>'+ils(t.gross)+'</b></span></div>';}
+function renderGaps(){
+  var rows=DATA.filter(function(r){return r.type==="delivery"||r.type==="comp";});
+  // build dayHour -> set of dates, and activeDays per dow
+  var dayHour={}, activeDays={};
+  for(var i=0;i<7;i++){activeDays[i]=new Set();}
+  rows.forEach(function(r){
+    var d=dow(r.date), h=hour(r.time);
+    var k=d+"_"+h;
+    if(!dayHour[k])dayHour[k]=new Set();
+    dayHour[k].add(r.date);
+    activeDays[d].add(r.date);
+  });
+  // confidence map 8..23
+  var hours=[];for(var hh=8;hh<=23;hh++)hours.push(hh);
+  var gm=document.getElementById("gapmap");
+  if(gm){
+    gm.style.setProperty("--cols",hours.length);
+    var html="<div class='hcell'></div>"+hours.map(function(h){return "<div class='hcell'>"+h+"</div>";}).join("");
+    for(var d=0;d<7;d++){
+      if(activeDays[d].size===0){
+        html+="<div class='rlab'>"+DOW[d]+"</div>";
+        hours.forEach(function(h){html+="<div class='cell' style='background:#3a1714' title='"+DOW[d]+" "+h+":00 · אין יום עבודה'></div>";});
+        continue;
+      }
+      html+="<div class='rlab'>"+DOW[d]+"</div>";
+      hours.forEach(function(h){
+        var n=(dayHour[d+"_"+h]||new Set()).size;
+        var bg, txt=n>0?n:"";
+        if(n===0)bg="#3a1714";
+        else if(n===1)bg="#5a4520";
+        else if(n<=2)bg="#10626f";
+        else if(n<=4)bg="#16a3b6";
+        else bg="#39c07a";
+        var col=n===0?"#7a3a34":(n>=3?"#04222a":"#bfe9ef");
+        html+="<div class='cell' style='background:"+bg+";color:"+col+"' title='"+DOW[d]+" "+h+":00 · "+n+" ימי נתונים'>"+txt+"</div>";
+      });
+    }
+    gm.innerHTML=html;
+  }
+  // big blind spots: whole periods with zero in working window
+  var blinds=[];
+  for(var d=0;d<7;d++){
+    if(activeDays[d].size===0){blinds.push({k:DOW[d]+" — יום שלם",v:0,note:"אין שום נתונים"});continue;}
+    // morning 8-11
+    var morning=0;for(var h=8;h<12;h++)morning+=(dayHour[d+"_"+h]||new Set()).size;
+    if(morning===0)blinds.push({k:DOW[d]+" בוקר (8-12)",v:activeDays[d].size});
+    // late 21-23
+    var late=0;for(var h2=21;h2<=23;h2++)late+=(dayHour[d+"_"+h2]||new Set()).size;
+    if(late===0)blinds.push({k:DOW[d]+" לילה (21-23)",v:activeDays[d].size});
+  }
+  var bb=document.getElementById("bigblind");
+  if(bb){
+    if(blinds.length===0){bb.innerHTML="<div class='empty'>אין חורים גדולים — כיסוי טוב!</div>";}
+    else{bb.innerHTML=blinds.map(function(b){return "<div class='brow'><div class='k'>"+b.k+"</div><div class='track'><div class='fill' style='width:100%;background:#5a2e2b'></div></div><div class='val'>0 נתונים</div></div>";}).join("");}
+  }
+  // try gaps: empty slots adjacent to slots with >=2 days
+  var tries=[];
+  for(var d=0;d<7;d++){
+    if(activeDays[d].size===0)continue;
+    var hrs=[];
+    for(var h=8;h<=23;h++){
+      var n=(dayHour[d+"_"+h]||new Set()).size;
+      if(n===0){
+        var nb=Math.max((dayHour[d+"_"+(h-1)]||new Set()).size,(dayHour[d+"_"+(h+1)]||new Set()).size);
+        if(nb>=2)hrs.push(h);
+      }
+    }
+    if(hrs.length)tries.push({dw:d,hrs:hrs});
+  }
+  var tg=document.getElementById("trygaps");
+  if(tg){
+    if(tries.length===0){tg.innerHTML="<div class='empty'>אין חורים קלים לסגירה כרגע.</div>";}
+    else{tg.innerHTML=tries.map(function(t){
+      return "<div class='wrow'><div><span class='d'>"+DOW[t.dw]+"</span></div><div class='t'>נסה: "+t.hrs.map(function(h){return h+":00";}).join(", ")+"</div><div class='a' style='font-size:11px'>צמוד לשעות פעילות</div></div>";
+    }).join("");}
+  }
+}
+function renderHealth(){const bd=byDoc(),present=Object.keys(bd),h=document.getElementById("health");h.innerHTML="";const items=[];
+  items.push(["good","✓",`${DATA.filter(r=>r.type==='delivery').length} משלוחים שמורים · ${present.length} דוחות שבועיים`]);
+  const seen={},dups=[];DATA.forEach(r=>{const k=rowKey(r);if(seen[k])dups.push(k);else seen[k]=1;});
+  items.push(dups.length?["warn","!",`נמצאו ${dups.length} שורות כפולות.`]:["good","✓","אין כפילויות."]);
+  items.forEach(([c,ic,tx])=>h.insertAdjacentHTML("beforeend",`<div class="hitem ${c}"><span class="ic">${ic}</span><span>${tx}</span></div>`));}
+async function setGoal(){const v=parseFloat(document.getElementById("goalInput").value);if(!v||v<=0){document.getElementById("goalMsg").innerHTML=`<div class="msg err">הכנס מספר.</div>`;return;}
+  GOAL=v;await saveGoal(v);document.getElementById("goalMsg").innerHTML=`<div class="msg ok">היעד נשמר: ${ils(v)} לשבוע.</div>`;renderGoal();}
+
+/* months + nav */
+function renderMonthChips(){
+  const set=new Set(DATA.map(r=>r.date.slice(5,7)));const el=document.getElementById("months");
+  const chips=[["all","הכל"]].concat([...set].sort().map(m=>[m,MON[m]||m]));
+  el.innerHTML=chips.map(([v,l])=>`<button class="mchip" data-m="${v}" aria-pressed="${FILTER===v}">${l}</button>`).join("");
+  el.querySelectorAll(".mchip").forEach(b=>b.onclick=()=>{FILTER=b.dataset.m;el.querySelectorAll(".mchip").forEach(x=>x.setAttribute("aria-pressed",x.dataset.m===FILTER));renderFiltered();});
+}
+function renderFiltered(){renderInsights();renderHero();renderCumulative();renderCalendar();renderTimes();renderTips();renderPlaces();}
+function renderAll(){renderMonthChips();renderMini();renderInsights();renderHero();renderWeekly();renderGoal();renderRecs();renderCumulative();renderCalendar();renderMonths();setupCompare();renderTimes();renderTips();renderPlaces();syncP();renderHealth();renderDataStatus();renderGaps();
+  if(GOAL)document.getElementById("goalInput").value=GOAL;
+  document.getElementById("foot").innerHTML="נשמר אוטומטית במכשיר · גבה מדי פעם בלשונית נתונים · להוספת שבוע: העלה PDF בצ'אט.";}
+function setupTabs(){const tabs=document.getElementById("tabs");
+  tabs.addEventListener("click",e=>{const b=e.target.closest(".tab");if(!b)return;
+    [...tabs.children].forEach(t=>t.setAttribute("aria-selected",t===b));
+    document.querySelectorAll("section").forEach(s=>s.classList.toggle("on",s.id===b.dataset.t));});}
+(async function(){DATA=await load();GOAL=await loadGoal();
+  setupTabs();renderPredictUI();
+
+
+
+
+  document.getElementById("vsearch").addEventListener("input",renderVSearch);
+  renderAll();})();
+</script>
+<a href="../index.html" style="position:fixed;bottom:18px;left:18px;z-index:9999;background:linear-gradient(135deg,#8b5cf6,#6d28d9);color:#fff;border:none;box-shadow:0 10px 24px rgba(109,40,217,.5);border-radius:30px;padding:10px 18px;font-family:Heebo,sans-serif;font-weight:700;font-size:14px;text-decoration:none;box-shadow:0 8px 24px rgba(0,0,0,.5)">🏠 הביתה</a>
+</body></html>

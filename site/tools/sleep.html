@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>שינה</title>
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@500;700;900&family=Heebo:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0b0d14;--text:#f4f6fb;--muted:#9aa3b5;--card:#141826;--line:rgba(255,255,255,.08);--a:#a78bfa;--a2:#7c3aed}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Heebo',system-ui,sans-serif;min-height:100vh}
+.wrap{max-width:560px;margin:0 auto;padding:24px 16px 110px}
+h1{font-family:'Rubik';font-weight:900;font-size:30px;text-align:center;padding:14px 0 4px;
+ background:linear-gradient(92deg,var(--a),var(--a2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.sub{text-align:center;color:var(--muted);font-size:14px;margin-bottom:22px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:18px;margin-top:16px}
+.card h2{font-family:'Rubik';font-weight:700;font-size:17px;margin-bottom:12px}
+.row{display:flex;gap:10px}
+.field{flex:1}
+.field label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
+.field input{width:100%;background:#0e1220;border:1px solid var(--line);border-radius:14px;color:var(--text);
+ font:700 22px 'Rubik';padding:12px;text-align:center;outline:none;color-scheme:dark}
+.field input:focus{border-color:var(--a)}
+.save{width:100%;margin-top:14px;border:none;cursor:pointer;color:#fff;font:900 19px 'Rubik';
+ background:linear-gradient(135deg,var(--a),var(--a2));border-radius:16px;padding:16px}
+.big{text-align:center;font:900 46px 'Rubik';margin:8px 0 2px}
+.lbl{text-align:center;color:var(--muted);font-size:13px}
+.hist{list-style:none}
+.hist li{display:flex;justify-content:space-between;padding:11px 4px;border-bottom:1px solid var(--line);font-size:14.5px}
+.hist li:last-child{border-bottom:none}
+.hist .d{color:var(--muted)}
+.hist .m{font-family:'Rubik';font-weight:700}
+.good{color:#34d399}.bad{color:#fbbf24}
+.empty{color:var(--muted);text-align:center;font-size:14px;padding:8px 0}
+.home{position:fixed;bottom:18px;left:18px;z-index:9;color:#fff;border:none;text-decoration:none;
+ background:linear-gradient(135deg,#8b5cf6,#6d28d9);border-radius:30px;padding:13px 20px;font:800 14.5px 'Heebo';
+ box-shadow:0 10px 24px rgba(109,40,217,.5);transition:transform .15s}
+.home:active{transform:scale(.93)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>😴 שינה</h1>
+  <div class="sub">נהג שישן טוב — מרוויח יותר ובטוח יותר.</div>
+  <div class="card">
+    <h2>🌙 כמה ישנת הלילה?</h2>
+    <div class="row">
+      <div class="field"><label>נרדמתי ב־</label><input type="time" id="from" value="01:00"></div>
+      <div class="field"><label>קמתי ב־</label><input type="time" id="to" value="09:00"></div>
+    </div>
+    <button class="save" onclick="add()">💾 שמור שינה</button>
+  </div>
+  <div class="card">
+    <div class="big" id="avg">—</div>
+    <div class="lbl">ממוצע שעות שינה (7 ימים)</div>
+  </div>
+  <div class="card">
+    <h2>🛏️ לילות אחרונים</h2>
+    <ul class="hist" id="hist"><li class="empty">עוד אין — מחר בבוקר זה מתחיל.</li></ul>
+  </div>
+</div>
+<a class="home" href="../index.html">🏠 הביתה</a>
+<script>
+const load=(k,d)=>{try{return JSON.parse(localStorage.getItem(k)) ?? d}catch(e){return d}};
+let nights=load('st_sleep',[]);
+function hours(f,t){
+  const [fh,fm]=f.split(':').map(Number),[th,tm]=t.split(':').map(Number);
+  let h=(th+tm/60)-(fh+fm/60); if(h<0)h+=24; return Math.round(h*10)/10;
+}
+function render(){
+  const last7=nights.slice(-7);
+  document.getElementById('avg').textContent=last7.length?
+    (last7.reduce((a,n)=>a+n.h,0)/last7.length).toFixed(1)+' שע\'':'—';
+  const hist=document.getElementById('hist');
+  if(nights.length){
+    hist.innerHTML=nights.slice(-7).reverse().map(n=>{
+      const d=new Date(n.ts);
+      return `<li><span><b>${d.getDate()}/${d.getMonth()+1}</b> <span class="d">· ${n.from}→${n.to}</span></span>
+        <span class="m ${n.h>=7?'good':'bad'}">${n.h} שע' ${n.h>=7?'😊':'🥱'}</span></li>`;
+    }).join('');
+  }
+}
+function add(){
+  const f=document.getElementById('from').value,t=document.getElementById('to').value;
+  if(!f||!t)return;
+  nights.push({ts:Date.now(),from:f,to:t,h:hours(f,t)});
+  localStorage.setItem('st_sleep',JSON.stringify(nights));
+  render();
+  alert('נרשם! '+hours(f,t)+' שעות 😴');
+}
+render();
+</script>
+</body>
+</html>

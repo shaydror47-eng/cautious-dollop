@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>בונה הפוסטים</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;600;800;900&family=Frank+Ruhl+Libre:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0f1115;
+    --panel:#171a21;
+    --panel2:#1e222b;
+    --line:#2a2f3a;
+    --accent:#ff5a3c;
+    --accent2:#ffb627;
+    --green:#2ecc71;
+    --text:#eef1f6;
+    --muted:#8b93a3;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:'Heebo',sans-serif;
+    background:
+      radial-gradient(1200px 600px at 90% -10%, rgba(255,90,60,.12), transparent),
+      radial-gradient(900px 500px at -10% 110%, rgba(255,182,39,.10), transparent),
+      var(--bg);
+    color:var(--text);
+    min-height:100vh;
+    padding:24px 16px 60px;
+  }
+  .wrap{max-width:1180px;margin:0 auto}
+  header{margin-bottom:28px}
+  h1{
+    font-family:'Frank Ruhl Libre',serif;
+    font-weight:900;
+    font-size:clamp(28px,5vw,46px);
+    line-height:1;
+    letter-spacing:-.02em;
+  }
+  h1 span{color:var(--accent)}
+  .sub{color:var(--muted);margin-top:8px;font-size:15px}
+
+  .grid{display:grid;grid-template-columns:1fr 420px;gap:22px;margin-top:24px}
+  @media(max-width:900px){.grid{grid-template-columns:1fr}}
+
+  .card{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:18px;
+    padding:20px;
+  }
+  .card h2{
+    font-size:13px;text-transform:uppercase;letter-spacing:.12em;
+    color:var(--muted);margin-bottom:14px;font-weight:600;
+    display:flex;align-items:center;gap:8px;
+  }
+  .card h2::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--accent)}
+
+  .blocks{display:flex;flex-wrap:wrap;gap:10px}
+  .blk{
+    border:1px solid var(--line);
+    background:var(--panel2);
+    color:var(--text);
+    padding:10px 14px;border-radius:12px;cursor:pointer;
+    font-family:inherit;font-size:14px;font-weight:600;
+    transition:.15s;display:flex;align-items:center;gap:7px;
+  }
+  .blk:hover{border-color:var(--accent);transform:translateY(-2px)}
+  .blk.on{background:var(--accent);border-color:var(--accent);color:#fff}
+  .blk .e{font-size:16px}
+
+  .field{margin-top:14px}
+  .field label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px;font-weight:600}
+  .field input,.field textarea,.field select{
+    width:100%;background:var(--panel2);border:1px solid var(--line);
+    color:var(--text);border-radius:10px;padding:11px 13px;
+    font-family:inherit;font-size:15px;resize:vertical;
+  }
+  .field input:focus,.field textarea:focus,.field select:focus{outline:none;border-color:var(--accent)}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+  .toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+  .btn{
+    border:none;border-radius:12px;padding:13px 20px;cursor:pointer;
+    font-family:inherit;font-weight:800;font-size:15px;transition:.15s;
+  }
+  .btn-main{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;flex:1;min-width:180px}
+  .btn-main:hover{filter:brightness(1.08);transform:translateY(-2px)}
+  .btn-ghost{background:var(--panel2);color:var(--text);border:1px solid var(--line)}
+  .btn-ghost:hover{border-color:var(--accent)}
+
+  /* preview */
+  .preview-wrap{position:sticky;top:24px}
+  .fb{
+    background:#fff;color:#050505;border-radius:14px;overflow:hidden;
+    box-shadow:0 20px 50px rgba(0,0,0,.4);font-size:15px;
+  }
+  .fb-top{display:flex;align-items:center;gap:10px;padding:12px 14px}
+  .fb-av{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2))}
+  .fb-name{font-weight:700;font-size:15px}
+  .fb-meta{font-size:12px;color:#65676b}
+  .fb-body{padding:4px 14px 14px;white-space:pre-wrap;line-height:1.55;min-height:80px}
+  .fb-body.empty{color:#aaa}
+  .fb-actions{display:flex;border-top:1px solid #e4e6eb;color:#65676b;font-weight:600;font-size:14px}
+  .fb-actions div{flex:1;text-align:center;padding:9px}
+
+  .saved{display:flex;flex-direction:column;gap:8px;margin-top:6px}
+  .tmpl{
+    display:flex;justify-content:space-between;align-items:center;gap:8px;
+    background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:9px 12px;font-size:14px;
+  }
+  .tmpl button{background:none;border:none;color:var(--muted);cursor:pointer;font-size:13px;font-family:inherit}
+  .tmpl button:hover{color:var(--accent)}
+  .tmpl .load{color:var(--accent2);font-weight:700}
+  .empty-note{color:var(--muted);font-size:13px}
+  .toast{
+    position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);
+    background:var(--green);color:#04220f;padding:12px 22px;border-radius:30px;font-weight:800;
+    transition:.3s;z-index:50;
+  }
+  .toast.show{transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<script>
+/* shim: window.storage backed by localStorage so the tool works on a real website */
+if(!window.storage){window.storage={
+ async get(k){const v=localStorage.getItem('st_'+k);if(v===null)throw new Error('not found');return{key:k,value:v};},
+ async set(k,v){localStorage.setItem('st_'+k,v);return{key:k,value:v};},
+ async delete(k){localStorage.removeItem('st_'+k);return{key:k,deleted:true};}
+};}
+</script>
+<div class="wrap">
+  <header>
+    <h1>בונה <span>הפוסטים</span></h1>
+    <p class="sub">בחר בלוקים, מלא פרטים, ולחץ "בנה פוסט" — מוכן להעתקה לקבוצות.</p>
+  </header>
+
+  <div class="grid">
+    <!-- LEFT: builder -->
+    <div>
+      <div class="card">
+        <h2>1. בחר בלוקים לפוסט</h2>
+        <div class="blocks" id="blocks"></div>
+      </div>
+
+      <div class="card" style="margin-top:18px">
+        <h2>2. מלא את הפרטים</h2>
+        <div id="fields"></div>
+      </div>
+
+      <div class="toolbar">
+        <button class="btn btn-main" onclick="build()">⚡ בנה פוסט</button>
+        <button class="btn btn-main" style="background:linear-gradient(135deg,#4285f4,#9b72cb)" onclick="toGemini()">✨ שלח ל-Gemini</button>
+        <button class="btn btn-ghost" onclick="copyPost()">📋 העתק</button>
+        <button class="btn btn-ghost" onclick="saveTemplate()">💾 שמור תבנית</button>
+        <button class="btn btn-ghost" onclick="resetAll()">↺ נקה</button>
+      </div>
+    </div>
+
+    <!-- RIGHT: preview + templates -->
+    <div class="preview-wrap">
+      <div class="card">
+        <h2>תצוגה מקדימה</h2>
+        <div class="fb">
+          <div class="fb-top">
+            <div class="fb-av"></div>
+            <div>
+              <div class="fb-name">השם שלך</div>
+              <div class="fb-meta">עכשיו · 🌐</div>
+            </div>
+          </div>
+          <div class="fb-body empty" id="preview">הפוסט יופיע כאן אחרי שתלחץ "בנה פוסט"…</div>
+          <div class="fb-actions"><div>👍 לייק</div><div>💬 תגובה</div><div>↗️ שיתוף</div></div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:18px">
+        <h2>תבניות שמורות</h2>
+        <div class="saved" id="saved"></div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast">הועתק! ✓</div>
+
+<script>
+// ---- Block definitions ----
+const BLOCKS = [
+  {id:'open',  label:'פתיחה',     emoji:'📢', fields:[{k:'open',label:'משפט פתיחה',ph:'למכירה / חדש באריזה / הזדמנות!'}]},
+  {id:'item',  label:'מוצר',      emoji:'🛍️', fields:[{k:'item',label:'שם המוצר',ph:'ספה תלת מושבית'}]},
+  {id:'desc',  label:'תיאור',     emoji:'📝', fields:[{k:'desc',label:'תיאור',ph:'מצב מצוין, שנה בשימוש, צבע אפור',area:true}]},
+  {id:'price', label:'מחיר',      emoji:'💰', fields:[{k:'price',label:'מחיר',ph:'1200'},{k:'neg',label:'ניתן למיקוח?',sel:['','גמיש במחיר','מחיר סופי']}]},
+  {id:'cond',  label:'מצב',       emoji:'⭐', fields:[{k:'cond',label:'מצב המוצר',sel:['חדש באריזה','כמו חדש','מצב מצוין','מצב טוב','משומש']}]},
+  {id:'loc',   label:'מיקום',     emoji:'📍', fields:[{k:'loc',label:'איזור / עיר',ph:'תל אביב, אפשרות לשליחה'}]},
+  {id:'contact',label:'יצירת קשר',emoji:'📞', fields:[{k:'contact',label:'טלפון / איך לפנות',ph:'פרטים בפרטי / 050-0000000'}]},
+  {id:'tags',  label:'האשטגים',   emoji:'#️⃣', fields:[{k:'tags',label:'מילים (מופרד בפסיק)',ph:'רהיטים, יד שנייה, ספה'}]},
+];
+
+let active = new Set(['open','item','price']);
+const data = {};
+
+const blocksEl = document.getElementById('blocks');
+const fieldsEl = document.getElementById('fields');
+
+function renderBlocks(){
+  blocksEl.innerHTML = '';
+  BLOCKS.forEach(b=>{
+    const el = document.createElement('button');
+    el.className = 'blk'+(active.has(b.id)?' on':'');
+    el.innerHTML = `<span class="e">${b.emoji}</span>${b.label}`;
+    el.onclick = ()=>{ active.has(b.id)?active.delete(b.id):active.add(b.id); renderBlocks(); renderFields(); };
+    blocksEl.appendChild(el);
+  });
+}
+
+function renderFields(){
+  fieldsEl.innerHTML = '';
+  const ordered = BLOCKS.filter(b=>active.has(b.id));
+  if(!ordered.length){ fieldsEl.innerHTML = '<p class="empty-note">בחר בלוקים למעלה כדי להתחיל.</p>'; return; }
+  ordered.forEach(b=>{
+    b.fields.forEach(f=>{
+      const wrap = document.createElement('div'); wrap.className='field';
+      const lab = document.createElement('label'); lab.textContent = f.label; wrap.appendChild(lab);
+      let inp;
+      if(f.sel){
+        inp = document.createElement('select');
+        f.sel.forEach(o=>{const op=document.createElement('option');op.value=o;op.textContent=o||'— ללא —';inp.appendChild(op);});
+      } else if(f.area){
+        inp = document.createElement('textarea'); inp.rows=2; inp.placeholder=f.ph||'';
+      } else {
+        inp = document.createElement('input'); inp.placeholder=f.ph||'';
+      }
+      inp.value = data[f.k]||'';
+      inp.oninput = e=> data[f.k]=e.target.value;
+      wrap.appendChild(inp); fieldsEl.appendChild(wrap);
+    });
+  });
+}
+
+// ---- The "last button": assemble everything ----
+function build(){
+  const lines = [];
+  const has = id=>active.has(id);
+  if(has('open') && data.open) lines.push('📢 '+data.open);
+  if(has('item') && data.item) lines.push('🛍️ '+data.item);
+  if(has('cond') && data.cond) lines.push('⭐ מצב: '+data.cond);
+  if(has('desc') && data.desc) lines.push('\n'+data.desc);
+  if(has('price') && data.price){
+    let p = '💰 מחיר: '+data.price+' ₪';
+    if(data.neg) p += ' ('+data.neg+')';
+    lines.push(p);
+  }
+  if(has('loc') && data.loc) lines.push('📍 '+data.loc);
+  if(has('contact') && data.contact) lines.push('📞 '+data.contact);
+  if(has('tags') && data.tags){
+    const t = data.tags.split(',').map(s=>s.trim()).filter(Boolean).map(s=>'#'+s.replace(/\s+/g,'_')).join(' ');
+    if(t) lines.push('\n'+t);
+  }
+  const post = lines.join('\n').trim();
+  const pv = document.getElementById('preview');
+  if(post){ pv.textContent = post; pv.classList.remove('empty'); }
+  else { pv.textContent='לא מולאו פרטים — בחר בלוקים ומלא טקסט.'; pv.classList.add('empty'); }
+}
+
+function copyPost(){
+  const txt = document.getElementById('preview').textContent;
+  if(!txt || document.getElementById('preview').classList.contains('empty')){ build(); }
+  navigator.clipboard.writeText(document.getElementById('preview').textContent).then(()=>showToast('הועתק! ✓'));
+}
+function showToast(msg){const t=document.getElementById('toast');if(msg)t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200);}
+
+// ---- The Gemini button: build + copy + open the specific chat ----
+const GEMINI_URL = 'https://gemini.google.com/app/faad35d7718c372d';
+function toGemini(){
+  build();
+  const pv = document.getElementById('preview');
+  if(pv.classList.contains('empty')){ showToast('מלא פרטים קודם'); return; }
+  navigator.clipboard.writeText(pv.textContent).then(()=>{
+    showToast('הועתק! נפתח Gemini — הדבק ושלח ✓');
+    setTimeout(()=>window.open(GEMINI_URL,'_blank'),700);
+  }).catch(()=>{ window.open(GEMINI_URL,'_blank'); });
+}
+
+// ---- Templates (persisted) ----
+async function getTemplates(){
+  try{const r=await window.storage.get('templates');return r?JSON.parse(r.value):[];}catch(e){return [];}
+}
+async function saveTemplate(){
+  const name = prompt('שם לתבנית:'); if(!name) return;
+  const tmpls = await getTemplates();
+  tmpls.push({name, active:[...active], data:{...data}});
+  try{await window.storage.set('templates', JSON.stringify(tmpls));}catch(e){}
+  renderSaved();
+}
+async function renderSaved(){
+  const el = document.getElementById('saved');
+  const tmpls = await getTemplates();
+  if(!tmpls.length){ el.innerHTML='<p class="empty-note">אין תבניות עדיין. בנה פוסט ולחץ "שמור תבנית".</p>'; return; }
+  el.innerHTML='';
+  tmpls.forEach((t,i)=>{
+    const row=document.createElement('div');row.className='tmpl';
+    row.innerHTML=`<span>${t.name}</span><span><button class="load">טען</button> <button>מחק</button></span>`;
+    row.querySelector('.load').onclick=()=>{active=new Set(t.active);Object.keys(data).forEach(k=>delete data[k]);Object.assign(data,t.data);renderBlocks();renderFields();build();};
+    row.querySelector('button:not(.load)').onclick=async()=>{const a=await getTemplates();a.splice(i,1);try{await window.storage.set('templates',JSON.stringify(a));}catch(e){}renderSaved();};
+    el.appendChild(row);
+  });
+}
+
+function resetAll(){Object.keys(data).forEach(k=>delete data[k]);active=new Set(['open','item','price']);renderBlocks();renderFields();const pv=document.getElementById('preview');pv.textContent='הפוסט יופיע כאן אחרי שתלחץ "בנה פוסט"…';pv.classList.add('empty');}
+
+renderBlocks(); renderFields(); renderSaved();
+</script>
+<a href="../index.html" style="position:fixed;bottom:18px;left:18px;z-index:9999;background:linear-gradient(135deg,#8b5cf6,#6d28d9);color:#fff;border:none;box-shadow:0 10px 24px rgba(109,40,217,.5);border-radius:30px;padding:10px 18px;font-family:Heebo,sans-serif;font-weight:700;font-size:14px;text-decoration:none;box-shadow:0 8px 24px rgba(0,0,0,.5)">🏠 הביתה</a>
+</body>
+</html>

@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>גלגל ההחלטות</title>
+<style>
+  :root{
+    --bg0:#0d0a22; --bg1:#1c1340; --bg2:#2a1a5e;
+    --ink:#f5f2ff; --soft:#a99fce;
+    --accent:#ffce3a; --pink:#ff4f8b; --cyan:#46d6ff; --green:#4dffab;
+    --glass:rgba(255,255,255,.07); --glass2:rgba(255,255,255,.12);
+    --line:rgba(255,255,255,.15);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{
+    min-height:100vh;color:var(--ink);
+    font-family:"Heebo","Segoe UI",system-ui,sans-serif;
+    background:
+      radial-gradient(900px circle at 50% -5%, var(--bg2), transparent 60%),
+      radial-gradient(700px circle at 10% 100%, #3a1f6e, transparent 55%),
+      linear-gradient(160deg,var(--bg1),var(--bg0));
+    background-attachment:fixed;
+    display:flex;flex-direction:column;align-items:center;padding:20px 14px 40px;overflow-x:hidden;
+  }
+  .wrap{width:100%;max-width:460px;}
+  header{text-align:center;margin-bottom:10px;}
+  h1{font-size:30px;font-weight:900;margin:0;letter-spacing:-.5px;
+     background:linear-gradient(90deg,var(--accent),var(--pink),var(--cyan));
+     -webkit-background-clip:text;background-clip:text;color:transparent;}
+  .tagline{margin:4px 0 0;color:var(--soft);font-size:13px;min-height:18px;transition:.3s;}
+  .stats{display:flex;gap:8px;margin:12px 0 6px;}
+  .stat{flex:1;background:var(--glass);border:1px solid var(--line);border-radius:13px;
+        padding:9px 6px;text-align:center;backdrop-filter:blur(8px);}
+  .stat b{display:block;font-size:18px;font-weight:900;}
+  .stat span{font-size:10px;color:var(--soft);}
+  .stage{position:relative;width:100%;aspect-ratio:1;max-width:360px;margin:6px auto 2px;display:grid;place-items:center;}
+  .glow{position:absolute;width:96%;height:96%;border-radius:50%;
+        background:radial-gradient(circle,rgba(255,206,58,0),transparent 70%);
+        filter:blur(14px);transition:.3s;pointer-events:none;}
+  .stage.spinning .glow{background:radial-gradient(circle,rgba(255,79,139,.55),rgba(70,214,255,.25) 60%,transparent 72%);}
+  canvas#wheel{width:100%;height:100%;border-radius:50%;
+    box-shadow:0 22px 60px rgba(0,0,0,.55), 0 0 0 9px rgba(255,255,255,.05), inset 0 0 40px rgba(0,0,0,.3);
+    transition:transform 5.2s cubic-bezier(.16,.73,.12,1);will-change:transform;}
+  .stage.shake{animation:sh .12s linear 0s 6;}
+  @keyframes sh{0%{transform:translate(0,0)}25%{transform:translate(-2px,1px)}50%{transform:translate(2px,-1px)}75%{transform:translate(-1px,-1px)}100%{transform:translate(0,0)}}
+  .pointer{position:absolute;top:-6px;left:50%;transform:translateX(-50%);width:0;height:0;z-index:4;
+    border-left:15px solid transparent;border-right:15px solid transparent;border-top:30px solid var(--accent);
+    filter:drop-shadow(0 3px 5px rgba(0,0,0,.5));}
+  .hub{position:absolute;width:66px;height:66px;border-radius:50%;z-index:3;cursor:pointer;border:none;
+    background:radial-gradient(circle at 35% 30%,#fff,#ffe9a6 40%,var(--accent));
+    color:#3a2400;font-weight:900;font-size:14px;font-family:inherit;
+    box-shadow:0 6px 18px rgba(0,0,0,.5);transition:transform .12s;user-select:none;}
+  .hub:active{transform:scale(.92);}
+  .hub:disabled{filter:grayscale(.7) brightness(.8);cursor:not-allowed;}
+  .lock-msg{text-align:center;color:var(--accent);font-size:13px;font-weight:700;min-height:18px;margin:2px 0 0;}
+  .topbar{display:flex;justify-content:space-between;align-items:center;}
+  .icon-btn{background:var(--glass);border:1px solid var(--line);color:var(--ink);border-radius:11px;
+    width:40px;height:40px;font-size:17px;cursor:pointer;display:grid;place-items:center;}
+  .quickadd{display:flex;gap:8px;margin:14px 0 10px;}
+  .quickadd input{flex:1;background:rgba(0,0,0,.28);border:1px solid var(--line);color:var(--ink);
+    border-radius:12px;padding:13px 14px;font-family:inherit;font-size:15px;outline:none;}
+  .quickadd input:focus{border-color:var(--accent);}
+  .quickadd button{background:linear-gradient(135deg,var(--accent),var(--pink));border:0;color:#1a0d00;
+    font-weight:900;font-family:inherit;border-radius:12px;padding:0 18px;font-size:15px;cursor:pointer;}
+  #list{display:flex;flex-direction:column;gap:8px;margin-bottom:6px;}
+  .opt{display:flex;align-items:center;gap:10px;background:var(--glass);border:1px solid var(--line);
+    border-radius:13px;padding:10px 12px;backdrop-filter:blur(6px);transition:.15s;}
+  .opt.drag{opacity:.4;}
+  .opt.over{border-color:var(--accent);transform:scale(1.01);}
+  .grip{cursor:grab;color:var(--soft);font-size:16px;flex:none;touch-action:none;}
+  .swatch{width:16px;height:16px;border-radius:5px;flex:none;}
+  .opt input.ed{flex:1;background:transparent;border:0;color:var(--ink);font-family:inherit;font-size:15px;outline:none;min-width:0;}
+  .opt .x{flex:none;background:transparent;border:0;color:var(--soft);font-size:18px;cursor:pointer;width:28px;}
+  .opt .x:hover{color:var(--pink);}
+  .empty{text-align:center;color:var(--soft);font-size:13px;padding:18px;border:1.5px dashed var(--line);border-radius:13px;}
+  .rowbtns{display:flex;gap:8px;margin:12px 0;}
+  .rowbtns button{flex:1;border:1px solid var(--line);background:var(--glass);color:var(--ink);
+    font-family:inherit;font-weight:700;font-size:13px;border-radius:12px;padding:11px 6px;cursor:pointer;transition:.15s;}
+  .rowbtns button:hover{border-color:var(--accent);}
+  .surprise{background:linear-gradient(135deg,var(--cyan),var(--pink))!important;color:#0d0a22!important;border:0!important;}
+
+  .savebox{background:var(--glass);border:1px solid var(--line);border-radius:16px;padding:12px;margin:12px 0 4px;backdrop-filter:blur(8px);}
+  .savebox .save-title{font-size:12px;color:var(--soft);font-weight:800;margin:0 0 9px;}
+  .save-row{display:flex;gap:8px;margin-bottom:9px;}
+  .save-row input{flex:1;background:rgba(0,0,0,.28);border:1px solid var(--line);color:var(--ink);
+    border-radius:12px;padding:12px 13px;font-family:inherit;font-size:14px;outline:none;min-width:0;}
+  .save-row input:focus{border-color:var(--accent);}
+  .save-row button{background:linear-gradient(135deg,var(--green),var(--cyan));border:0;color:#062b18;
+    font-weight:900;font-family:inherit;border-radius:12px;padding:0 14px;font-size:13px;cursor:pointer;white-space:nowrap;}
+  .saved-list{display:flex;flex-direction:column;gap:7px;}
+  .saved-empty{color:var(--soft);font-size:12px;text-align:center;padding:8px 4px;border:1px dashed var(--line);border-radius:11px;}
+  .saved-wheel{display:flex;align-items:center;gap:8px;background:rgba(0,0,0,.18);border:1px solid var(--line);border-radius:12px;padding:8px 10px;}
+  .saved-wheel .saved-main{flex:1;min-width:0;cursor:pointer;}
+  .saved-wheel b{display:block;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .saved-wheel span{display:block;font-size:11px;color:var(--soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .saved-wheel button{border:0;background:transparent;color:var(--soft);font-size:17px;cursor:pointer;width:28px;height:28px;border-radius:8px;}
+  .saved-wheel button:hover{background:var(--glass2);color:var(--pink);}
+
+  .sec-title{font-size:12px;color:var(--soft);font-weight:700;margin:16px 0 8px;letter-spacing:.5px;}
+  .cats{display:flex;gap:8px;flex-wrap:wrap;}
+  .cat{border:1px solid var(--line);background:var(--glass);color:var(--ink);border-radius:22px;
+    padding:8px 14px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;transition:.15s;}
+  .cat:hover{border-color:var(--accent);transform:translateY(-1px);}
+  .cat.active{background:linear-gradient(135deg,var(--accent),var(--pink));color:#1a0d00;border:0;}
+  .hist{display:flex;flex-direction:column;gap:6px;margin-top:8px;}
+  .hist .h{display:flex;justify-content:space-between;background:var(--glass);border-radius:10px;padding:8px 12px;font-size:13px;}
+  .hist .h span{color:var(--soft);font-size:11px;}
+  .overlay{position:fixed;inset:0;background:rgba(8,5,20,.78);backdrop-filter:blur(6px);
+    display:none;place-items:center;z-index:60;padding:20px;}
+  .overlay.show{display:grid;animation:fade .25s ease;}
+  @keyframes fade{from{opacity:0}to{opacity:1}}
+  .resultcard{width:100%;max-width:360px;background:linear-gradient(160deg,var(--bg2),var(--bg1));
+    border:1px solid var(--line);border-radius:24px;padding:28px 22px;text-align:center;
+    box-shadow:0 30px 80px rgba(0,0,0,.6);animation:pop .4s cubic-bezier(.2,1.3,.4,1);}
+  @keyframes pop{from{transform:scale(.7);opacity:0}to{transform:scale(1);opacity:1}}
+  .resultcard .pre{color:var(--soft);font-size:15px;margin-bottom:8px;}
+  .resultcard .pick{font-size:40px;font-weight:900;line-height:1.1;margin:6px 0 4px;
+    background:linear-gradient(90deg,var(--accent),var(--pink));-webkit-background-clip:text;background-clip:text;color:transparent;}
+  .resultcard .emoji{font-size:46px;margin-bottom:4px;}
+  .rc-btns{display:flex;flex-direction:column;gap:9px;margin-top:20px;}
+  .rc-btns button{border:0;font-family:inherit;font-weight:800;font-size:15px;border-radius:13px;padding:13px;cursor:pointer;}
+  .b-again{background:linear-gradient(135deg,var(--accent),var(--pink));color:#1a0d00;}
+  .b-accept{background:var(--green);color:#062b18;}
+  .b-share{background:var(--glass2);color:var(--ink);}
+  .b-close{background:transparent;color:var(--soft);}
+  .confirm-final{display:none;margin-top:14px;padding:14px;border-radius:14px;
+    background:linear-gradient(135deg,rgba(77,255,171,.18),rgba(70,214,255,.12));border:1px solid var(--green);}
+  .confirm-final.show{display:block;animation:fade .3s;}
+  .confirm-final b{font-size:18px;}
+  canvas.cf{position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:80;}
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);
+    background:var(--ink);color:var(--bg0);padding:11px 20px;border-radius:30px;font-weight:700;font-size:14px;
+    opacity:0;transition:.3s;z-index:90;pointer-events:none;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  @media (prefers-reduced-motion:reduce){
+    canvas#wheel{transition:transform 1.2s ease-out;}
+    .stage.shake{animation:none;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <button class="icon-btn" id="reset" title="איפוס">🗑️</button>
+    <header style="flex:1">
+      <h1>גלגל ההחלטות 🎯</h1>
+      <p class="tagline" id="tagline">לא מצליחים להחליט? תנו לגלגל לעבוד</p>
+    </header>
+    <button class="icon-btn" id="sound" title="צליל">🔊</button>
+  </div>
+  <div class="stats">
+    <div class="stat"><b id="sSpins">0</b><span>סיבובים היום</span></div>
+    <div class="stat"><b id="sTop">—</b><span>הכי יוצא</span></div>
+    <div class="stat"><b id="sSaved">0</b><span>החלטות נחסכו</span></div>
+  </div>
+  <div class="stage" id="stage">
+    <div class="glow"></div>
+    <div class="pointer"></div>
+    <canvas id="wheel" width="360" height="360"></canvas>
+    <button class="hub" id="hub">סובב</button>
+  </div>
+  <div class="lock-msg" id="lockMsg"></div>
+  <div class="quickadd">
+    <input type="text" id="qInput" placeholder="הוסיפו אפשרות ולחצו אנטר…" maxlength="40">
+    <button id="qAdd">הוסף</button>
+  </div>
+  <div id="list"></div>
+  <div class="empty" id="emptyState" style="display:none">הגלגל ריק 🎈<br>הוסיפו אפשרויות או בחרו קטגוריה למטה</div>
+  <div class="rowbtns"><button class="surprise" id="surprise">🎲 תפתיע אותי</button></div>
+
+  <div class="savebox">
+    <div class="save-title">שמרו גלגלים אישיים וחזרו אליהם מתי שתרצו</div>
+    <div class="save-row">
+      <input type="text" id="wheelName" placeholder="שם לגלגל למשל דייטים אוכל חברים" maxlength="28">
+      <button id="saveWheel">שמור</button>
+    </div>
+    <div class="saved-list" id="savedList"></div>
+  </div>
+  <div class="sec-title">קטגוריות מוכנות</div>
+  <div class="cats" id="cats"></div>
+  <div class="sec-title">3 ההחלטות האחרונות</div>
+  <div class="hist" id="hist"><div class="empty" style="padding:10px">עדיין לא סובבתם 🌀</div></div>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="resultcard">
+    <div class="emoji" id="rcEmoji">🎉</div>
+    <div class="pre" id="rcPre">הגלגל החליט</div>
+    <div class="pick" id="rcPick">—</div>
+    <div class="confirm-final" id="confirmFinal">
+      <div class="emoji">🚀</div><b>מעולה!</b><br>עכשיו עושים. לא מתלבטים.
+    </div>
+    <div class="rc-btns">
+      <button class="b-accept" id="bAccept">✅ אני מקבל את ההחלטה</button>
+      <button class="b-again" id="bAgain">🔄 סובב שוב</button>
+      <button class="b-share" id="bShare">📤 שתף תוצאה</button>
+      <button class="b-close" id="bClose">סגור</button>
+    </div>
+  </div>
+</div>
+
+<canvas class="cf" id="cf"></canvas>
+<div class="toast" id="toast"></div>
+
+<script>
+"use strict";
+const COLORS=["#ff4f8b","#ffce3a","#46d6ff","#9b8cff","#4dffab","#ff9a52","#ff6fd8","#6affd0","#ffa1c2","#7ec8ff"];
+const CATS={
+  "🍽️ מה אוכלים":["פיצה","המבורגר","סושי","שווארמה","פסטה","מוקפץ","סלט","להכין בבית"],
+  "🎬 מה רואים":["קומדיה","מתח","אקשן","אנימה","סדרה קצרה","סרט עם טוויסט","דוקו","משהו קליל"],
+  "☀️ מה עושים היום":["הליכה","קפה בחוץ","סרט","לסדר את החדר","להתקשר לחבר","לצאת לאכול","משחק","לנוח"],
+  "✅ משימות":["לענות למיילים","לסדר 10 דקות","לשלם חשבון","ללמוד שעה","לכבס","לקנות מצרכים","להתקשר","לתכנן מחר"],
+  "🔥 אתגרים":["בלי טלפון שעה","לשתות מים","לסדר 10 דקות","אימון קצר","לשלוח הודעה למישהו","לסיים משימה אחת","לצאת להליכה","לצלם סרטון"],
+  "💸 מי משלם":["דנה","יוסי","נועה","עומר"],
+  "😈 אמת או חובה":["אמת","חובה","אמת","חובה"],
+  "✏️ גלגל אישי":[]
+};
+const TAGLINES=["אין יותר אולי","הגלגל לא מתלבט","מה שיוצא — עושים","תנו לגורל לבחור","סובב ויאללה החלטה","לא מצליחים להחליט? תנו לגלגל לעבוד"];
+const PRES=["הגלגל החליט","אין ויכוחים","זה הגורל שלך להיום","הבחירה שלך היא","סוף לדיון"];
+const EMO=["🎉","✨","🎯","🥳","🔮","💥"];
+
+let state={options:[],activeCat:null,history:[],spinsToday:0,saved:0,counts:{},lastDay:"",savedWheels:[]};
+let angle=0,spinning=false,soundOn=true,audioCtx=null;
+
+function save(){try{localStorage.setItem("wheelState",JSON.stringify(state));}catch(e){}}
+function load(){
+  try{const s=JSON.parse(localStorage.getItem("wheelState"));if(s)state=Object.assign(state,s);}catch(e){}
+  const today=new Date().toDateString();
+  if(!Array.isArray(state.savedWheels))state.savedWheels=[];
+  if(state.lastDay!==today){state.spinsToday=0;state.lastDay=today;}
+  if(!state.options||!state.options.length){state.options=CATS["🍽️ מה אוכלים"].slice();state.activeCat="🍽️ מה אוכלים";}
+}
+
+function beep(freq,dur,type,vol){
+  if(!soundOn)return;
+  try{
+    audioCtx=audioCtx||new (window.AudioContext||window.webkitAudioContext)();
+    const o=audioCtx.createOscillator(),g=audioCtx.createGain();
+    o.type=type||"square";o.frequency.value=freq;
+    g.gain.setValueAtTime(vol||0.04,audioCtx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.0001,audioCtx.currentTime+dur);
+    o.connect(g);g.connect(audioCtx.destination);o.start();o.stop(audioCtx.currentTime+dur);
+  }catch(e){}
+}
+function tickSound(i){beep(420+(i%2)*60,0.05,"square",0.025);}
+function winSound(){[523,659,784,1046].forEach((f,i)=>setTimeout(()=>beep(f,0.18,"triangle",0.06),i*90));}
+
+const cv=document.getElementById("wheel"),ctx=cv.getContext("2d");
+function draw(){
+  const opts=state.options,n=opts.length,r=cv.width/2,cx=r,cy=r;
+  ctx.clearRect(0,0,cv.width,cv.height);
+  if(n===0){ctx.fillStyle="#241a45";ctx.beginPath();ctx.arc(cx,cy,r-3,0,7);ctx.fill();return;}
+  const seg=Math.PI*2/n;
+  for(let i=0;i<n;i++){
+    const st=i*seg;
+    ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,r-3,st,st+seg);ctx.closePath();
+    ctx.fillStyle=COLORS[i%COLORS.length];ctx.fill();
+    ctx.strokeStyle="rgba(0,0,0,.18)";ctx.lineWidth=2;ctx.stroke();
+    ctx.save();ctx.translate(cx,cy);ctx.rotate(st+seg/2);
+    ctx.textAlign="right";ctx.fillStyle="#1a0d2e";
+    ctx.font="800 "+(n>9?12:n>6?14:16)+"px Heebo,sans-serif";
+    let t=opts[i];if(t.length>13)t=t.slice(0,12)+"…";
+    ctx.fillText(t,r-20,5);ctx.restore();
+  }
+}
+
+const listEl=document.getElementById("list"),emptyEl=document.getElementById("emptyState");
+function renderList(){
+  listEl.innerHTML="";
+  emptyEl.style.display=state.options.length===0?"block":"none";
+  state.options.forEach((o,i)=>{
+    const row=document.createElement("div");row.className="opt";row.draggable=true;row.dataset.i=i;
+    row.innerHTML=`<span class="grip">⋮⋮</span>
+      <span class="swatch" style="background:${COLORS[i%COLORS.length]}"></span>
+      <input class="ed" type="text" maxlength="40" value="${o.replace(/"/g,'&quot;')}">
+      <button class="x">×</button>`;
+    row.querySelector(".ed").addEventListener("input",e=>{state.options[i]=e.target.value;draw();save();});
+    row.querySelector(".ed").addEventListener("blur",e=>{if(!e.target.value.trim())removeOpt(i);});
+    row.querySelector(".x").onclick=()=>removeOpt(i);
+    addDrag(row);listEl.appendChild(row);
+  });
+  updateLock();
+}
+function removeOpt(i){state.options.splice(i,1);renderList();draw();save();}
+function addOpt(val){
+  val=(val||"").trim();
+  if(!val)return false;
+  if(state.options.some(o=>o.trim().toLowerCase()===val.toLowerCase())){toast("האפשרות כבר קיימת 🙃");return false;}
+  state.options.push(val);renderList();draw();save();return true;
+}
+
+let dragI=null;
+function addDrag(row){
+  row.addEventListener("dragstart",()=>{dragI=+row.dataset.i;row.classList.add("drag");});
+  row.addEventListener("dragend",()=>{row.classList.remove("drag");document.querySelectorAll(".opt").forEach(o=>o.classList.remove("over"));});
+  row.addEventListener("dragover",e=>{e.preventDefault();row.classList.add("over");});
+  row.addEventListener("dragleave",()=>row.classList.remove("over"));
+  row.addEventListener("drop",e=>{
+    e.preventDefault();const to=+row.dataset.i;
+    if(dragI===null||dragI===to)return;
+    const [m]=state.options.splice(dragI,1);state.options.splice(to,0,m);
+    renderList();draw();save();
+  });
+}
+
+const hub=document.getElementById("hub"),lockMsg=document.getElementById("lockMsg");
+function validCount(){return state.options.filter(o=>o.trim()).length;}
+function updateLock(){
+  if(validCount()<2){hub.disabled=true;lockMsg.textContent="תוסיפו לפחות שתי אפשרויות כדי לסובב";}
+  else{hub.disabled=false;lockMsg.textContent="";}
+}
+
+const stage=document.getElementById("stage");
+function spin(){
+  if(spinning||validCount()<2)return;
+  spinning=true;hub.disabled=true;
+  stage.classList.add("spinning","shake");
+  setTimeout(()=>stage.classList.remove("shake"),720);
+  const n=state.options.length,seg=360/n;
+  const turns=5+Math.random()*3,target=Math.random()*360;
+  const finalDeg=angle-(angle%360)+turns*360+target;
+  angle=finalDeg;cv.style.transform=`rotate(${finalDeg}deg)`;
+  let ti=0;const tickTimer=setInterval(()=>tickSound(ti++),90);
+  setTimeout(()=>clearInterval(tickTimer),4200);
+  setTimeout(()=>{
+    const norm=((360-(finalDeg%360))+270)%360;
+    const idx=Math.floor(norm/seg)%n;
+    finishSpin(state.options[idx]||"—");
+  },5250);
+}
+function finishSpin(pick){
+  spinning=false;stage.classList.remove("spinning");updateLock();
+  state.spinsToday++;state.saved++;
+  state.counts[pick]=(state.counts[pick]||0)+1;
+  state.history.unshift({pick,t:new Date().toLocaleTimeString("he-IL",{hour:"2-digit",minute:"2-digit"})});
+  state.history=state.history.slice(0,3);
+  save();renderStats();renderHist();
+  showResult(pick);winSound();confetti();
+}
+
+const overlay=document.getElementById("overlay");
+function showResult(pick){
+  document.getElementById("rcPre").textContent=PRES[Math.floor(Math.random()*PRES.length)];
+  document.getElementById("rcEmoji").textContent=EMO[Math.floor(Math.random()*EMO.length)];
+  document.getElementById("rcPick").textContent=pick;
+  document.getElementById("confirmFinal").classList.remove("show");
+  overlay.dataset.pick=pick;overlay.classList.add("show");
+}
+document.getElementById("bClose").onclick=()=>overlay.classList.remove("show");
+document.getElementById("bAgain").onclick=()=>{overlay.classList.remove("show");setTimeout(spin,250);};
+document.getElementById("bAccept").onclick=()=>document.getElementById("confirmFinal").classList.add("show");
+document.getElementById("bShare").onclick=()=>{
+  const pick=overlay.dataset.pick;
+  copy(`הגלגל החליט בשבילי היום: ${pick} 🎯\nמה אתם הייתם בוחרים?`);
+};
+
+function renderStats(){
+  document.getElementById("sSpins").textContent=state.spinsToday;
+  document.getElementById("sSaved").textContent=state.saved;
+  let top="—",max=0;
+  for(const k in state.counts){if(state.counts[k]>max){max=state.counts[k];top=k;}}
+  document.getElementById("sTop").textContent=top.length>8?top.slice(0,7)+"…":top;
+}
+function renderHist(){
+  const el=document.getElementById("hist");
+  if(!state.history.length){el.innerHTML=`<div class="empty" style="padding:10px">עדיין לא סובבתם 🌀</div>`;return;}
+  el.innerHTML=state.history.map(h=>`<div class="h"><b>${h.pick}</b><span>${h.t}</span></div>`).join("");
+}
+
+
+function renderSavedWheels(){
+  const el=document.getElementById("savedList");
+  if(!el)return;
+  if(!state.savedWheels||!state.savedWheels.length){
+    el.innerHTML=`<div class="saved-empty">עדיין אין גלגלים שמורים</div>`;
+    return;
+  }
+  el.innerHTML=state.savedWheels.map((w,i)=>{
+    const opts=(w.options||[]).slice(0,4).join(" · ");
+    const more=(w.options||[]).length>4?` ועוד ${(w.options||[]).length-4}`:"";
+    return `<div class="saved-wheel">
+      <div class="saved-main" data-load="${i}" title="טען את הגלגל">
+        <b>${escapeHtml(w.name||"גלגל ללא שם")}</b>
+        <span>${escapeHtml(opts+more)}</span>
+      </div>
+      <button data-del="${i}" title="מחק">×</button>
+    </div>`;
+  }).join("");
+  el.querySelectorAll("[data-load]").forEach(btn=>btn.onclick=()=>{
+    const w=state.savedWheels[+btn.dataset.load];
+    if(!w)return;
+    state.options=(w.options||[]).slice();
+    state.activeCat="שמור: "+(w.name||"גלגל");
+    document.getElementById("wheelName").value=w.name||"";
+    renderList();draw();save();markActiveCat();toast("נטען: "+(w.name||"גלגל שמור"));
+  });
+  el.querySelectorAll("[data-del]").forEach(btn=>btn.onclick=()=>{
+    const i=+btn.dataset.del,w=state.savedWheels[i];
+    if(confirm(`למחוק את הגלגל "${w.name}"?`)){
+      state.savedWheels.splice(i,1);save();renderSavedWheels();toast("הגלגל נמחק");
+    }
+  });
+}
+function escapeHtml(str){
+  return String(str||"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
+}
+function saveCurrentWheel(){
+  const name=(document.getElementById("wheelName").value||"").trim();
+  const opts=state.options.map(o=>String(o||"").trim()).filter(Boolean);
+  if(!name){toast("תן שם לגלגל לפני שמירה");return;}
+  if(opts.length<2){toast("צריך לפחות שתי אפשרויות כדי לשמור");return;}
+  state.savedWheels=state.savedWheels||[];
+  const existing=state.savedWheels.findIndex(w=>(w.name||"").toLowerCase()===name.toLowerCase());
+  const data={name,options:opts,updatedAt:Date.now()};
+  if(existing>=0){state.savedWheels[existing]=data;toast("הגלגל עודכן ✅");}
+  else{state.savedWheels.unshift(data);toast("הגלגל נשמר ✅");}
+  state.savedWheels=state.savedWheels.slice(0,12);
+  state.activeCat="שמור: "+name;
+  save();renderSavedWheels();markActiveCat();
+}
+
+const catsEl=document.getElementById("cats");
+Object.keys(CATS).forEach(name=>{
+  const b=document.createElement("button");b.className="cat";b.textContent=name;
+  b.onclick=()=>{
+    state.options=CATS[name].length?CATS[name].slice():[];
+    state.activeCat=name;
+    document.getElementById("wheelName").value="";
+    document.querySelectorAll(".cat").forEach(c=>c.classList.remove("active"));
+    b.classList.add("active");
+    renderList();draw();save();
+    if(!CATS[name].length)toast("גלגל אישי — הוסיפו אפשרויות משלכם ✏️");
+  };
+  catsEl.appendChild(b);
+});
+function markActiveCat(){document.querySelectorAll(".cat").forEach(c=>c.classList.toggle("active",c.textContent===state.activeCat));}
+
+document.getElementById("surprise").onclick=()=>{
+  const names=Object.keys(CATS).filter(k=>CATS[k].length);
+  const cat=names[Math.floor(Math.random()*names.length)];
+  state.options=CATS[cat].slice();state.activeCat=cat;
+  document.getElementById("wheelName").value="";
+  renderList();draw();save();markActiveCat();
+  toast("הגלגל בחר: "+cat);
+  if(!spinning)setTimeout(spin,400);
+};
+
+document.getElementById("qAdd").onclick=qa;
+document.getElementById("qInput").addEventListener("keydown",e=>{if(e.key==="Enter")qa();});
+function qa(){const inp=document.getElementById("qInput");if(addOpt(inp.value)){inp.value="";inp.focus();}}
+
+document.getElementById("saveWheel").onclick=saveCurrentWheel;
+document.getElementById("wheelName").addEventListener("keydown",e=>{if(e.key==="Enter")saveCurrentWheel();});
+
+document.getElementById("reset").onclick=()=>{
+  if(confirm("לאפס את הגלגל? כל האפשרויות הנוכחיות יימחקו.")){
+    state.options=[];state.activeCat=null;
+    renderList();draw();save();markActiveCat();
+    toast("אופס נקי ✨ בחרו קטגוריה או הוסיפו אפשרויות");
+  }
+};
+
+document.getElementById("sound").onclick=function(){
+  soundOn=!soundOn;this.textContent=soundOn?"🔊":"🔇";
+  if(soundOn)beep(660,0.1,"triangle",0.05);
+};
+
+const cf=document.getElementById("cf"),cx2=cf.getContext("2d");
+function rs(){cf.width=innerWidth;cf.height=innerHeight;}addEventListener("resize",rs);rs();
+let parts=[];
+function confetti(){
+  parts=[];
+  for(let i=0;i<150;i++)parts.push({
+    x:innerWidth/2,y:innerHeight*0.4,vx:(Math.random()-.5)*16,vy:Math.random()*-14-3,
+    g:.38+Math.random()*.22,c:COLORS[i%COLORS.length],s:5+Math.random()*7,
+    life:100+Math.random()*40,rot:Math.random()*6,vr:(Math.random()-.5)*.5
+  });
+  cfLoop();
+}
+function cfLoop(){
+  cx2.clearRect(0,0,cf.width,cf.height);let alive=false;
+  parts.forEach(p=>{if(p.life<=0)return;alive=true;
+    p.x+=p.vx;p.y+=p.vy;p.vy+=p.g;p.rot+=p.vr;p.life--;
+    cx2.save();cx2.translate(p.x,p.y);cx2.rotate(p.rot);cx2.fillStyle=p.c;
+    cx2.globalAlpha=Math.max(0,Math.min(1,p.life/40));
+    cx2.fillRect(-p.s/2,-p.s/2,p.s,p.s*.62);cx2.restore();});
+  if(alive)requestAnimationFrame(cfLoop);else cx2.clearRect(0,0,cf.width,cf.height);
+}
+
+let toTimer;
+function toast(msg){const t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");
+  clearTimeout(toTimer);toTimer=setTimeout(()=>t.classList.remove("show"),2200);}
+function copy(txt){
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(txt).then(()=>toast("הועתק ללוח 📋")).catch(()=>fallbackCopy(txt));
+  }else fallbackCopy(txt);
+}
+function fallbackCopy(txt){
+  const ta=document.createElement("textarea");ta.value=txt;ta.style.position="fixed";ta.style.opacity="0";
+  document.body.appendChild(ta);ta.select();try{document.execCommand("copy");toast("הועתק ללוח 📋");}catch(e){toast("העתקה נכשלה");}
+  document.body.removeChild(ta);
+}
+
+let tgi=0;setInterval(()=>{tgi=(tgi+1)%TAGLINES.length;
+  const el=document.getElementById("tagline");el.style.opacity=0;
+  setTimeout(()=>{el.textContent=TAGLINES[tgi];el.style.opacity=1;},300);},3800);
+
+hub.onclick=spin;cv.onclick=()=>{if(!hub.disabled)spin();};
+
+load();renderList();draw();renderStats();renderHist();renderSavedWheels();markActiveCat();
+</script>
+<a href="../index.html" style="position:fixed;bottom:18px;left:18px;z-index:9999;background:linear-gradient(135deg,#8b5cf6,#6d28d9);color:#fff;border:none;box-shadow:0 10px 24px rgba(109,40,217,.5);border-radius:30px;padding:10px 18px;font-family:Heebo,sans-serif;font-weight:700;font-size:14px;text-decoration:none;box-shadow:0 8px 24px rgba(0,0,0,.5)">🏠 הביתה</a>
+</body>
+</html>
