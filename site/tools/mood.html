@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>איך היה היום?</title>
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@500;700;900&family=Heebo:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0b0d14;--text:#f4f6fb;--muted:#9aa3b5;--card:#141826;--line:rgba(255,255,255,.08);--a:#f472b6;--a2:#db2777}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Heebo',system-ui,sans-serif;min-height:100vh}
+.wrap{max-width:560px;margin:0 auto;padding:24px 16px 110px}
+h1{font-family:'Rubik';font-weight:900;font-size:30px;text-align:center;padding:14px 0 4px;
+ background:linear-gradient(92deg,var(--a),var(--a2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.sub{text-align:center;color:var(--muted);font-size:14px;margin-bottom:22px}
+.moods{display:flex;gap:8px;margin-bottom:12px}
+.moods button{flex:1;background:var(--card);border:1px solid var(--line);cursor:pointer;
+ border-radius:18px;padding:16px 4px;font-size:34px;transition:all .15s}
+.moods button:active{transform:scale(.9)}
+.moods button.on{background:linear-gradient(135deg,rgba(244,114,182,.25),rgba(219,39,119,.25));border-color:var(--a);transform:scale(1.08)}
+.inp{width:100%;background:var(--card);border:1px solid var(--line);border-radius:18px;color:var(--text);
+ font:500 16px 'Heebo';padding:16px;outline:none;margin-bottom:12px;min-height:90px;resize:vertical}
+.inp:focus{border-color:var(--a)}
+.save{width:100%;border:none;cursor:pointer;color:#fff;font:900 19px 'Rubik';
+ background:linear-gradient(135deg,var(--a),var(--a2));border-radius:18px;padding:17px;transition:transform .15s}
+.save:active{transform:scale(.96)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:18px;margin-top:18px}
+.card h2{font-family:'Rubik';font-weight:700;font-size:17px;margin-bottom:12px}
+.hist{list-style:none}
+.hist li{padding:12px 4px;border-bottom:1px solid var(--line);font-size:14.5px}
+.hist li:last-child{border-bottom:none}
+.hist .top{display:flex;justify-content:space-between;margin-bottom:3px}
+.hist .d{color:var(--muted);font-size:12.5px}
+.hist .note{color:var(--muted);font-size:13.5px}
+.empty{color:var(--muted);text-align:center;font-size:14px;padding:8px 0}
+.home{position:fixed;bottom:18px;left:18px;z-index:9;color:#fff;border:none;text-decoration:none;
+ background:linear-gradient(135deg,#8b5cf6,#6d28d9);border-radius:30px;padding:13px 20px;font:800 14.5px 'Heebo';
+ box-shadow:0 10px 24px rgba(109,40,217,.5);transition:transform .15s}
+.home:active{transform:scale(.93)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>📓 איך היה היום?</h1>
+  <div class="sub">פרצוף + משפט. 10 שניות, וההיסטוריה שלך נבנית.</div>
+  <div class="moods" id="moods"></div>
+  <textarea class="inp" id="note" placeholder="משפט אחד על היום… (מה היה טוב? מה פחות?)"></textarea>
+  <button class="save" onclick="add()">💾 שמור את היום</button>
+  <div class="card">
+    <h2>🗂️ הימים האחרונים</h2>
+    <ul class="hist" id="hist"><li class="empty">היום הראשון שלך מחכה להירשם.</li></ul>
+  </div>
+</div>
+<a class="home" href="../index.html">🏠 הביתה</a>
+<script>
+const FACES=['😫','😕','😐','🙂','🤩'];
+const load=(k,d)=>{try{return JSON.parse(localStorage.getItem(k)) ?? d}catch(e){return d}};
+let entries=load('st_mood',[]);
+let face=null;
+function renderMoods(){
+  document.getElementById('moods').innerHTML=FACES.map((f,i)=>
+    `<button class="${face===i?'on':''}" onclick="pick(${i})">${f}</button>`).join('');
+}
+function pick(i){face=i;renderMoods()}
+function render(){
+  renderMoods();
+  if(entries.length){
+    document.getElementById('hist').innerHTML=entries.slice(-7).reverse().map(e=>{
+      const d=new Date(e.ts);
+      return `<li><div class="top"><span style="font-size:20px">${FACES[e.face]}</span><span class="d">${d.getDate()}/${d.getMonth()+1}</span></div>
+        <div class="note">${e.note||''}</div></li>`;
+    }).join('');
+  }
+}
+function add(){
+  if(face===null)return alert('תבחר פרצוף 🙂');
+  entries.push({ts:Date.now(),face,note:document.getElementById('note').value.trim().slice(0,200)});
+  localStorage.setItem('st_mood',JSON.stringify(entries));
+  document.getElementById('note').value='';face=null;
+  render();
+  alert('נשמר! לילה טוב 🌙');
+}
+render();
+</script>
+</body>
+</html>

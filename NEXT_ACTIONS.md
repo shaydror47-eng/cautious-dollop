@@ -21,3 +21,12 @@
 - Write any problems in BUGS.md
 - Update PHONE.md if anything changed
 - Add a short note to DAILY_LOG.md
+
+## Site & Apps (updated 2026-06-10)
+
+- [x] My Center v5 deployed — "שעות עם אורי" button live in Business world
+- [x] Site source backed up in `site/` folder in repo
+- [ ] Test "שעות עם אורי" button on both phones
+- [ ] Check the Wolt app (guileless-macaron) — Shay suspects it's broken; report in BUGS.md
+- [ ] Next session: plan the categories + personal/business split feature (see IDEAS.md 2026-06-10)
+- [ ] Merge PR #1 to main so everything is saved

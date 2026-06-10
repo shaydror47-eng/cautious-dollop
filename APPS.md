@@ -14,6 +14,7 @@ Apps and tools in use and in development for work optimization, delivery decisio
   - 🧮 Money: bill splitter
   - 💼 Business: post builder
   - 🎡 Misc: workout timer, decision wheel, habit swap
+- **v5 (2026-06-10)**: added "שעות עם אורי" button (https://calm-biscochitos-855f2a.netlify.app) in the Business world; site source now backed up in `site/`
 - **v2 (2026-06-10)**: unified dark design across all pages, mobile fixes (zoom, tap targets), 3 new one-tap tools
 - **Data**: saved in the browser (localStorage) on each device
 - **How to update**: change files in `site/` here → drag updated zip to Netlify Deploys

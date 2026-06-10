@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>הוצאות מהירות</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@500;700;900&family=Heebo:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0b0d14;--text:#f4f6fb;--muted:#9aa3b5;--card:#141826;--line:rgba(255,255,255,.08);
+--accent:#13b380;--accent2:#065f55;--bad:#f87171}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Heebo',system-ui,sans-serif;min-height:100vh}
+.wrap{max-width:560px;margin:0 auto;padding:24px 16px 110px}
+h1{font-family:'Rubik';font-weight:900;font-size:30px;text-align:center;padding:14px 0 4px;
+ background:linear-gradient(92deg,#34d399,var(--accent));-webkit-background-clip:text;background-clip:text;color:transparent}
+.sub{text-align:center;color:var(--muted);font-size:14px;margin-bottom:20px}
+.amount{width:100%;background:var(--card);border:1px solid var(--line);border-radius:20px;color:var(--text);
+ font:900 44px 'Rubik';padding:18px;text-align:center;outline:none;margin-bottom:12px}
+.amount:focus{border-color:var(--accent)}
+.cats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px}
+.cats button{background:var(--card);border:1px solid var(--line);color:var(--text);cursor:pointer;
+ border-radius:16px;padding:14px 4px;font:700 14px 'Heebo';transition:all .15s}
+.cats button:active{transform:scale(.94)}
+.cats button.on{background:linear-gradient(135deg,#10b981,#047857);border-color:transparent}
+.save{width:100%;border:none;cursor:pointer;color:#fff;font:900 22px 'Rubik';
+ background:linear-gradient(135deg,#10b981,#047857);border-radius:20px;padding:20px;transition:transform .15s;
+ box-shadow:0 14px 34px -12px rgba(16,185,129,.5)}
+.save:active{transform:scale(.97)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:18px;margin-top:18px}
+.card h2{font-family:'Rubik';font-weight:700;font-size:17px;margin-bottom:12px}
+.tot{display:flex;gap:10px;text-align:center}
+.tot div{flex:1;background:#0e1220;border:1px solid var(--line);border-radius:14px;padding:12px}
+.tot b{display:block;font-family:'Rubik';font-size:22px;color:var(--bad)}
+.tot span{font-size:12px;color:var(--muted)}
+.hist{list-style:none}
+.hist li{display:flex;justify-content:space-between;align-items:center;padding:10px 4px;border-bottom:1px solid var(--line);font-size:14.5px}
+.hist li:last-child{border-bottom:none}
+.hist .d{color:var(--muted);font-size:12.5px}
+.hist .m{font-family:'Rubik';font-weight:700;color:var(--bad)}
+.hist .x{background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;padding:0 6px}
+.empty{color:var(--muted);text-align:center;font-size:14px;padding:8px 0}
+.home{position:fixed;bottom:18px;left:18px;z-index:9;color:#fff;border:none;text-decoration:none;
+ background:linear-gradient(135deg,#8b5cf6,#6d28d9);border-radius:30px;padding:13px 20px;font:800 14.5px 'Heebo';
+ box-shadow:0 10px 24px rgba(109,40,217,.5);transition:transform .15s}
+.home:active{transform:scale(.93)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>💸 הוצאות מהירות</h1>
+  <div class="sub">סכום → קטגוריה → שמור. 3 שניות וזה בזיכרון.</div>
+
+  <input class="amount" type="number" id="amt" inputmode="numeric" placeholder="₪0">
+  <div class="cats" id="cats"></div>
+  <button class="save" onclick="add()">💾 שמור הוצאה</button>
+
+  <div class="card">
+    <h2>📊 כמה יצא</h2>
+    <div class="tot">
+      <div><b id="tToday">₪0</b><span>היום</span></div>
+      <div><b id="tWeek">₪0</b><span>השבוע</span></div>
+      <div><b id="tMonth">₪0</b><span>החודש</span></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>🧾 אחרונות</h2>
+    <ul class="hist" id="hist"><li class="empty">עוד אין — ההוצאה הבאה שלך נכנסת לפה.</li></ul>
+  </div>
+</div>
+<a class="home" href="../index.html">🏠 הביתה</a>
+
+<script>
+const CATS=['⛽ דלק','🍔 אוכל','📱 טלפון','🛒 קניות','🛵 אופנוע/רכב','📦 אחר'];
+const load=(k,d)=>{try{return JSON.parse(localStorage.getItem(k)) ?? d}catch(e){return d}};
+const save=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
+let items=load('st_expenses',[]);
+let cat=CATS[0];
+function renderCats(){
+  document.getElementById('cats').innerHTML=CATS.map(c=>
+    `<button class="${c===cat?'on':''}" onclick="pick('${c}')">${c}</button>`).join('');
+}
+function pick(c){cat=c;renderCats()}
+function startOf(unit){
+  const d=new Date();d.setHours(0,0,0,0);
+  if(unit==='week')d.setDate(d.getDate()-d.getDay());
+  if(unit==='month')d.setDate(1);
+  return d.getTime();
+}
+function render(){
+  renderCats();
+  const sum=t=>items.filter(i=>i.ts>=t).reduce((a,i)=>a+i.amt,0);
+  document.getElementById('tToday').textContent='₪'+sum(startOf('day')).toLocaleString();
+  document.getElementById('tWeek').textContent='₪'+sum(startOf('week')).toLocaleString();
+  document.getElementById('tMonth').textContent='₪'+sum(startOf('month')).toLocaleString();
+  const hist=document.getElementById('hist');
+  if(items.length){
+    hist.innerHTML=items.slice(-10).reverse().map(i=>{
+      const d=new Date(i.ts);
+      return `<li><span>${i.cat} <span class="d">· ${d.getDate()}/${d.getMonth()+1} ${d.getHours()}:${String(d.getMinutes()).padStart(2,'0')}</span></span>
+        <span><span class="m">₪${i.amt.toLocaleString()}</span><button class="x" onclick="del(${i.ts})">✕</button></span></li>`;
+    }).join('');
+  } else hist.innerHTML='<li class="empty">עוד אין — ההוצאה הבאה שלך נכנסת לפה.</li>';
+}
+function add(){
+  const amt=parseFloat(document.getElementById('amt').value);
+  if(!amt||amt<=0) return alert('תכניס סכום 🙂');
+  items.push({ts:Date.now(),amt,cat});
+  save('st_expenses',items);
+  document.getElementById('amt').value='';
+  render();
+}
+function del(ts){
+  items=items.filter(i=>i.ts!==ts);
+  save('st_expenses',items);
+  render();
+}
+render();
+</script>
+</body>
+</html>

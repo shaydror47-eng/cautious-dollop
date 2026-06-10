@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>המשימה של היום</title>
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@500;700;900&family=Heebo:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0b0d14;--text:#f4f6fb;--muted:#9aa3b5;--card:#141826;--line:rgba(255,255,255,.08);--a:#fbbf24;--a2:#d97706}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Heebo',system-ui,sans-serif;min-height:100vh}
+.wrap{max-width:560px;margin:0 auto;padding:24px 16px 110px}
+h1{font-family:'Rubik';font-weight:900;font-size:30px;text-align:center;padding:14px 0 4px;
+ background:linear-gradient(92deg,var(--a),var(--a2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.sub{text-align:center;color:var(--muted);font-size:14px;margin-bottom:22px}
+.inp{width:100%;background:var(--card);border:1px solid var(--line);border-radius:18px;color:var(--text);
+ font:700 20px 'Heebo';padding:18px;outline:none;margin-bottom:12px}
+.inp:focus{border-color:var(--a)}
+.set{width:100%;border:none;cursor:pointer;color:#1a1305;font:900 20px 'Rubik';
+ background:linear-gradient(135deg,var(--a),var(--a2));border-radius:18px;padding:18px;transition:transform .15s}
+.set:active{transform:scale(.96)}
+.mission{display:none;background:var(--card);border:2px solid var(--a);border-radius:22px;padding:24px;text-align:center}
+.mission.on{display:block;animation:pop .4s cubic-bezier(.34,1.5,.64,1)}
+@keyframes pop{from{transform:scale(.85);opacity:0}to{transform:scale(1);opacity:1}}
+.mission .t{font:900 24px 'Rubik';margin:8px 0 18px;line-height:1.35}
+.mission .lbl{color:var(--muted);font-size:13px;letter-spacing:1px}
+.doneBtn{border:none;cursor:pointer;color:#fff;font:900 19px 'Rubik';width:100%;
+ background:linear-gradient(135deg,#10b981,#047857);border-radius:16px;padding:17px;transition:transform .15s}
+.doneBtn:active{transform:scale(.95)}
+.victory{display:none;text-align:center;padding:26px 10px}
+.victory.on{display:block;animation:pop .5s cubic-bezier(.34,1.5,.64,1)}
+.victory .e{font-size:74px}
+.victory .t{font:900 26px 'Rubik';margin-top:8px}
+.victory .s{color:var(--muted);margin-top:6px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:18px;margin-top:18px}
+.card h2{font-family:'Rubik';font-weight:700;font-size:17px;margin-bottom:12px}
+.hist{list-style:none}
+.hist li{display:flex;gap:10px;align-items:center;padding:10px 4px;border-bottom:1px solid var(--line);font-size:14.5px}
+.hist li:last-child{border-bottom:none}
+.hist .d{color:var(--muted);font-size:12.5px;flex:none}
+.empty{color:var(--muted);text-align:center;font-size:14px;padding:8px 0}
+.home{position:fixed;bottom:18px;left:18px;z-index:9;color:#fff;border:none;text-decoration:none;
+ background:linear-gradient(135deg,#8b5cf6,#6d28d9);border-radius:30px;padding:13px 20px;font:800 14.5px 'Heebo';
+ box-shadow:0 10px 24px rgba(109,40,217,.5);transition:transform .15s}
+.home:active{transform:scale(.93)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🎯 המשימה של היום</h1>
+  <div class="sub">דבר אחד. הכי חשוב. מי שעושה אחד כל יום — בלתי עציר.</div>
+
+  <div id="ask">
+    <input class="inp" id="txt" placeholder="מה הדבר האחד של היום?" maxlength="80">
+    <button class="set" onclick="setGoal()">🎯 זאת המשימה!</button>
+  </div>
+
+  <div class="mission" id="mission">
+    <div class="lbl">— המשימה של היום —</div>
+    <div class="t" id="mTxt"></div>
+    <button class="doneBtn" onclick="done()">✅ בוצע!</button>
+  </div>
+
+  <div class="victory" id="victory">
+    <div class="e">🏆</div>
+    <div class="t">בוצע! יום מנוצח.</div>
+    <div class="s">מחר מחכה משימה חדשה 😎</div>
+  </div>
+
+  <div class="card">
+    <h2>📜 הניצחונות שלי</h2>
+    <ul class="hist" id="hist"><li class="empty">הניצחון הראשון שלך בדרך…</li></ul>
+  </div>
+</div>
+<a class="home" href="../index.html">🏠 הביתה</a>
+<script>
+const load=(k,d)=>{try{return JSON.parse(localStorage.getItem(k)) ?? d}catch(e){return d}};
+let goals=load('st_goals',[]);
+const today=()=>new Date().toISOString().slice(0,10);
+function cur(){return goals.find(g=>g.date===today())}
+function render(){
+  const g=cur();
+  document.getElementById('ask').style.display=g?'none':'block';
+  document.getElementById('mission').classList.toggle('on',!!(g&&!g.done));
+  document.getElementById('victory').classList.toggle('on',!!(g&&g.done));
+  if(g)document.getElementById('mTxt').textContent=g.txt;
+  const doneList=goals.filter(x=>x.done).slice(-10).reverse();
+  if(doneList.length){
+    document.getElementById('hist').innerHTML=doneList.map(x=>{
+      const d=new Date(x.date);
+      return `<li>🏆 <span>${x.txt}</span> <span class="d" style="margin-inline-start:auto">${d.getDate()}/${d.getMonth()+1}</span></li>`;
+    }).join('');
+  }
+}
+function setGoal(){
+  const t=document.getElementById('txt').value.trim();
+  if(!t)return alert('תכתוב משהו 🙂');
+  goals.push({date:today(),txt:t,done:false});
+  localStorage.setItem('st_goals',JSON.stringify(goals));
+  render();
+}
+function done(){
+  cur().done=true;
+  localStorage.setItem('st_goals',JSON.stringify(goals));
+  if(navigator.vibrate)navigator.vibrate([100,50,100,50,200]);
+  render();
+}
+render();
+</script>
+</body>
+</html>
