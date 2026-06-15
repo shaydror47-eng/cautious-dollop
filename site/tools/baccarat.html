@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>בקראט</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@500;700;900&family=Heebo:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#080812;--text:#f4f6fb;--muted:#9fa3b5;--line:rgba(255,255,255,.10);
+  --felt0:#1a0a2e;--felt1:#120820;--gold:#ffce3a;--green:#34d399;--red:#ff5470;
+  --pink:#c084fc;--chip:#1e1030;--glass:rgba(255,255,255,.06);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{
+  background:
+    radial-gradient(900px circle at 50% -5%,#2a1060aa,transparent 60%),
+    linear-gradient(160deg,#130820,var(--bg));
+  background-attachment:fixed;
+  color:var(--text);font-family:'Heebo',system-ui,sans-serif;min-height:100vh;
+  padding:16px 16px 100px;overflow-x:hidden;
+}
+.wrap{max-width:920px;margin:0 auto}
+header{text-align:center;padding:8px 0 14px}
+h1{font-family:'Rubik';font-weight:900;font-size:40px;letter-spacing:-.5px;
+  background:linear-gradient(90deg,var(--gold),var(--pink),#46d6ff);
+  -webkit-background-clip:text;background-clip:text;color:transparent}
+.tag{color:var(--muted);font-size:14px;margin-top:4px}
+
+/* top bar */
+.topbar{display:flex;align-items:center;gap:12px;margin:10px 0 18px;flex-wrap:wrap;justify-content:center}
+.bal{background:var(--glass);border:1px solid var(--line);border-radius:16px;padding:10px 22px;text-align:center;min-width:130px}
+.bal b{display:block;font-family:'Rubik';font-weight:900;font-size:28px;color:var(--gold)}
+.bal span{font-size:12px;color:var(--muted)}
+.mini{background:var(--chip);border:1px solid var(--line);color:var(--text);
+  border-radius:12px;padding:12px 18px;font:700 14px 'Heebo';cursor:pointer;transition:.15s;min-height:46px}
+.mini:hover{border-color:var(--gold)}
+.mini:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+
+/* table */
+.table{
+  background:radial-gradient(120% 90% at 50% 0%,var(--felt0),var(--felt1));
+  border:1px solid rgba(255,255,255,.09);border-radius:28px;padding:26px 22px 30px;
+  box-shadow:inset 0 0 80px rgba(0,0,0,.5), 0 22px 55px -22px #000;
+}
+
+/* two hands side by side */
+.hands{display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:start}
+.hand-zone{text-align:center}
+.hand-label{font-size:12px;color:var(--muted);font-weight:700;letter-spacing:1px;
+  text-transform:uppercase;margin-bottom:10px}
+.score-badge{display:inline-block;background:rgba(0,0,0,.45);border:1px solid var(--line);
+  border-radius:22px;padding:5px 18px;font-family:'Rubik';font-weight:900;font-size:18px;
+  margin-top:10px;min-width:48px}
+.score-badge.natural{color:var(--gold);border-color:var(--gold)}
+.score-badge.win{color:var(--green);border-color:var(--green)}
+.score-badge.lose{color:var(--red);border-color:rgba(255,84,112,.4)}
+
+/* divider */
+.vs{display:flex;align-items:center;justify-content:center;padding-top:60px}
+.vs-inner{font-family:'Rubik';font-weight:900;font-size:22px;color:rgba(255,255,255,.2);
+  background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:50%;
+  width:52px;height:52px;display:flex;align-items:center;justify-content:center}
+
+/* cards */
+.card-row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;min-height:128px;align-items:flex-start}
+.card{
+  width:82px;height:116px;border-radius:10px;background:#fbfbfd;color:#11131a;
+  display:flex;flex-direction:column;justify-content:space-between;padding:7px 9px;
+  font-family:'Rubik';font-weight:900;
+  box-shadow:0 5px 14px rgba(0,0,0,.45),0 1px 3px rgba(0,0,0,.25);
+  animation:deal .22s ease;flex-shrink:0;
+}
+@keyframes deal{from{transform:translateY(-18px) scale(.88);opacity:0}to{transform:none;opacity:1}}
+.card.red{color:#d11d3c}
+.card .r{font-size:21px;line-height:1}
+.card .s{font-size:29px;text-align:left;line-height:1}
+
+/* result overlay on hand zone */
+.hand-result{font-family:'Rubik';font-weight:900;font-size:15px;margin-top:8px;min-height:22px}
+.hand-result.g{color:var(--green)}
+.hand-result.r{color:var(--red)}
+.hand-result.y{color:var(--gold)}
+
+/* bet positions */
+.bet-zones{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:18px}
+.bet-zone{
+  border:2px solid var(--line);border-radius:18px;padding:14px 10px;text-align:center;
+  cursor:pointer;transition:.2s;background:rgba(0,0,0,.22);
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+}
+.bet-zone:hover{border-color:rgba(255,255,255,.35);background:rgba(0,0,0,.32)}
+.bet-zone:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.bet-zone.sel-p{border-color:var(--green);background:rgba(52,211,153,.08);box-shadow:0 0 0 2px rgba(52,211,153,.18)}
+.bet-zone.sel-b{border-color:var(--pink);background:rgba(192,132,252,.08);box-shadow:0 0 0 2px rgba(192,132,252,.18)}
+.bet-zone.sel-t{border-color:var(--gold);background:rgba(255,206,58,.08);box-shadow:0 0 0 2px rgba(255,206,58,.18)}
+.bet-zone.disabled{opacity:.4;pointer-events:none}
+.bz-icon{font-size:28px;line-height:1}
+.bz-name{font-family:'Rubik';font-weight:900;font-size:15px}
+.bz-pay{font-size:11px;color:var(--muted);font-weight:600}
+.bz-amount{font-size:16px;font-weight:900;color:var(--gold);min-height:22px}
+
+/* chips */
+.chips-wrap{margin:18px 0 6px}
+.chips-label{text-align:center;font-size:12px;color:var(--muted);margin-bottom:10px;letter-spacing:.5px}
+.chips{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.chipbtn{
+  width:68px;height:68px;border-radius:50%;border:3px dashed rgba(255,255,255,.52);
+  font-family:'Rubik';font-weight:900;font-size:15px;cursor:pointer;color:#fff;
+  display:grid;place-items:center;transition:.15s;
+  box-shadow:0 5px 16px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.2);
+  min-width:44px;min-height:44px;
+}
+.chipbtn:hover{transform:translateY(-4px);border-color:rgba(255,255,255,.85)}
+.chipbtn:active{transform:scale(.9)}
+.chipbtn.sel{outline:3px solid var(--gold);outline-offset:4px;transform:translateY(-3px)}
+.chipbtn:disabled{opacity:.28;cursor:not-allowed;transform:none!important;filter:grayscale(.6)}
+.chipbtn:focus-visible{outline:3px solid var(--gold);outline-offset:4px}
+.c10 {background:radial-gradient(circle at 35% 30%,#93c5fd,#1d4ed8)}
+.c25 {background:radial-gradient(circle at 35% 30%,#86efac,#15803d)}
+.c50 {background:radial-gradient(circle at 35% 30%,#fde68a,#d97706)}
+.c100{background:radial-gradient(circle at 35% 30%,#9ca3af,#374151)}
+.c500{background:radial-gradient(circle at 35% 30%,#d8b4fe,#7c3aed)}
+
+/* hint */
+.hint{text-align:center;color:var(--muted);font-size:15px;margin:10px 0 4px;min-height:22px;font-weight:500}
+
+/* actions */
+.actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:14px}
+.act{
+  border:0;font-family:'Rubik';font-weight:900;font-size:17px;border-radius:16px;
+  padding:16px 28px;cursor:pointer;transition:.15s;min-height:54px;
+  box-shadow:0 4px 14px rgba(0,0,0,.35);
+}
+.act:hover{transform:translateY(-2px);box-shadow:0 7px 20px rgba(0,0,0,.45)}
+.act:active{transform:scale(.96)}
+.act:disabled{opacity:.28;cursor:not-allowed;transform:none!important;filter:grayscale(.5);box-shadow:none}
+.act:focus-visible{outline:3px solid #fff;outline-offset:3px}
+.deal-btn{background:linear-gradient(135deg,var(--gold),#ff9a3c);color:#2a1700}
+.clear-btn{background:rgba(255,255,255,.08);color:var(--text);border:1px solid var(--line)}
+.clear-btn:hover{border-color:rgba(255,255,255,.35)}
+.next-btn{background:linear-gradient(135deg,var(--pink),#9333ea);color:#fff}
+
+/* banner */
+.banner{text-align:center;font-family:'Rubik';font-weight:900;font-size:24px;
+  margin:16px 0 2px;min-height:30px}
+.banner.g{color:var(--green)} .banner.r{color:var(--red)} .banner.y{color:var(--gold)}
+
+/* road / history */
+.road-wrap{margin-top:20px;background:rgba(0,0,0,.22);border:1px solid var(--line);
+  border-radius:16px;padding:12px 14px}
+.road-label{font-size:11px;color:var(--muted);font-weight:700;letter-spacing:.6px;margin-bottom:8px}
+.road{display:flex;gap:5px;flex-wrap:wrap;min-height:22px}
+.bead{width:22px;height:22px;border-radius:50%;font-size:10px;font-weight:900;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.bead.P{background:#34d399;color:#03201a}
+.bead.B{background:#c084fc;color:#1e0030}
+.bead.T{background:#ffce3a;color:#2a1700}
+
+/* fixed nav */
+.home{position:fixed;bottom:18px;left:18px;z-index:9999;
+  background:linear-gradient(135deg,#9333ea,#6b21a8);color:#fff;border:none;
+  border-radius:30px;padding:12px 20px;font-family:Heebo,sans-serif;font-weight:700;font-size:14px;
+  text-decoration:none;box-shadow:0 8px 24px rgba(0,0,0,.5);
+  display:inline-flex;align-items:center;min-height:46px}
+.toast{position:fixed;bottom:76px;left:50%;transform:translateX(-50%) translateY(20px);
+  background:var(--text);color:#06150e;padding:12px 24px;border-radius:30px;
+  font-weight:700;font-size:15px;opacity:0;transition:.28s;z-index:90;pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* responsive */
+@media(max-width:680px){
+  body{padding:10px 10px 90px}
+  h1{font-size:30px}
+  .hands{grid-template-columns:1fr auto 1fr;gap:8px}
+  .card{width:68px;height:96px}
+  .card .r{font-size:17px}
+  .card .s{font-size:23px}
+  .bet-zones{gap:7px}
+  .bz-name{font-size:13px}
+  .chipbtn{width:58px;height:58px;font-size:13px}
+  .act{font-size:15px;padding:14px 20px;min-height:48px}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>בקראט 👑</h1>
+    <div class="tag">הסיכוי הטוב ביותר בקזינו · חוקים אמיתיים · הוגן לחלוטין</div>
+  </header>
+
+  <div class="topbar">
+    <div class="bal"><b id="balance">0</b><span>היתרה שלי</span></div>
+    <button class="mini" id="addMoney">➕ טען 1000</button>
+    <button class="mini" id="resetMoney">איפוס ל-1000</button>
+  </div>
+
+  <div class="table">
+    <!-- two hand zones -->
+    <div class="hands">
+      <div class="hand-zone" id="zonePlayer">
+        <div class="hand-label">Player (שחקן)</div>
+        <div class="card-row" id="playerCards"></div>
+        <div class="score-badge" id="playerScore">—</div>
+        <div class="hand-result" id="playerResult"></div>
+      </div>
+      <div class="vs"><div class="vs-inner">VS</div></div>
+      <div class="hand-zone" id="zoneBanker">
+        <div class="hand-label">Banker (בנקאי)</div>
+        <div class="card-row" id="bankerCards"></div>
+        <div class="score-badge" id="bankerScore">—</div>
+        <div class="hand-result" id="bankerResult"></div>
+      </div>
+    </div>
+
+    <!-- bet zones -->
+    <div class="bet-zones" id="betZones">
+      <div class="bet-zone" id="bzPlayer" data-bet="P" tabindex="0">
+        <div class="bz-icon">🟢</div>
+        <div class="bz-name">Player</div>
+        <div class="bz-pay">משלם 1:1</div>
+        <div class="bz-amount" id="amtP"></div>
+      </div>
+      <div class="bet-zone" id="bzTie" data-bet="T" tabindex="0">
+        <div class="bz-icon">🟡</div>
+        <div class="bz-name">Tie</div>
+        <div class="bz-pay">משלם 8:1</div>
+        <div class="bz-amount" id="amtT"></div>
+      </div>
+      <div class="bet-zone" id="bzBanker" data-bet="B" tabindex="0">
+        <div class="bz-icon">🟣</div>
+        <div class="bz-name">Banker</div>
+        <div class="bz-pay">משלם 0.95:1</div>
+        <div class="bz-amount" id="amtB"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="banner" id="banner"></div>
+  <div class="hint"   id="hint"></div>
+
+  <div class="chips-wrap">
+    <div class="chips-label">בחרו צ'יפ ולחצו על תיבת הימור</div>
+    <div class="chips">
+      <button class="chipbtn c10"  data-v="10">10</button>
+      <button class="chipbtn c25"  data-v="25">25</button>
+      <button class="chipbtn c50"  data-v="50">50</button>
+      <button class="chipbtn c100" data-v="100">100</button>
+      <button class="chipbtn c500" data-v="500">500</button>
+    </div>
+  </div>
+
+  <div class="actions" id="betActions">
+    <button class="act deal-btn" id="dealBtn">חלק קלפים</button>
+    <button class="act clear-btn" id="clearBtn">נקה הימורים</button>
+  </div>
+  <div class="actions" id="nextActions" style="display:none">
+    <button class="act next-btn" id="nextBtn">סבב חדש</button>
+  </div>
+
+  <!-- road bead display -->
+  <div class="road-wrap">
+    <div class="road-label">היסטוריה (30 אחרונים)</div>
+    <div class="road" id="road"></div>
+  </div>
+</div>
+
+<a class="home" href="casino.html">🎰 קזינו</a>
+<div class="toast" id="toast"></div>
+
+<script>
+"use strict";
+
+/* ── fair randomness ── */
+function randInt(n){
+  const max=Math.floor(0xFFFFFFFF/n)*n;
+  const buf=new Uint32Array(1);
+  let x;
+  do{ crypto.getRandomValues(buf); x=buf[0]; }while(x>=max);
+  return x%n;
+}
+function shuffle(a){
+  for(let i=a.length-1;i>0;i--){const j=randInt(i+1);const t=a[i];a[i]=a[j];a[j]=t;}
+  return a;
+}
+
+/* ── shoe ── */
+const SUITS=[{s:"♠",red:false},{s:"♣",red:false},{s:"♥",red:true},{s:"♦",red:true}];
+const RANKS=["A","2","3","4","5","6","7","8","9","10","J","Q","K"];
+const NUM_DECKS=8;
+let shoe=[];
+
+function buildShoe(){
+  shoe=[];
+  for(let d=0;d<NUM_DECKS;d++)
+    for(const su of SUITS)
+      for(const r of RANKS)
+        shoe.push({r,s:su.s,red:su.red});
+  shuffle(shoe);
+}
+function needReshuffle(){ return shoe.length < NUM_DECKS*52*0.2; }
+function draw(){ if(!shoe.length) buildShoe(); return shoe.pop(); }
+
+/* ── baccarat card value ── */
+function bacVal(r){
+  if(r==="A") return 1;
+  if(["10","J","Q","K"].includes(r)) return 0;
+  return parseInt(r,10);
+}
+function handScore(cards){ return cards.reduce((s,c)=>s+bacVal(c.r),0)%10; }
+function isNatural(cards){ return cards.length===2 && handScore(cards)>=8; }
+
+/* ── state ── */
+let balance=0;
+let selChip=25;
+let phase="bet"; // bet | play | done
+let bets={P:0,B:0,T:0};
+let pCards=[], bCards=[];
+let road=[]; // 'P'|'B'|'T' history
+let lastBets={P:0,B:0,T:0};
+
+/* ── persistence ── */
+function save(){ try{ localStorage.setItem("baccaratState",JSON.stringify({balance,road})); }catch(e){} }
+function load(){
+  try{
+    const s=JSON.parse(localStorage.getItem("baccaratState"));
+    if(s&&typeof s.balance==="number") balance=s.balance;
+    else balance=1000;
+    if(s&&Array.isArray(s.road)) road=s.road.slice(-30);
+  }catch(e){ balance=1000; }
+}
+
+/* ── helpers ── */
+const $=id=>document.getElementById(id);
+function cardHTML(c){
+  return `<div class="card ${c.red?'red':''}"><div class="r">${c.r}</div><div class="s">${c.s}</div></div>`;
+}
+function totalBet(){ return bets.P+bets.B+bets.T; }
+function selBet(){ return Object.entries(bets).find(([,v])=>v>0)?.[0]||null; }
+
+function updateChipStates(){
+  document.querySelectorAll(".chipbtn").forEach(c=>{
+    c.disabled = balance < +c.dataset.v;
+  });
+}
+
+/* ── render ── */
+function renderCards(){
+  $("playerCards").innerHTML = pCards.map(cardHTML).join("");
+  $("bankerCards").innerHTML = bCards.map(cardHTML).join("");
+  const ps=pCards.length? handScore(pCards):null;
+  const bs=bCards.length? handScore(bCards):null;
+  const pEl=$("playerScore"), bEl=$("bankerScore");
+  pEl.textContent = ps!==null?ps:"—"; pEl.className="score-badge";
+  bEl.textContent = bs!==null?bs:"—"; bEl.className="score-badge";
+  if(ps!==null && isNatural(pCards)) pEl.classList.add("natural");
+  if(bs!==null && isNatural(bCards)) bEl.classList.add("natural");
+}
+function renderBetZones(){
+  ["P","B","T"].forEach(k=>{
+    const id={P:"bzPlayer",B:"bzBanker",T:"bzTie"}[k];
+    const amtId={P:"amtP",B:"amtB",T:"amtT"}[k];
+    const el=$(id);
+    el.className="bet-zone"+(bets[k]>0?{P:" sel-p",B:" sel-b",T:" sel-t"}[k]:"");
+    if(phase!=="bet") el.classList.add("disabled");
+    $(amtId).textContent = bets[k]>0?"₪"+bets[k]:"";
+  });
+}
+function renderRoad(){
+  const el=$("road");
+  el.innerHTML=road.slice(-30).map(r=>`<div class="bead ${r}">${r}</div>`).join("");
+}
+function render(){
+  $("balance").textContent="₪"+balance;
+  renderCards();
+  renderBetZones();
+  renderRoad();
+  updateChipStates();
+  updateHint();
+}
+
+function updateHint(){
+  if(phase==="bet"){
+    const t=totalBet();
+    $("hint").textContent = t>0
+      ? `הימור: ₪${t} · לחצו שוב להוסיף · לחיצה ימנית מנקה תיבה`
+      : "לחצו על Player, Banker, או Tie — ואחרי זה על חלק קלפים";
+    $("dealBtn").disabled = t<=0;
+  }
+}
+
+/* ── betting ── */
+function placeBetOn(k){
+  if(phase!=="bet") return;
+  if(balance<selChip){ toast("אין מספיק יתרה לצ'יפ הזה"); return; }
+  balance-=selChip;
+  bets[k]+=selChip;
+  save(); render();
+}
+function clearBetOn(k){
+  if(phase!=="bet") return;
+  balance+=bets[k]; bets[k]=0;
+  save(); render();
+}
+function clearAll(){
+  if(phase!=="bet") return;
+  ["P","B","T"].forEach(k=>{ balance+=bets[k]; bets[k]=0; });
+  save(); render();
+}
+
+/* ── deal ── */
+function dealRound(){
+  if(phase!=="bet") return;
+  if(totalBet()<=0){ toast("שימו הימור לפני שמחלקים"); return; }
+  lastBets={...bets};
+  if(needReshuffle()){ buildShoe(); toast("🔀 הקלפים עורבבו מחדש"); }
+
+  phase="play";
+  pCards=[]; bCards=[];
+  $("playerResult").textContent=""; $("playerResult").className="hand-result";
+  $("bankerResult").textContent=""; $("bankerResult").className="hand-result";
+  $("banner").textContent=""; $("banner").className="banner";
+  $("betActions").style.display="none";
+  $("nextActions").style.display="none";
+  $("hint").textContent="מחלקים…";
+  renderBetZones();
+
+  // deal 2 cards each with animation delay
+  const seq=[
+    ()=>{ pCards.push(draw()); render(); },
+    ()=>{ bCards.push(draw()); render(); },
+    ()=>{ pCards.push(draw()); render(); },
+    ()=>{ bCards.push(draw()); render(); },
+    ()=>{ checkNaturalOrDraw(); },
+  ];
+  seq.forEach((fn,i)=>setTimeout(fn, i*350));
+}
+
+/* ── game logic ── */
+function checkNaturalOrDraw(){
+  const ps=handScore(pCards), bs=handScore(bCards);
+  // natural: 8 or 9 on either hand → no more cards
+  if(ps>=8||bs>=8){
+    setTimeout(settle,400);
+    return;
+  }
+  // player draw rule
+  let playerDrew=false, playerThird=null;
+  if(ps<=5){
+    playerThird=draw(); pCards.push(playerThird); playerDrew=true;
+    render();
+  }
+  // banker draw rule
+  setTimeout(()=>{
+    const bs2=handScore(bCards);
+    let bankerDraws=false;
+    if(!playerDrew){
+      // player stood (had 6 or 7)
+      bankerDraws = bs2<=5;
+    }else{
+      const p3=bacVal(playerThird.r);
+      if(bs2<=2) bankerDraws=true;
+      else if(bs2===3) bankerDraws = p3!==8;
+      else if(bs2===4) bankerDraws = p3>=2&&p3<=7;
+      else if(bs2===5) bankerDraws = p3>=4&&p3<=7;
+      else if(bs2===6) bankerDraws = p3===6||p3===7;
+      // bs2===7 → stand
+    }
+    if(bankerDraws){ bCards.push(draw()); render(); }
+    setTimeout(settle,400);
+  }, playerDrew?400:0);
+}
+
+/* ── settlement ── */
+function settle(){
+  phase="done";
+  const ps=handScore(pCards), bs=handScore(bCards);
+  let winner=""; // 'P'|'B'|'T'
+  if(ps>bs) winner="P";
+  else if(bs>ps) winner="B";
+  else winner="T";
+
+  road.push(winner);
+  if(road.length>50) road=road.slice(-50);
+
+  let net=0;
+  // player bet
+  if(bets.P>0){
+    if(winner==="P"){ balance+=bets.P*2; net+=bets.P; }
+    else if(winner==="T"){ balance+=bets.P; } // push on tie
+    // loss: nothing returned
+    else net-=bets.P;
+  }
+  // banker bet (5% commission on win)
+  if(bets.B>0){
+    if(winner==="B"){ const win=Math.floor(bets.B*0.95); balance+=bets.B+win; net+=win; }
+    else if(winner==="T"){ balance+=bets.B; } // push on tie
+    else net-=bets.B;
+  }
+  // tie bet
+  if(bets.T>0){
+    if(winner==="T"){ balance+=bets.T*9; net+=bets.T*8; }
+    else net-=bets.T;
+  }
+  save();
+
+  // result labels on each zone
+  const pRes=$("playerResult"), bRes=$("bankerResult");
+  const pScore=$("playerScore"), bScore=$("bankerScore");
+  if(winner==="P"){
+    pScore.classList.add("win"); bScore.classList.add("lose");
+    pRes.textContent="✓ ניצח"; pRes.className="hand-result g";
+    bRes.textContent="הפסיד"; bRes.className="hand-result r";
+  }else if(winner==="B"){
+    bScore.classList.add("win"); pScore.classList.add("lose");
+    bRes.textContent="✓ ניצח"; bRes.className="hand-result g";
+    pRes.textContent="הפסיד"; pRes.className="hand-result r";
+  }else{
+    pScore.classList.add("natural"); bScore.classList.add("natural");
+    pRes.textContent="תיקו 🤝"; pRes.className="hand-result y";
+    bRes.textContent="תיקו 🤝"; bRes.className="hand-result y";
+  }
+
+  const bn=$("banner");
+  const winnerHe=winner==="P"?"Player":winner==="B"?"Banker":"Tie";
+  if(net>0)     { bn.textContent=`ניצחתם! +₪${net} 🎉`; bn.className="banner g"; }
+  else if(net<0){ bn.textContent=`הפסד של ₪${-net}`; bn.className="banner r"; }
+  else          { bn.textContent=`תיקו — ₪ הוחזר 🤝`; bn.className="banner y"; }
+  $("hint").textContent=`ניצח: ${winnerHe} · Player ${ps} · Banker ${bs}`;
+
+  renderRoad();
+  renderBetZones();
+  $("nextActions").style.display="flex";
+  updateChipStates();
+  if(balance<10) toast("נגמרה היתרה — טענו עוד כדי להמשיך");
+}
+
+/* ── new round ── */
+function newRound(){
+  phase="bet";
+  pCards=[]; bCards=[];
+  bets={P:0,B:0,T:0};
+  $("playerResult").textContent=""; $("playerResult").className="hand-result";
+  $("bankerResult").textContent=""; $("bankerResult").className="hand-result";
+  $("playerScore").textContent="—"; $("playerScore").className="score-badge";
+  $("bankerScore").textContent="—"; $("bankerScore").className="score-badge";
+  $("banner").textContent=""; $("banner").className="banner";
+  $("betActions").style.display="flex";
+  $("nextActions").style.display="none";
+  render();
+}
+
+/* ── chip selection ── */
+function selectChip(v){
+  selChip=v;
+  document.querySelectorAll(".chipbtn").forEach(c=>c.classList.toggle("sel",+c.dataset.v===v));
+}
+document.querySelectorAll(".chipbtn").forEach(c=>{
+  c.onclick=()=>{ if(!c.disabled) selectChip(+c.dataset.v); };
+});
+
+/* ── bet zone wiring ── */
+["P","B","T"].forEach(k=>{
+  const id={P:"bzPlayer",B:"bzBanker",T:"bzTie"}[k];
+  const el=$(id);
+  el.addEventListener("click",()=>placeBetOn(k));
+  el.addEventListener("contextmenu",e=>{e.preventDefault();clearBetOn(k);});
+  el.addEventListener("keydown",e=>{if(e.key===" "||e.key==="Enter"){e.preventDefault();placeBetOn(k);}});
+});
+
+/* ── button wiring ── */
+$("dealBtn").onclick  = dealRound;
+$("clearBtn").onclick = clearAll;
+$("nextBtn").onclick  = newRound;
+
+$("addMoney").onclick=()=>{ balance+=1000; save(); render(); toast("נטענו ₪1000"); };
+$("resetMoney").onclick=()=>{
+  if(confirm("לאפס את היתרה ל-₪1000?")){ balance=1000; save(); newRound(); toast("אופס ל-₪1000"); }
+};
+
+/* ── toast ── */
+function toast(msg){
+  const t=$("toast"); t.textContent=msg; t.classList.add("show");
+  clearTimeout(toast._t); toast._t=setTimeout(()=>t.classList.remove("show"),2600);
+}
+
+/* ── init ── */
+load();
+buildShoe();
+selectChip(25);
+newRound();
+</script>
+</body>
+</html>

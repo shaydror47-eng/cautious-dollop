@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>קזינו</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@500;700;900&family=Heebo:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#07120d;--text:#f4f6fb;--muted:#9fb3a6;--line:rgba(255,255,255,.10);
+  --gold:#ffce3a;--green:#34d399;--chip:#152a20;--glass:rgba(255,255,255,.06);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{
+  background:
+    radial-gradient(900px circle at 50% -5%,#14543699,transparent 60%),
+    linear-gradient(160deg,#0a2419,var(--bg));
+  background-attachment:fixed;
+  color:var(--text);font-family:'Heebo',system-ui,sans-serif;min-height:100vh;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:24px 16px 90px;overflow-x:hidden;
+}
+.wrap{width:100%;max-width:800px}
+header{text-align:center;margin-bottom:40px}
+h1{font-family:'Rubik';font-weight:900;font-size:46px;letter-spacing:-.5px;
+  background:linear-gradient(90deg,var(--gold),#34d399,#46d6ff);
+  -webkit-background-clip:text;background-clip:text;color:transparent}
+.sub{color:var(--muted);font-size:15px;margin-top:6px}
+
+.games{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media(max-width:560px){.games{grid-template-columns:1fr;gap:16px}}
+
+.game-card{
+  position:relative;border-radius:28px;overflow:hidden;cursor:pointer;
+  text-decoration:none;color:var(--text);display:block;
+  transition:transform .25s cubic-bezier(.34,1.56,.64,1),box-shadow .25s;
+  box-shadow:0 16px 40px -14px rgba(0,0,0,.7);min-height:280px;
+}
+.game-card:hover{transform:translateY(-8px) scale(1.02);box-shadow:0 24px 55px -16px rgba(0,0,0,.8)}
+.game-card:active{transform:scale(.98)}
+.game-card:focus-visible{outline:3px solid var(--gold);outline-offset:4px}
+
+.gc-bj {background:radial-gradient(circle at 80% 20%,#3b6e4a55,transparent 50%),linear-gradient(145deg,#0d4a2a,#052918)}
+.gc-bac{background:radial-gradient(circle at 80% 20%,#4a1d3b55,transparent 50%),linear-gradient(145deg,#3b0d2a,#1a0514)}
+
+.game-card::after{
+  content:"";position:absolute;inset:0;
+  background:linear-gradient(to top,rgba(0,0,0,.55),transparent 55%);
+  pointer-events:none;
+}
+.game-icon{
+  font-size:110px;position:absolute;right:-10px;top:-18px;
+  filter:drop-shadow(0 12px 28px rgba(0,0,0,.45));
+  transition:transform .35s ease;line-height:1;opacity:.92;
+}
+.game-card:hover .game-icon{transform:rotate(-8deg) scale(1.12)}
+
+.game-body{
+  position:absolute;bottom:0;right:0;left:0;padding:22px 24px 26px;z-index:2;
+}
+.game-name{font-family:'Rubik';font-weight:900;font-size:30px;text-shadow:0 2px 12px rgba(0,0,0,.5);line-height:1.1}
+.game-desc{font-size:13.5px;opacity:.88;margin-top:5px;font-weight:500;line-height:1.4}
+.game-btn{
+  display:inline-flex;align-items:center;gap:8px;margin-top:16px;
+  background:rgba(255,255,255,.15);backdrop-filter:blur(6px);
+  border:1px solid rgba(255,255,255,.3);border-radius:22px;
+  padding:10px 20px;font-family:'Rubik';font-weight:700;font-size:15px;
+  color:#fff;transition:.15s;
+}
+.game-card:hover .game-btn{background:rgba(255,255,255,.22);border-color:rgba(255,255,255,.5)}
+
+.new-badge{
+  position:absolute;top:18px;left:18px;z-index:3;
+  background:linear-gradient(135deg,var(--gold),#ff9a3c);color:#2a1700;
+  border-radius:20px;padding:4px 12px;font:700 12px 'Rubik';
+}
+
+.home-link{
+  position:fixed;bottom:18px;left:18px;z-index:9999;
+  background:linear-gradient(135deg,#0d9488,#065f55);color:#fff;border:none;
+  border-radius:30px;padding:12px 20px;font-family:Heebo,sans-serif;font-weight:700;font-size:14px;
+  text-decoration:none;box-shadow:0 8px 24px rgba(0,0,0,.5);display:inline-flex;align-items:center;min-height:46px;
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>🎰 קזינו</h1>
+    <div class="sub">בחרו משחק ושחקו · כל המשחקים הוגנים לחלוטין</div>
+  </header>
+
+  <div class="games">
+    <a class="game-card gc-bj" href="blackjack.html">
+      <div class="game-icon">🃏</div>
+      <div class="game-body">
+        <div class="game-name">בלאק ג'ק</div>
+        <div class="game-desc">5 ידיים מול הדילר · Hit, Stand, Double, Split · בלאק ג'ק 3:2</div>
+        <div class="game-btn">שחק עכשיו ›</div>
+      </div>
+    </a>
+
+    <a class="game-card gc-bac" href="baccarat.html">
+      <div class="new-badge">חדש</div>
+      <div class="game-icon">👑</div>
+      <div class="game-body">
+        <div class="game-name">בקראט</div>
+        <div class="game-desc">Player · Banker · Tie · 8 חפיסות · חוקי קזינו אמיתיים</div>
+        <div class="game-btn">שחק עכשיו ›</div>
+      </div>
+    </a>
+  </div>
+</div>
+
+<a class="home-link" href="../index.html">🏠 הביתה</a>
+</body>
+</html>
