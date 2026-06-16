@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>טטריס - Tetris Sand</title>
+    <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;700&family=Heebo:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0b0d14;
+            --text: #f4f6fb;
+            --accent: #ffd700;
+            --board-bg: #1a1f2e;
+            --blue: #3498db;
+            --red: #e74c3c;
+            --yellow: #f1c40f;
+            --green: #2ecc71;
+            --cyan: #1abc9c;
+            --purple: #9b59b6;
+            --orange: #e67e22;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Rubik', 'Heebo', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 10px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            background: rgba(26, 31, 46, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .title {
+            font-size: 2.5em;
+            font-weight: 700;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #ffd700, #ff69b4, #00d4ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            font-size: 0.9em;
+            color: rgba(244, 246, 251, 0.7);
+            margin-bottom: 15px;
+        }
+
+        .game-wrapper {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .game-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .board-container {
+            background: var(--board-bg);
+            border: 3px solid rgba(255, 215, 0, 0.3);
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.5);
+            width: 300px;
+            height: 500px;
+        }
+
+        #gameCanvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            background: var(--board-bg);
+        }
+
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            min-width: 150px;
+        }
+
+        .info-box {
+            background: rgba(255, 215, 0, 0.1);
+            border: 2px solid rgba(255, 215, 0, 0.3);
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+        }
+
+        .info-label {
+            font-size: 0.8em;
+            color: rgba(244, 246, 251, 0.6);
+            margin-bottom: 5px;
+            text-transform: uppercase;
+        }
+
+        .info-value {
+            font-size: 1.8em;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        .preview-box {
+            background: rgba(255, 215, 0, 0.1);
+            border: 2px solid rgba(255, 215, 0, 0.3);
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+            width: 150px;
+            min-height: 120px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #nextPieceCanvas {
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 5px;
+            margin-top: 8px;
+        }
+
+        .difficulty-selector {
+            background: rgba(255, 215, 0, 0.1);
+            border: 2px solid rgba(255, 215, 0, 0.3);
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+        }
+
+        .difficulty-label {
+            font-size: 0.8em;
+            color: rgba(244, 246, 251, 0.6);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .difficulty-buttons {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .difficulty-btn {
+            padding: 8px 12px;
+            background: rgba(255, 215, 0, 0.1);
+            color: var(--text);
+            border: 2px solid rgba(255, 215, 0, 0.3);
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85em;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        .difficulty-btn:hover {
+            background: rgba(255, 215, 0, 0.2);
+            border-color: var(--accent);
+        }
+
+        .difficulty-btn.active {
+            background: var(--accent);
+            color: var(--bg);
+            border-color: var(--accent);
+        }
+
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .button-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            width: 100%;
+            max-width: 300px;
+            margin: 0 auto;
+        }
+
+        .game-button {
+            padding: 15px;
+            background: rgba(255, 215, 0, 0.1);
+            color: var(--text);
+            border: 2px solid rgba(255, 215, 0, 0.3);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.2em;
+            font-weight: 700;
+            transition: all 0.15s ease;
+            font-family: 'Rubik', 'Heebo', sans-serif;
+            user-select: none;
+        }
+
+        .game-button:active {
+            transform: scale(0.95);
+            background: var(--accent);
+            color: var(--bg);
+            border-color: var(--accent);
+        }
+
+        .game-button:hover:not(:active) {
+            background: rgba(255, 215, 0, 0.2);
+            border-color: var(--accent);
+        }
+
+        .button-full {
+            grid-column: 1 / -1;
+        }
+
+        .game-state {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .state-text {
+            font-size: 1em;
+            color: rgba(244, 246, 251, 0.7);
+            margin-bottom: 10px;
+        }
+
+        .start-button {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #ffd700, #ff69b4);
+            color: var(--bg);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: 700;
+            transition: all 0.2s ease;
+            font-family: 'Rubik', 'Heebo', sans-serif;
+        }
+
+        .start-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 215, 0, 0.3);
+        }
+
+        .start-button:active {
+            transform: translateY(0);
+        }
+
+        .game-over-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .game-over-overlay.active {
+            display: flex;
+        }
+
+        .game-over-content {
+            background: var(--bg);
+            border: 3px solid var(--accent);
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            max-width: 400px;
+        }
+
+        .game-over-title {
+            font-size: 2em;
+            color: var(--accent);
+            margin-bottom: 15px;
+        }
+
+        .game-over-stats {
+            margin: 20px 0;
+            font-size: 1.1em;
+        }
+
+        .game-over-stat {
+            margin: 10px 0;
+            color: rgba(244, 246, 251, 0.8);
+        }
+
+        .game-over-stat-value {
+            color: var(--accent);
+            font-weight: 700;
+        }
+
+        .game-over-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            justify-content: center;
+        }
+
+        .game-over-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 700;
+            transition: all 0.2s ease;
+            font-family: 'Rubik', 'Heebo', sans-serif;
+            font-size: 1em;
+        }
+
+        .game-over-btn-restart {
+            background: var(--accent);
+            color: var(--bg);
+        }
+
+        .game-over-btn-restart:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 215, 0, 0.3);
+        }
+
+        .game-over-btn-home {
+            background: rgba(255, 215, 0, 0.1);
+            color: var(--text);
+            border: 2px solid rgba(255, 215, 0, 0.3);
+        }
+
+        .game-over-btn-home:hover {
+            background: rgba(255, 215, 0, 0.2);
+            border-color: var(--accent);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+
+            .title {
+                font-size: 1.8em;
+            }
+
+            .board-container {
+                width: 280px;
+                height: 450px;
+            }
+
+            .game-wrapper {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .sidebar {
+                width: 100%;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .info-box, .preview-box, .difficulty-selector {
+                flex: 1;
+                min-width: 130px;
+            }
+
+            .button-grid {
+                max-width: 250px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 10px;
+            }
+
+            .title {
+                font-size: 1.5em;
+            }
+
+            .board-container {
+                width: 100%;
+                height: 350px;
+            }
+
+            .info-value {
+                font-size: 1.4em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="title">🎮 טטריס</div>
+            <div class="subtitle">Tetris Sand - Physics Edition</div>
+        </div>
+
+        <div class="game-wrapper">
+            <div class="game-section">
+                <div class="board-container">
+                    <canvas id="gameCanvas"></canvas>
+                </div>
+            </div>
+
+            <div class="sidebar">
+                <div class="info-box">
+                    <div class="info-label">Score</div>
+                    <div class="info-value" id="scoreDisplay">0</div>
+                </div>
+
+                <div class="info-box">
+                    <div class="info-label">High Score</div>
+                    <div class="info-value" id="highScoreDisplay">0</div>
+                </div>
+
+                <div class="preview-box">
+                    <div class="info-label">Next Piece</div>
+                    <canvas id="nextPieceCanvas" width="100" height="80"></canvas>
+                </div>
+
+                <div class="difficulty-selector">
+                    <div class="difficulty-label">Difficulty</div>
+                    <div class="difficulty-buttons">
+                        <button class="difficulty-btn active" data-difficulty="easy">Easy</button>
+                        <button class="difficulty-btn" data-difficulty="medium">Medium</button>
+                        <button class="difficulty-btn" data-difficulty="hard">Hard</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <div class="game-state">
+                <div class="state-text" id="stateText">Ready to play</div>
+                <button class="start-button" id="startButton">Start Game</button>
+            </div>
+
+            <div class="button-grid" id="buttonGrid">
+                <button class="game-button" id="leftBtn">⬅️ Left</button>
+                <button class="game-button" id="rotateBtn">↻ Rotate</button>
+                <button class="game-button" id="rightBtn">➡️ Right</button>
+                <button class="game-button button-full" id="downBtn">⬇️ Drop</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="game-over-overlay" id="gameOverOverlay">
+        <div class="game-over-content">
+            <div class="game-over-title">Game Over</div>
+            <div class="game-over-stats">
+                <div class="game-over-stat">Final Score: <span class="game-over-stat-value" id="finalScore">0</span></div>
+                <div class="game-over-stat">Difficulty: <span class="game-over-stat-value" id="finalDifficulty">Easy</span></div>
+                <div class="game-over-stat" id="newHighScoreStat" style="display: none; color: #ffd700;">🏆 New High Score!</div>
+            </div>
+            <div class="game-over-buttons">
+                <button class="game-over-btn game-over-btn-restart" id="restartBtn">Play Again</button>
+                <button class="game-over-btn game-over-btn-home" id="homeBtn">Back to Hub</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Game constants
+        const BOARD_WIDTH = 10;
+        const BOARD_HEIGHT = 20;
+        const PARTICLE_SIZE = 30;
+        const GRAVITY = 0.5;
+
+        const DIFFICULTY_SETTINGS = {
+            easy: { gravity: 0.3, dropDelay: 800 },
+            medium: { gravity: 0.5, dropDelay: 500 },
+            hard: { gravity: 0.8, dropDelay: 300 }
+        };
+
+        const PIECE_COLORS = {
+            I: '#3498db',
+            O: '#f1c40f',
+            T: '#9b59b6',
+            S: '#2ecc71',
+            Z: '#e74c3c',
+            J: '#1abc9c',
+            L: '#e67e22'
+        };
+
+        const TETROMINOS = {
+            I: [[0, 0], [1, 0], [2, 0], [3, 0]],
+            O: [[0, 0], [1, 0], [0, 1], [1, 1]],
+            T: [[0, 0], [1, 0], [2, 0], [1, 1]],
+            S: [[1, 0], [2, 0], [0, 1], [1, 1]],
+            Z: [[0, 0], [1, 0], [1, 1], [2, 1]],
+            J: [[0, 0], [0, 1], [1, 1], [2, 1]],
+            L: [[2, 0], [0, 1], [1, 1], [2, 1]]
+        };
+
+        // Game state
+        let gameState = {
+            playing: false,
+            score: 0,
+            highScore: localStorage.getItem('tetris_highscore') || 0,
+            difficulty: 'easy',
+            particles: [],
+            fallingPiece: null,
+            nextPiece: null,
+            dropCounter: 0,
+            gravity: GRAVITY
+        };
+
+        // DOM elements
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const nextPieceCanvas = document.getElementById('nextPieceCanvas');
+        const nextPieceCtx = nextPieceCanvas.getContext('2d');
+        const startButton = document.getElementById('startButton');
+        const gameOverOverlay = document.getElementById('gameOverOverlay');
+        const scoreDisplay = document.getElementById('scoreDisplay');
+        const highScoreDisplay = document.getElementById('highScoreDisplay');
+        const stateText = document.getElementById('stateText');
+
+        // Set canvas size
+        function resizeCanvas() {
+            const container = canvas.parentElement;
+            canvas.width = container.clientWidth;
+            canvas.height = container.clientHeight;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // Particle class
+        class Particle {
+            constructor(x, y, color) {
+                this.x = x;
+                this.y = y;
+                this.vx = (Math.random() - 0.5) * 2;
+                this.vy = 0;
+                this.color = color;
+                this.settled = false;
+                this.size = PARTICLE_SIZE;
+            }
+
+            update(gravity) {
+                if (!this.settled) {
+                    this.vy += gravity;
+                    this.x += this.vx;
+                    this.y += this.vy;
+
+                    // Wall collisions
+                    if (this.x < 0) {
+                        this.x = 0;
+                        this.vx *= -0.3;
+                    }
+                    if (this.x + this.size > canvas.width) {
+                        this.x = canvas.width - this.size;
+                        this.vx *= -0.3;
+                    }
+
+                    // Floor collision
+                    if (this.y + this.size > canvas.height) {
+                        this.y = canvas.height - this.size;
+                        this.vy = 0;
+                        this.settled = true;
+                        gameState.score += 10;
+                    }
+                }
+            }
+
+            checkCollision(particles) {
+                if (this.settled) return;
+
+                for (let p of particles) {
+                    if (p === this || !p.settled) continue;
+
+                    const dx = this.x - p.x;
+                    const dy = this.y - p.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+
+                    if (dist < this.size) {
+                        this.y = p.y - this.size;
+                        this.vy *= 0.1;
+                        if (Math.abs(this.vy) < 0.1) {
+                            this.settled = true;
+                            gameState.score += 10;
+                        }
+                    }
+                }
+            }
+
+            draw(context) {
+                context.fillStyle = this.color;
+                context.fillRect(this.x, this.y, this.size, this.size);
+                context.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+                context.lineWidth = 1;
+                context.strokeRect(this.x, this.y, this.size, this.size);
+            }
+        }
+
+        // Falling piece class
+        class FallingPiece {
+            constructor(type) {
+                this.type = type;
+                this.x = (BOARD_WIDTH / 2 - 1) * PARTICLE_SIZE;
+                this.y = 0;
+                this.vx = 0;
+                this.vy = 0;
+                this.particles = [];
+                this.createParticles();
+            }
+
+            createParticles() {
+                const shape = TETROMINOS[this.type];
+                const color = PIECE_COLORS[this.type];
+
+                this.particles = shape.map(([ox, oy]) => {
+                    return new Particle(
+                        this.x + ox * PARTICLE_SIZE,
+                        this.y + oy * PARTICLE_SIZE,
+                        color
+                    );
+                });
+            }
+
+            moveLeft() {
+                const minX = Math.min(...this.particles.map(p => p.x));
+                if (minX > 0) {
+                    this.particles.forEach(p => p.x -= PARTICLE_SIZE);
+                    this.x -= PARTICLE_SIZE;
+                }
+            }
+
+            moveRight() {
+                const maxX = Math.max(...this.particles.map(p => p.x));
+                if (maxX + PARTICLE_SIZE < canvas.width) {
+                    this.particles.forEach(p => p.x += PARTICLE_SIZE);
+                    this.x += PARTICLE_SIZE;
+                }
+            }
+
+            rotate() {
+                const shape = TETROMINOS[this.type];
+                const newShape = this.rotateShape(shape);
+                const centerX = this.x;
+                const centerY = this.y;
+
+                this.particles.forEach((p, i) => {
+                    const [ox, oy] = newShape[i];
+                    p.x = centerX + ox * PARTICLE_SIZE;
+                    p.y = centerY + oy * PARTICLE_SIZE;
+                });
+            }
+
+            rotateShape(shape) {
+                const size = Math.max(...shape.map(p => Math.max(...p))) + 1;
+                return shape.map(([x, y]) => [size - 1 - y, x]);
+            }
+
+            settle() {
+                this.particles.forEach(p => {
+                    p.settled = true;
+                    gameState.score += 10;
+                });
+                return this.particles;
+            }
+
+            draw(context) {
+                this.particles.forEach(p => p.draw(context));
+            }
+        }
+
+        // Game functions
+        function generateNextPiece() {
+            const types = Object.keys(TETROMINOS);
+            return types[Math.floor(Math.random() * types.length)];
+        }
+
+        function drawNextPiece() {
+            nextPieceCtx.fillStyle = '#1a1f2e';
+            nextPieceCtx.fillRect(0, 0, nextPieceCanvas.width, nextPieceCanvas.height);
+
+            if (gameState.nextPiece) {
+                const shape = TETROMINOS[gameState.nextPiece];
+                const color = PIECE_COLORS[gameState.nextPiece];
+                const offsetX = (nextPieceCanvas.width - shape.length * 15) / 2;
+                const offsetY = (nextPieceCanvas.height - 60) / 2;
+
+                nextPieceCtx.fillStyle = color;
+                shape.forEach(([x, y]) => {
+                    nextPieceCtx.fillRect(offsetX + x * 15, offsetY + y * 15, 12, 12);
+                });
+            }
+        }
+
+        function startGame() {
+            gameState.playing = true;
+            gameState.score = 0;
+            gameState.particles = [];
+            gameState.fallingPiece = null;
+            gameState.dropCounter = 0;
+            gameState.nextPiece = generateNextPiece();
+
+            spawnNewPiece();
+            startButton.disabled = true;
+            stateText.textContent = 'Game in Progress...';
+            scoreDisplay.textContent = '0';
+
+            document.getElementById('buttonGrid').style.display = 'grid';
+            gameLoop();
+        }
+
+        function spawnNewPiece() {
+            const pieceType = gameState.nextPiece || generateNextPiece();
+            gameState.fallingPiece = new FallingPiece(pieceType);
+            gameState.nextPiece = generateNextPiece();
+            drawNextPiece();
+
+            // Check if piece can spawn (game over)
+            for (let p of gameState.fallingPiece.particles) {
+                for (let settled of gameState.particles) {
+                    if (settled.x === p.x && settled.y === p.y) {
+                        endGame();
+                        return;
+                    }
+                }
+            }
+        }
+
+        function endGame() {
+            gameState.playing = false;
+            gameOverOverlay.classList.add('active');
+            document.getElementById('finalScore').textContent = gameState.score;
+            document.getElementById('finalDifficulty').textContent = gameState.difficulty.charAt(0).toUpperCase() + gameState.difficulty.slice(1);
+
+            if (gameState.score > gameState.highScore) {
+                gameState.highScore = gameState.score;
+                localStorage.setItem('tetris_highscore', gameState.highScore);
+                document.getElementById('newHighScoreStat').style.display = 'block';
+                highScoreDisplay.textContent = gameState.highScore;
+            } else {
+                document.getElementById('newHighScoreStat').style.display = 'none';
+            }
+        }
+
+        function gameLoop() {
+            if (!gameState.playing) return;
+
+            // Update physics
+            gameState.dropCounter++;
+            const dropDelay = DIFFICULTY_SETTINGS[gameState.difficulty].dropDelay / 16.67;
+
+            if (gameState.fallingPiece) {
+                gameState.fallingPiece.particles.forEach(p => {
+                    p.update(gameState.gravity);
+                    p.checkCollision(gameState.particles);
+                });
+
+                // Check if falling piece should settle
+                let shouldSettle = false;
+                for (let p of gameState.fallingPiece.particles) {
+                    if (p.settled) {
+                        shouldSettle = true;
+                        break;
+                    }
+                }
+
+                if (shouldSettle) {
+                    gameState.particles.push(...gameState.fallingPiece.settle());
+                    spawnNewPiece();
+                }
+            }
+
+            // Update other particles
+            gameState.particles.forEach(p => {
+                p.update(gameState.gravity);
+                p.checkCollision(gameState.particles);
+            });
+
+            // Render
+            ctx.fillStyle = '#0b0d14';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Draw grid background
+            ctx.strokeStyle = 'rgba(255, 215, 0, 0.05)';
+            ctx.lineWidth = 1;
+            for (let i = 0; i < BOARD_WIDTH; i++) {
+                ctx.beginPath();
+                ctx.moveTo(i * PARTICLE_SIZE, 0);
+                ctx.lineTo(i * PARTICLE_SIZE, canvas.height);
+                ctx.stroke();
+            }
+            for (let i = 0; i < BOARD_HEIGHT; i++) {
+                ctx.beginPath();
+                ctx.moveTo(0, i * PARTICLE_SIZE);
+                ctx.lineTo(canvas.width, i * PARTICLE_SIZE);
+                ctx.stroke();
+            }
+
+            // Draw particles
+            gameState.particles.forEach(p => p.draw(ctx));
+            if (gameState.fallingPiece) {
+                gameState.fallingPiece.draw(ctx);
+            }
+
+            // Update score display
+            scoreDisplay.textContent = gameState.score;
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Event listeners
+        startButton.addEventListener('click', startGame);
+
+        document.getElementById('leftBtn').addEventListener('mousedown', () => {
+            if (gameState.fallingPiece) gameState.fallingPiece.moveLeft();
+        });
+
+        document.getElementById('rightBtn').addEventListener('mousedown', () => {
+            if (gameState.fallingPiece) gameState.fallingPiece.moveRight();
+        });
+
+        document.getElementById('rotateBtn').addEventListener('mousedown', () => {
+            if (gameState.fallingPiece) gameState.fallingPiece.rotate();
+        });
+
+        document.getElementById('downBtn').addEventListener('mousedown', () => {
+            if (gameState.fallingPiece) {
+                gameState.fallingPiece.particles.forEach(p => p.vy += 5);
+            }
+        });
+
+        // Touch support
+        document.getElementById('leftBtn').addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            if (gameState.fallingPiece) gameState.fallingPiece.moveLeft();
+        });
+
+        document.getElementById('rightBtn').addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            if (gameState.fallingPiece) gameState.fallingPiece.moveRight();
+        });
+
+        document.getElementById('rotateBtn').addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            if (gameState.fallingPiece) gameState.fallingPiece.rotate();
+        });
+
+        document.getElementById('downBtn').addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            if (gameState.fallingPiece) {
+                gameState.fallingPiece.particles.forEach(p => p.vy += 5);
+            }
+        });
+
+        // Keyboard controls
+        document.addEventListener('keydown', (e) => {
+            if (!gameState.playing) return;
+
+            switch(e.key.toLowerCase()) {
+                case 'arrowleft':
+                    e.preventDefault();
+                    if (gameState.fallingPiece) gameState.fallingPiece.moveLeft();
+                    break;
+                case 'arrowright':
+                    e.preventDefault();
+                    if (gameState.fallingPiece) gameState.fallingPiece.moveRight();
+                    break;
+                case 'arrowdown':
+                    e.preventDefault();
+                    if (gameState.fallingPiece) {
+                        gameState.fallingPiece.particles.forEach(p => p.vy += 5);
+                    }
+                    break;
+                case ' ':
+                    e.preventDefault();
+                    if (gameState.fallingPiece) gameState.fallingPiece.rotate();
+                    break;
+            }
+        });
+
+        // Difficulty selection
+        document.querySelectorAll('.difficulty-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                if (gameState.playing) return;
+
+                document.querySelectorAll('.difficulty-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                gameState.difficulty = btn.dataset.difficulty;
+                gameState.gravity = DIFFICULTY_SETTINGS[gameState.difficulty].gravity;
+            });
+        });
+
+        // Game over buttons
+        document.getElementById('restartBtn').addEventListener('click', () => {
+            gameOverOverlay.classList.remove('active');
+            startButton.disabled = false;
+            stateText.textContent = 'Ready to play';
+            startGame();
+        });
+
+        document.getElementById('homeBtn').addEventListener('click', () => {
+            window.location.href = '../index.html';
+        });
+
+        // Initialize
+        highScoreDisplay.textContent = gameState.highScore;
+        gameState.gravity = DIFFICULTY_SETTINGS[gameState.difficulty].gravity;
+        drawNextPiece();
+    </script>
+</body>
+</html>
