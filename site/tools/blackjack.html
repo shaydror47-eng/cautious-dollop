@@ -206,6 +206,31 @@ h1{font-family:'Rubik';font-weight:900;font-size:42px;letter-spacing:-.5px;
   .banner{font-size:19px}
 }
 
+/* ── side bets info ── */
+.sidebets{margin-top:40px;padding:20px;background:rgba(0,0,0,.3);border-radius:12px;border:1px solid rgba(255,255,255,.1)}
+.sidebets h3{font-size:18px;margin-bottom:15px;color:var(--gold)}
+.sidebet-table{width:100%;border-collapse:collapse;font-size:13px}
+.sidebet-table thead th{background:rgba(255,255,255,.08);padding:10px;text-align:right;font-weight:600;border-bottom:1px solid rgba(255,255,255,.15)}
+.sidebet-table tbody tr{border-bottom:1px solid rgba(255,255,255,.08)}
+.sidebet-table tbody tr:nth-child(even){background:rgba(255,255,255,.02)}
+.sidebet-table td{padding:10px;text-align:right}
+.sidebet-table .bet-name{font-weight:600;color:var(--gold)}
+.sidebet-table .payout{color:var(--green);font-weight:600}
+
+@media(max-width:960px){
+  .sidebets{padding:16px;margin-top:30px}
+  .sidebets h3{font-size:16px}
+  .sidebet-table{font-size:12px}
+  .sidebet-table td{padding:8px}
+}
+
+@media(max-width:680px){
+  .sidebets{padding:12px;margin-top:20px}
+  .sidebets h3{font-size:14px;margin-bottom:10px}
+  .sidebet-table{font-size:11px}
+  .sidebet-table td{padding:6px}
+}
+
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -261,6 +286,25 @@ h1{font-family:'Rubik';font-weight:900;font-size:42px;letter-spacing:-.5px;
 
   <div class="actions" id="nextActions" style="display:none">
     <button class="act deal" id="nextBtn">סבב חדש</button>
+  </div>
+
+  <div class="sidebets">
+    <h3>💡 הימורי צד (מידע)</h3>
+    <table class="sidebet-table">
+      <thead>
+        <tr><th>שם</th><th>תיאור</th><th>תשלום</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="bet-name">Insurance</td><td>בטחון נגד BJ של דילר</td><td class="payout">2:1</td></tr>
+        <tr><td class="bet-name">21+3</td><td>קלפיך + upcard דילר</td><td class="payout">5-100:1</td></tr>
+        <tr><td class="bet-name">Perfect Pairs</td><td>זוג בקלפיך הראשונים</td><td class="payout">5-25:1</td></tr>
+        <tr><td class="bet-name">Lucky Ladies</td><td>שני קלפים סכום 20</td><td class="payout">9-200:1</td></tr>
+        <tr><td class="bet-name">Bust It</td><td>דילר פרץ</td><td class="payout">2-4:1</td></tr>
+        <tr><td class="bet-name">Royal Match</td><td>קלפים same suit</td><td class="payout">5-25:1</td></tr>
+        <tr><td class="bet-name">Over/Under 13</td><td>סכום קלפים מעל/תחת 13</td><td class="payout">1:1</td></tr>
+        <tr><td class="bet-name">Rummy</td><td>Matching rank/suit ביד</td><td class="payout">6-10:1</td></tr>
+      </tbody>
+    </table>
   </div>
 </div>
 
@@ -612,10 +656,10 @@ function dealerPlay(){
   if(anyPlayerAlive()){
     const step=()=>{
       const v=handValue(dealer.cards);
-      if(v.total<17){ dealer.cards.push(drawCard()); render(); setTimeout(step,450); }
+      if(v.total<17){ dealer.cards.push(drawCard()); render(); setTimeout(step,800); }
       else settle();
     };
-    setTimeout(step,500);
+    setTimeout(step,1000);
   }else{
     setTimeout(settle,500);
   }

@@ -183,6 +183,31 @@ h1{font-family:'Rubik';font-weight:900;font-size:40px;letter-spacing:-.5px;
   .chipbtn{width:58px;height:58px;font-size:13px}
   .act{font-size:15px;padding:14px 20px;min-height:48px}
 }
+/* ── side bets info ── */
+.sidebets{margin-top:40px;padding:20px;background:rgba(0,0,0,.3);border-radius:12px;border:1px solid rgba(255,255,255,.1)}
+.sidebets h3{font-size:18px;margin-bottom:15px;color:var(--gold)}
+.sidebet-table{width:100%;border-collapse:collapse;font-size:13px}
+.sidebet-table thead th{background:rgba(255,255,255,.08);padding:10px;text-align:right;font-weight:600;border-bottom:1px solid rgba(255,255,255,.15)}
+.sidebet-table tbody tr{border-bottom:1px solid rgba(255,255,255,.08)}
+.sidebet-table tbody tr:nth-child(even){background:rgba(255,255,255,.02)}
+.sidebet-table td{padding:10px;text-align:right}
+.sidebet-table .bet-name{font-weight:600;color:var(--gold)}
+.sidebet-table .payout{color:var(--green);font-weight:600}
+
+@media(max-width:960px){
+  .sidebets{padding:16px;margin-top:30px}
+  .sidebets h3{font-size:16px}
+  .sidebet-table{font-size:12px}
+  .sidebet-table td{padding:8px}
+}
+
+@media(max-width:680px){
+  .sidebets{padding:12px;margin-top:20px}
+  .sidebets h3{font-size:14px;margin-bottom:10px}
+  .sidebet-table{font-size:11px}
+  .sidebet-table td{padding:6px}
+}
+
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -266,6 +291,25 @@ h1{font-family:'Rubik';font-weight:900;font-size:40px;letter-spacing:-.5px;
   <div class="road-wrap">
     <div class="road-label">היסטוריה (30 אחרונים)</div>
     <div class="road" id="road"></div>
+  </div>
+
+  <div class="sidebets">
+    <h3>💡 הימורי צד (מידע)</h3>
+    <table class="sidebet-table">
+      <thead>
+        <tr><th>שם</th><th>תיאור</th><th>תשלום</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="bet-name">Player Pair</td><td>זוג בקלפי Player</td><td class="payout">11:1</td></tr>
+        <tr><td class="bet-name">Banker Pair</td><td>זוג בקלפי Banker</td><td class="payout">11:1</td></tr>
+        <tr><td class="bet-name">Either Pair</td><td>זוג כלשהו (Player OR Banker)</td><td class="payout">5:1</td></tr>
+        <tr><td class="bet-name">Dragon Bonus</td><td>ניצחון עם הפרש נקודות</td><td class="payout">1-20:1</td></tr>
+        <tr><td class="bet-name">Super Six</td><td>Banker יד = 6 בדיוק</td><td class="payout">12:1</td></tr>
+        <tr><td class="bet-name">Tiger</td><td>Player/Banker +6 נקודות</td><td class="payout">20-30:1</td></tr>
+        <tr><td class="bet-name">Small/Big</td><td>סך הקלפים בסבב</td><td class="payout">0.5-1.5:1</td></tr>
+        <tr><td class="bet-name">Big/Small Tie</td><td>Tie עם ספירת קלפים</td><td class="payout">9-23:1</td></tr>
+      </tbody>
+    </table>
   </div>
 </div>
 
@@ -437,7 +481,7 @@ function dealRound(){
     ()=>{ bCards.push(draw()); render(); },
     ()=>{ checkNaturalOrDraw(); },
   ];
-  seq.forEach((fn,i)=>setTimeout(fn, i*350));
+  seq.forEach((fn,i)=>setTimeout(fn, i*800));
 }
 
 /* ── game logic ── */
@@ -445,7 +489,7 @@ function checkNaturalOrDraw(){
   const ps=handScore(pCards), bs=handScore(bCards);
   // natural: 8 or 9 on either hand → no more cards
   if(ps>=8||bs>=8){
-    setTimeout(settle,400);
+    setTimeout(settle,600);
     return;
   }
   // player draw rule
@@ -471,8 +515,8 @@ function checkNaturalOrDraw(){
       // bs2===7 → stand
     }
     if(bankerDraws){ bCards.push(draw()); render(); }
-    setTimeout(settle,400);
-  }, playerDrew?400:0);
+    setTimeout(settle,600);
+  }, playerDrew?600:0);
 }
 
 /* ── settlement ── */
