@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>עוזר ריצה — Balatro</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@500;700;900&family=Heebo:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#07090f;--text:#f0f2f8;--muted:#8a93aa;--line:rgba(255,255,255,.09);
+  --card:#10141f;--card2:#141926;--gold:#ffd166;--green:#34d399;
+  --red:#ff5470;--blue:#38bdf8;--purple:#c084fc;--orange:#fb923c;
+  --glass:rgba(255,255,255,.05);--danger:#ff3b5c;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{
+  background:radial-gradient(ellipse 90% 60% at 50% -10%,#1a0a3388,transparent 60%),
+             radial-gradient(ellipse 60% 40% at 80% 100%,#0a2a1a66,transparent 55%),
+             var(--bg);
+  background-attachment:fixed;
+  color:var(--text);font-family:'Heebo',system-ui,sans-serif;
+  min-height:100vh;padding:14px 12px 90px;overflow-x:hidden;
+}
+.wrap{max-width:820px;margin:0 auto}
+
+/* HEADER */
+header{text-align:center;padding:8px 0 12px}
+h1{font-family:'Rubik';font-weight:900;font-size:32px;letter-spacing:-.5px;
+  background:linear-gradient(90deg,var(--gold),var(--orange),var(--purple),var(--blue));
+  -webkit-background-clip:text;background-clip:text;color:transparent}
+.sub{color:var(--muted);font-size:13px;margin-top:4px}
+
+/* BUILD TAGS */
+.tags-row{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 16px;justify-content:center}
+.btag{padding:5px 13px;border-radius:20px;font-size:12px;font-weight:700;border:1.5px solid transparent;cursor:default;transition:.15s}
+.btag.flush    {background:#0e2d4a;border-color:#38bdf8;color:#38bdf8}
+.btag.fullhouse{background:#0f2d1a;border-color:#34d399;color:#34d399}
+.btag.facecard {background:#2d1a00;border-color:#ffd166;color:#ffd166}
+.btag.flushhouse{background:#1a0d2e;border-color:#c084fc;color:#c084fc}
+.btag.economy  {background:#0f1f0e;border-color:#86efac;color:#86efac}
+.btag.scaling  {background:#1f100a;border-color:#fb923c;color:#fb923c}
+.btag.danger   {background:#2d0a0f;border-color:#ff3b5c;color:#ff3b5c;animation:pulse 1.4s ease infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 #ff3b5c44}50%{box-shadow:0 0 0 5px transparent}}
+.btag.active{box-shadow:0 0 0 3px currentColor40}
+
+/* PANEL */
+.panel{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:18px 16px;margin-bottom:14px}
+.phead{font-family:'Rubik';font-weight:700;font-size:15px;color:var(--text);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.phead .icon{font-size:18px}
+
+/* TABS */
+.tabs{display:flex;gap:6px;margin-bottom:14px}
+.tab{flex:1;padding:9px;border-radius:12px;border:1.5px solid var(--line);background:transparent;
+  color:var(--muted);font:700 13px 'Heebo';cursor:pointer;transition:.15s}
+.tab.on{background:var(--glass);border-color:rgba(255,255,255,.22);color:var(--text)}
+
+/* INPUT */
+textarea{
+  width:100%;background:#0c1018;border:1.5px solid var(--line);border-radius:14px;
+  color:var(--text);font:14px/1.6 'Heebo';padding:13px 14px;resize:vertical;
+  min-height:110px;outline:none;transition:border-color .15s;direction:ltr;text-align:left;
+}
+textarea:focus{border-color:rgba(255,255,255,.3)}
+textarea::placeholder{color:var(--muted);opacity:.7;direction:ltr}
+
+/* SCREENSHOT UPLOAD */
+.upload-zone{
+  border:2px dashed var(--line);border-radius:14px;padding:28px 16px;text-align:center;
+  cursor:pointer;transition:.15s;position:relative;overflow:hidden
+}
+.upload-zone:hover{border-color:rgba(255,255,255,.25);background:var(--glass)}
+.upload-zone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.upload-icon{font-size:36px;margin-bottom:8px}
+.upload-label{color:var(--muted);font-size:13px}
+.upload-label b{color:var(--text)}
+#imgPreview{width:100%;border-radius:12px;margin-top:12px;display:none;max-height:300px;object-fit:contain}
+.img-hint{background:#1a1000;border:1px solid #ffd16633;border-radius:10px;padding:9px 12px;
+  margin-top:10px;font-size:12.5px;color:#ffd166;display:none}
+
+/* ANALYZE BUTTON */
+.btn-analyze{
+  width:100%;padding:15px;border-radius:16px;border:none;cursor:pointer;
+  background:linear-gradient(135deg,#7c3aed,#4f46e5);color:#fff;
+  font:900 16px 'Rubik';letter-spacing:.3px;transition:.15s;margin-top:8px;
+}
+.btn-analyze:hover{transform:translateY(-2px);box-shadow:0 8px 24px -8px #7c3aed88}
+.btn-analyze:active{transform:scale(.98)}
+.btn-analyze:disabled{opacity:.5;cursor:not-allowed;transform:none}
+
+/* OUTPUT */
+#output{display:none}
+.out-section{margin-bottom:14px}
+.out-title{font-family:'Rubik';font-weight:700;font-size:13px;letter-spacing:.5px;
+  text-transform:uppercase;color:var(--muted);margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.out-title .dot{width:8px;height:8px;border-radius:50%;flex:none}
+.out-body{background:#0c1018;border:1px solid var(--line);border-radius:12px;padding:12px 14px;
+  font-size:14px;line-height:1.7;direction:rtl}
+.out-body b,.out-body strong{color:var(--gold)}
+.out-body .en{direction:ltr;display:inline;unicode-bidi:embed}
+.best-move{background:linear-gradient(135deg,#0f2b1a,#0d1f30);border:1.5px solid #34d399;
+  border-radius:14px;padding:14px 16px;font-size:15px;font-weight:700;line-height:1.6}
+.danger-box{background:#1a0408;border:1.5px solid var(--danger);border-radius:12px;
+  padding:11px 14px;font-size:13.5px;line-height:1.65}
+.danger-box .dtitle{color:var(--danger);font-weight:700;margin-bottom:5px}
+.info-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:2px}
+@media(max-width:480px){.info-row{grid-template-columns:1fr}}
+.info-cell{background:#0c1018;border:1px solid var(--line);border-radius:10px;padding:8px 11px;font-size:13px}
+.info-cell .lbl{color:var(--muted);font-size:11px;font-weight:700;margin-bottom:2px}
+.conf-bar{background:#1a1a2e;border-radius:20px;height:8px;margin-top:8px;overflow:hidden}
+.conf-fill{height:100%;border-radius:20px;transition:width .4s ease;
+  background:linear-gradient(90deg,var(--red),var(--gold),var(--green))}
+.missing{color:var(--orange);font-size:12.5px;margin-top:6px;font-style:italic}
+
+/* HISTORY */
+#histPanel{display:none}
+.hist-item{background:var(--card2);border:1px solid var(--line);border-radius:14px;
+  margin-bottom:8px;overflow:hidden}
+.hist-head{display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer;
+  transition:background .15s}
+.hist-head:hover{background:var(--glass)}
+.hist-ts{color:var(--muted);font-size:11.5px;flex:1}
+.hist-label{font-weight:700;font-size:13px}
+.hist-body{padding:0 14px;max-height:0;overflow:hidden;transition:max-height .3s ease}
+.hist-body.open{max-height:2000px}
+.hist-inner{padding:10px 0 14px;border-top:1px solid var(--line);font-size:13px;line-height:1.6}
+.hist-inner b{color:var(--gold)}
+.clr-hist{background:transparent;border:1px solid var(--line);color:var(--muted);
+  border-radius:10px;padding:6px 12px;font:600 12px 'Heebo';cursor:pointer;float:left;transition:.15s}
+.clr-hist:hover{border-color:var(--red);color:var(--red)}
+
+/* NEXT TARGET */
+.target-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+@media(max-width:440px){.target-grid{grid-template-columns:1fr}}
+.tcard{background:#0c1018;border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.tcard .tlbl{color:var(--muted);font-size:11px;font-weight:700;margin-bottom:4px}
+.tcard .tval{font-size:13px;line-height:1.5}
+
+/* WARNING banner */
+.warn-banner{background:#1f0e00;border:1px solid var(--orange);border-radius:10px;
+  padding:9px 12px;font-size:13px;color:var(--orange);margin-bottom:10px;line-height:1.5}
+
+/* misc */
+.sep{height:1px;background:var(--line);margin:14px 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>🃏 Balatro Run Assistant</h1>
+  <div class="sub">Checkered Deck · Purple Stake · עוזר החלטות לריצה</div>
+</header>
+
+<!-- BUILD DIRECTION TAGS -->
+<div class="tags-row" id="buildTags">
+  <span class="btag flush" id="tag-flush">♠ Flush</span>
+  <span class="btag fullhouse" id="tag-fh">🏠 Full House</span>
+  <span class="btag facecard" id="tag-fc">👑 Face Cards</span>
+  <span class="btag flushhouse" id="tag-flushhouse">🌊 Flush House</span>
+  <span class="btag economy" id="tag-econ">💰 Economy</span>
+  <span class="btag scaling" id="tag-scale">📈 Scaling</span>
+  <span class="btag danger" id="tag-danger" style="display:none">⚠ Danger</span>
+</div>
+
+<!-- INPUT PANEL -->
+<div class="panel">
+  <div class="phead"><span class="icon">📝</span> מצב הריצה</div>
+
+  <div class="tabs">
+    <button class="tab on" id="tabText" onclick="switchTab('text')">הקלד מצב</button>
+    <button class="tab" id="tabImg" onclick="switchTab('img')">העלה צילום מסך</button>
+  </div>
+
+  <div id="paneText">
+    <textarea id="stateInput" rows="5" placeholder="Ante 3, $18, 2 hands, 1 discard, jokers: Photograph, Hanging Chad, Business Card, shop: Earth, Arcana Pack, Eternal Joker X, Jupiter"></textarea>
+    <div style="color:var(--muted);font-size:11.5px;margin-top:5px;direction:rtl">
+      רשום כל מה שאתה רואה: Ante, כסף, ידיים, discards, jokers, shop, pack, tarot, planet, enchantments
+    </div>
+  </div>
+
+  <div id="paneImg" style="display:none">
+    <div class="upload-zone" id="uploadZone">
+      <input type="file" id="imgInput" accept="image/*" onchange="handleImg(event)">
+      <div class="upload-icon">📸</div>
+      <div class="upload-label"><b>לחץ או גרור</b> צילום מסך של המשחק</div>
+    </div>
+    <img id="imgPreview" alt="screenshot preview">
+    <div class="img-hint" id="imgHint">
+      ✅ צילום המסך הועלה. עכשיו עבור ל"הקלד מצב" והוסף כל מה שאינו ברור מהתמונה: Ante, כסף, jokers, shop items.
+    </div>
+    <div style="margin-top:12px">
+      <textarea id="stateInput2" rows="4" placeholder="הוסף פרטים שחסרים מהתמונה (אופציונלי)..."></textarea>
+    </div>
+  </div>
+
+  <button class="btn-analyze" onclick="analyze()">🔍 נתח את המצב</button>
+</div>
+
+<!-- OUTPUT PANEL -->
+<div id="output">
+  <div class="panel" id="outPanel">
+    <div class="phead"><span class="icon">🎯</span> BALATRO RUN DECISION</div>
+
+    <!-- 1. Current Read -->
+    <div class="out-section">
+      <div class="out-title"><span class="dot" style="background:#38bdf8"></span>1 · מצב נוכחי</div>
+      <div class="info-row" id="infoGrid"></div>
+    </div>
+
+    <div class="sep"></div>
+
+    <!-- 2. Best Move -->
+    <div class="out-section">
+      <div class="out-title"><span class="dot" style="background:#34d399"></span>2 · המהלך הטוב ביותר עכשיו</div>
+      <div class="best-move" id="bestMove"></div>
+    </div>
+
+    <div class="sep"></div>
+
+    <!-- 3. Why -->
+    <div class="out-section">
+      <div class="out-title"><span class="dot" style="background:#ffd166"></span>3 · למה זה הכי טוב</div>
+      <div class="out-body" id="whyBox"></div>
+    </div>
+
+    <div class="sep"></div>
+
+    <!-- 4. What NOT to do -->
+    <div class="out-section">
+      <div class="out-title"><span class="dot" style="background:#ff5470"></span>4 · מה לא לעשות</div>
+      <div class="danger-box" id="notBox"></div>
+    </div>
+
+    <div class="sep"></div>
+
+    <!-- 5. Next target -->
+    <div class="out-section">
+      <div class="out-title"><span class="dot" style="background:#c084fc"></span>5 · יעד הבא</div>
+      <div class="target-grid" id="targetGrid"></div>
+    </div>
+
+    <div class="sep"></div>
+
+    <!-- 6. Hand Plan -->
+    <div class="out-section">
+      <div class="out-title"><span class="dot" style="background:#fb923c"></span>6 · תוכנית יד לblind הבא</div>
+      <div class="out-body" id="handPlan"></div>
+    </div>
+
+    <div class="sep"></div>
+
+    <!-- 7. Confidence -->
+    <div class="out-section">
+      <div class="out-title"><span class="dot" style="background:#86efac"></span>7 · ביטחון</div>
+      <div id="confBox"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- HISTORY PANEL -->
+<div id="histPanel">
+  <div class="panel">
+    <div class="phead">
+      <span class="icon">🕐</span> היסטוריה
+      <button class="clr-hist" onclick="clearHistory()">מחק הכל</button>
+    </div>
+    <div id="histList"></div>
+  </div>
+</div>
+
+</div><!-- /wrap -->
+
+<script>
+/* ============================================================
+   DATA — JOKER KNOWLEDGE BASE
+   ============================================================ */
+const JOKERS = {
+  // High priority / run-defining
+  blueprint:     {tier:'S',type:'scaling',tags:['copy']},
+  brainstorm:    {tier:'S',type:'scaling',tags:['copy']},
+  'sock and buskin':{tier:'S',type:'facecard',tags:['retrigger']},
+  photograph:    {tier:'S',type:'facecard',tags:['retrigger','firstcard']},
+  'hanging chad':{tier:'S',type:'facecard',tags:['retrigger','firstcard']},
+  triboulet:     {tier:'S',type:'facecard',tags:['king','queen','mult']},
+  'card sharp':  {tier:'A',type:'scaling',tags:['repeat']},
+  constellation: {tier:'A',type:'scaling',tags:['planet','xmult']},
+  'baseball card':{tier:'A',type:'scaling',tags:['uncommon','xmult']},
+  // Face card support
+  'scary face':  {tier:'B',type:'facecard',tags:['chips']},
+  'smiley face': {tier:'B',type:'facecard',tags:['mult']},
+  'reserved parking':{tier:'B',type:'economy',tags:['facecard','money']},
+  'business card':{tier:'A',type:'economy',tags:['money']},
+  // Economy
+  rocket:        {tier:'B',type:'economy',tags:['money']},
+  'golden joker':{tier:'B',type:'economy',tags:['money']},
+  'to the moon': {tier:'A',type:'economy',tags:['interest']},
+  'cloud 9':     {tier:'B',type:'economy',tags:['nines','money']},
+  // Flush
+  'flush':       {tier:'B',type:'flush',tags:['flush']},
+  'runner':      {tier:'C',type:'flush',tags:['flush','consecutive']},
+  'clever':      {tier:'B',type:'flush',tags:['flush']},
+  // Generally good
+  'green joker': {tier:'B',type:'scaling',tags:['hands']},
+  'red card':    {tier:'C',type:'misc',tags:['skip']},
+  'mime':        {tier:'B',type:'facecard',tags:['retrigger']},
+  'spare trousers':{tier:'B',type:'misc',tags:['twopair']},
+};
+
+const PLANETS = {
+  earth:'Full House', jupiter:'Flush', saturn:'Straight', mars:'Full House',
+  mercury:'Pair', venus:'Three of a Kind', uranus:'Two Pair', neptune:'Straight Flush',
+  pluto:'High Card', 'planet x':'Five of a Kind', eris:'Flush Five', ceres:'Flush House',
+};
+
+const TAROTS = {
+  death:'copy card',hangedman:'remove card',strength:'upgrade rank to Face Card',
+  'the sun':'convert to Hearts','the world':'convert to Spades',empress:'mult enhancement',
+  hierophant:'bonus chips',magician:'lucky card',devil:'gold card',justice:'glass card',
+  'the fool':'copy last tarot/planet',lovers:'wild card',wheel:'lucky card',chariot:'steel card',
+};
+
+const HIGH_PRIO_JOKERS = ['blueprint','brainstorm','sock and buskin','photograph','hanging chad',
+  'triboulet','card sharp','constellation','baseball card'];
+const FACE_JOKERS = ['sock and buskin','photograph','hanging chad','triboulet','scary face',
+  'smiley face','reserved parking','mime'];
+const ECON_JOKERS = ['business card','reserved parking','rocket','golden joker','to the moon','cloud 9'];
+const FIRST_CARD_JOKERS = ['photograph','hanging chad'];
+
+/* ============================================================
+   PARSER
+   ============================================================ */
+function parseState(raw){
+  const t = raw.toLowerCase();
+  const st = {};
+
+  // Ante
+  const anteM = t.match(/ante\s*[:#]?\s*(\d)/i);
+  st.ante = anteM ? parseInt(anteM[1]) : null;
+
+  // Blind
+  if(t.includes('boss'))       st.blind = 'Boss';
+  else if(t.includes('big'))   st.blind = 'Big';
+  else if(t.includes('small')) st.blind = 'Small';
+  else st.blind = null;
+
+  // Money
+  const monM = t.match(/\$\s*(\d+)/) || t.match(/(\d+)\s*\$/);
+  st.money = monM ? parseInt(monM[1]) : null;
+
+  // Hands
+  const hanM = t.match(/(\d)\s*hand/);
+  st.hands = hanM ? parseInt(hanM[1]) : null;
+
+  // Discards
+  const disM = t.match(/(\d)\s*discard/);
+  st.discards = disM ? parseInt(disM[1]) : null;
+
+  // Jokers — scan for known names in order of length (longest first to avoid partial matches)
+  const jokerNames = Object.keys(JOKERS).sort((a,b)=>b.length-a.length);
+  st.jokers = [];
+  for(const jn of jokerNames){
+    if(t.includes(jn) && !st.jokers.includes(jn)) st.jokers.push(jn);
+  }
+  // Also grab any word after "joker:" or "jokers:" not already found
+  const jokerSec = t.match(/jokers?\s*[:]\s*([^,\n]+(?:,\s*[^,\n]+)*)/i);
+  if(jokerSec){
+    const parts = jokerSec[1].split(',').map(s=>s.trim());
+    for(const p of parts){
+      if(p && !st.jokers.find(j=>p.includes(j))) {
+        // unknown joker — store raw
+        if(!st.unknownJokers) st.unknownJokers=[];
+        st.unknownJokers.push(p);
+      }
+    }
+  }
+
+  // Shop / pack items
+  st.shop = [];
+  if(t.includes('arcana pack')) st.shop.push({type:'pack',name:'Arcana Pack'});
+  if(t.includes('celestial pack')) st.shop.push({type:'pack',name:'Celestial Pack'});
+  if(t.includes('spectral pack')) st.shop.push({type:'pack',name:'Spectral Pack'});
+  if(t.includes('buffoon pack')) st.shop.push({type:'pack',name:'Buffoon Pack'});
+  if(t.includes('standard pack')) st.shop.push({type:'pack',name:'Standard Pack'});
+
+  // Planets in shop
+  for(const [p,hand] of Object.entries(PLANETS)){
+    if(t.includes(p)) st.shop.push({type:'planet',name:p.charAt(0).toUpperCase()+p.slice(1),hand});
+  }
+
+  // Jokers in shop (eternal check)
+  const eternalM = t.match(/eternal\s+joker\s+([^\s,\.]+)/i);
+  if(eternalM) st.shop.push({type:'joker',name:eternalM[1],eternal:true});
+  const eternalGeneric = t.match(/eternal/i);
+  if(eternalGeneric) st.hasEternal = true;
+
+  // High priority jokers in shop
+  for(const jn of jokerNames){
+    // check if it's in shop context
+    const shopIdx = Math.max(t.indexOf('shop'),t.indexOf('buy'));
+    if(shopIdx >= 0 && t.indexOf(jn) > shopIdx && !st.jokers.includes(jn)){
+      if(!st.shopJokers) st.shopJokers=[];
+      if(!st.shopJokers.includes(jn)) st.shopJokers.push(jn);
+    }
+  }
+
+  // Tarots
+  st.tarots = [];
+  for(const tn of Object.keys(TAROTS)){
+    if(t.includes(tn)) st.tarots.push(tn);
+  }
+
+  // Enhancements mentioned
+  st.enhancements = [];
+  ['glass','steel','mult card','gold card','red seal','polychrome','lucky'].forEach(e=>{
+    if(t.includes(e)) st.enhancements.push(e);
+  });
+
+  // Spectral
+  const spectralCards = ['aura','cryptid','immolate','ankh','ectoplasm','hex','ouija','trance','medium'];
+  st.spectral = spectralCards.filter(s=>t.includes(s));
+
+  // Hand type focus
+  st.handFocus = null;
+  if(t.includes('flush house')) st.handFocus='Flush House';
+  else if(t.includes('full house')) st.handFocus='Full House';
+  else if(t.includes('flush')) st.handFocus='Flush';
+
+  return st;
+}
+
+/* ============================================================
+   BUILD DIRECTION DETECTOR
+   ============================================================ */
+function detectBuild(st){
+  let scores = {flush:1, fullhouse:0, facecard:0, flushhouse:0, economy:0, scaling:0};
+
+  // Joker scoring
+  for(const jn of st.jokers){
+    const j = JOKERS[jn];
+    if(!j) continue;
+    if(j.type==='facecard') scores.facecard += (j.tier==='S'?3:j.tier==='A'?2:1);
+    if(j.type==='economy')  scores.economy  += (j.tier==='A'?2:1);
+    if(j.type==='scaling')  scores.scaling  += (j.tier==='S'?3:j.tier==='A'?2:1);
+    if(j.type==='flush')    scores.flush    += 2;
+  }
+
+  // If strong face card presence → check flush house possibility
+  if(scores.facecard>=3 && scores.flush>=1) scores.flushhouse += 2;
+
+  // Full house signals
+  const hasFHPlanet = st.shop.some(s=>s.type==='planet'&&s.hand==='Full House');
+  if(hasFHPlanet || (st.handFocus==='Full House')) scores.fullhouse += 3;
+  if(st.handFocus==='Flush House') scores.flushhouse += 3;
+
+  // Blueprint/Brainstorm → big scaling
+  if(st.jokers.includes('blueprint')||st.jokers.includes('brainstorm')) scores.scaling += 3;
+
+  // Determine primary direction
+  const primary = Object.entries(scores).reduce((a,b)=>b[1]>a[1]?b:a)[0];
+  const dirs = Object.entries(scores).filter(([,v])=>v>0).map(([k])=>k);
+
+  return {primary, scores, dirs};
+}
+
+/* ============================================================
+   RECOMMENDATION ENGINE
+   ============================================================ */
+function recommend(st, build){
+  const result = {
+    bestMove: '',
+    why: '',
+    notDo: [],
+    nextJokers: [],
+    nextTarot: '',
+    nextPlanet: '',
+    nextEnhance: '',
+    handPlan: '',
+    confidence: 5,
+    missing: [],
+    warnings: [],
+    dangerEternal: false,
+  };
+
+  // Track missing fields
+  if(st.ante===null)     result.missing.push('Ante');
+  if(st.money===null)    result.missing.push('כסף ($)');
+  if(st.hands===null)    result.missing.push('מספר Hands');
+  if(st.discards===null) result.missing.push('מספר Discards');
+  if(st.jokers.length===0 && !st.unknownJokers) result.missing.push('Jokers');
+
+  // Confidence
+  const filled = 5 - result.missing.length;
+  result.confidence = Math.max(2, Math.min(9, Math.round(2 + filled * 1.4)));
+  if(st.shop.length>0) result.confidence = Math.min(10, result.confidence+1);
+
+  // --- DANGER FLAGS ---
+  if(st.hasEternal){
+    result.dangerEternal = true;
+    result.warnings.push('נמצא Joker עם תכונת Eternal בחנות. לא ניתן למכור אותו — הערך שלו חייב להיות גבוה מאוד לפני קנייה.');
+  }
+
+  // Spectral warnings
+  if(st.spectral.length>0){
+    result.warnings.push(`Spectral card${st.spectral.length>1?'s':''} זיהיתי: <b>${st.spectral.join(', ')}</b>. בPurple Stake — זהירות. Ectoplasm מסכן במיוחד (-1 Discard לצמיתות).`);
+  }
+
+  // --- FIRST CARD REMINDER ---
+  const firstCardJokers = st.jokers.filter(j=>FIRST_CARD_JOKERS.includes(j));
+  if(firstCardJokers.length>0){
+    result.warnings.push(`🎯 <b>${firstCardJokers.join(' + ')}</b> פעיל — הקלף הראשון שנספר הוא הקריטי ביותר. מקם King או Queen עם Glass/Mult/Red Seal ראשון.`);
+  }
+
+  // --- MONEY ADVICE ---
+  let moneyAdvice = '';
+  if(st.money!==null && st.ante!==null){
+    if(st.ante<=2) moneyAdvice = 'Ante 1–2: מותר להוציא עד $0 לJoker שמגדיר את הריצה.';
+    else if(st.ante<=4) moneyAdvice = 'Ante 3–4: נסה לשמור $15–25 לריבית.';
+    else moneyAdvice = 'Ante 5+: שמור $25+ לריבית אלא אם יש קנייה שמנצחת את הריצה.';
+  }
+
+  // --- SHOP ANALYSIS ---
+  let shopRec = '';
+  let hasPack = st.shop.find(s=>s.type==='pack');
+  let hasArcanaPack = st.shop.find(s=>s.name==='Arcana Pack');
+  let hasCelestialPack = st.shop.find(s=>s.name==='Celestial Pack');
+  let hasSpectralPack = st.shop.find(s=>s.name==='Spectral Pack');
+
+  // Planet analysis
+  const planets = st.shop.filter(s=>s.type==='planet');
+  const goodPlanets = planets.filter(p=>{
+    if(build.primary==='fullhouse'&&p.hand==='Full House') return true;
+    if(build.primary==='flush'&&p.hand==='Flush') return true;
+    if(build.primary==='flushhouse'&&(p.hand==='Flush House'||p.hand==='Flush')) return true;
+    if((build.primary==='facecard'||build.primary==='fullhouse')&&p.hand==='Full House') return true;
+    return false;
+  });
+
+  // Shop joker analysis
+  const shopJokers = st.shopJokers || [];
+  const highPrioShop = shopJokers.filter(j=>HIGH_PRIO_JOKERS.includes(j));
+
+  // --- BUILD BEST MOVE ---
+  const dir = build.primary;
+
+  if(hasArcanaPack){
+    shopRec = 'פתח את ה<b>Arcana Pack</b> — Tarot cards מתקנים את החפיסה ומגבירים ניקוד.';
+  } else if(highPrioShop.length>0){
+    shopRec = `קנה <b>${highPrioShop[0]}</b> — Joker בעדיפות גבוהה שמתאים לבניה.`;
+  } else if(goodPlanets.length>0){
+    shopRec = `קנה <b>${goodPlanets[0].name}</b> (Planet) — משדרג ${goodPlanets[0].hand} שהוא הHand העיקרי שלך.`;
+  } else if(hasCelestialPack){
+    const focusHand = dir==='fullhouse'?'Full House':dir==='flush'?'Flush':'Full House';
+    shopRec = `פתח <b>Celestial Pack</b> — בחר Planet ל${focusHand}.`;
+  } else if(st.shop.length===0){
+    shopRec = 'אין מידע על חנות. תאר את אפשרויות החנות לניתוח מדויק יותר.';
+  } else {
+    shopRec = 'בדוק את החנות — אין פריט בעדיפות גבוהה ברשימה. שקול לעשות Reroll אם יש תקציב.';
+  }
+
+  result.bestMove = shopRec || 'שלח פרטי חנות לקבלת המלצה ספציפית.';
+
+  // --- WHY ---
+  let why = '';
+  if(dir==='facecard') why = `הבניה שלך מוכוונת <b>Face Cards</b>. `;
+  else if(dir==='fullhouse') why = `הבניה שלך מוכוונת <b>Full House</b>. `;
+  else if(dir==='flushhouse') why = `הבניה שלך שואפת ל<b>Flush House</b>. `;
+  else why = `הבניה הבסיסית עם Checkered Deck היא <b>Flush</b>. `;
+
+  if(hasArcanaPack) why += 'Arcana Pack נותן Tarot cards שמתקנים קלפים, מסירים קלפים חלשים ומגבירים ניקוד — בPurple Stake כל שיפור לחפיסה חשוב. ';
+  if(moneyAdvice) why += moneyAdvice + ' ';
+  if(st.hasEternal) why += 'Eternal Joker דורש שיקול מיוחד — לא ניתן למכור אותו מאוחר יותר. ';
+  result.why = why || 'תאר את מצב הריצה לניתוח מעמיק יותר.';
+
+  // --- WHAT NOT TO DO ---
+  result.notDo = [];
+  if(st.hasEternal) result.notDo.push('לא לקנות Eternal Joker אלא אם הוא tier S ומשנה את הריצה.');
+  if(st.ante>=3 && st.money!==null && st.money<10) result.notDo.push(`לא לעשות Reroll — יש רק $${st.money}, שמור כסף.`);
+  result.notDo.push('לא לקנות Joker רק כי הוא "בסדר" — כל Joker slot יקר.');
+  result.notDo.push('לא לבזבז Planet card על Hand type שאינך משחק.');
+  if(dir==='flush'||dir==='facecard') result.notDo.push('לא לנסות לבנות Straight — Checkered Deck לא תומך בזה.');
+  if(st.discards!==null && st.discards<=1) result.notDo.push(`יש רק ${st.discards} Discard — לא לחפור ידיים. תשחק יד יציבה מהיד הראשונה.`);
+  result.notDo.push('לא לפצל את הבניה — בחר כיוון אחד ותחזק אותו.');
+
+  // --- NEXT TARGET ---
+  if(dir==='facecard'||dir==='flushhouse'){
+    result.nextJokers = ['Sock and Buskin','Photograph','Hanging Chad','Triboulet','Blueprint'];
+    result.nextTarot = 'Strength (להעלות קלפים לFace Cards), Death (להעתיק קלף חזק)';
+    result.nextPlanet = dir==='flushhouse'?'Ceres (Flush House)':'Earth (Full House) או Jupiter (Flush)';
+    result.nextEnhance = 'King/Queen עם Glass + Red Seal — אידיאלי לRetrigger';
+  } else if(dir==='fullhouse'){
+    result.nextJokers = ['Blueprint','Brainstorm','Triboulet','Card Sharp','Baseball Card'];
+    result.nextTarot = 'Death, Hanged Man (הסר קלפים חלשים)';
+    result.nextPlanet = 'Earth (Full House)';
+    result.nextEnhance = 'Steel Cards, Glass Cards, Red Seal על קלפי ציר';
+  } else {
+    result.nextJokers = ['Blueprint','Brainstorm','Sock and Buskin','Constellation'];
+    result.nextTarot = 'Hanged Man (הסר קלפים), Death, The Sun/World (תקן חפיסה)';
+    result.nextPlanet = 'Jupiter (Flush)';
+    result.nextEnhance = 'Polychrome, Glass, Red Seal על קלפים גבוהים';
+  }
+
+  // Economy sub-target
+  if(build.scores.economy<2){
+    result.nextJokers.push('Business Card או To the Moon (כלכלה)');
+  }
+
+  // --- HAND PLAN ---
+  let hp = '';
+  const dsc = st.discards!==null?st.discards:1;
+  if(dir==='facecard'||dir==='flushhouse'){
+    hp = `<b>Face Cards + Full House / Flush House</b><br>
+שמור: King, Queen, Jack מכל הסוגים (Hearts/Spades).<br>
+זרוק: קלפים נמוכים שאינם תורמים ל5-קלפים חזקים.<br>
+${dsc<=1?'<b>⚠ Discard אחד בלבד — תשחק את היד הטובה ביותר מהיד הראשונה.</b>':'שתמש בDiscards לחפור Face Cards.'}<br>
+${firstCardJokers.length>0?`<b>🎯 הצב King/Queen חזק ראשון בשביל ${firstCardJokers.join('+')}.</b>`:''}`;
+  } else if(dir==='fullhouse'){
+    hp = `<b>Full House</b><br>
+שמור: זוגות של קלפים גבוהים, Face Cards.<br>
+זרוק: ערכים שאין להם זוג.<br>
+${dsc<=1?'<b>⚠ Discard מוגבל — אל תחכה ליד מושלמת.</b>':''}`;
+  } else {
+    hp = `<b>Flush (Hearts/Spades)</b><br>
+שמור: 5 קלפים מאותו סוג (Hearts או Spades).<br>
+זרוק: קלפים מהסוג הלא נכון.<br>
+${dsc<=1?'<b>⚠ Discard אחד בלבד — בחר Flush יציב.</b>':''}<br>
+Checkered Deck = 26 Hearts + 26 Spades — Flush אמין יחסית.`;
+  }
+  result.handPlan = hp;
+
+  return result;
+}
+
+/* ============================================================
+   RENDER OUTPUT
+   ============================================================ */
+function renderInfo(st, build){
+  const rows = [
+    ['Ante', st.ante!==null?`Ante ${st.ante}`:'⚠ לא זוהה'],
+    ['Blind', st.blind||'⚠ לא זוהה'],
+    ['כסף', st.money!==null?`$${st.money}`:'⚠ לא זוהה'],
+    ['Hands', st.hands!==null?`${st.hands} 🤚`:'⚠ לא זוהה'],
+    ['Discards', st.discards!==null?`${st.discards} ♻`:'⚠ לא זוהה'],
+    ['Build Direction', buildName(build.primary)],
+    ['Jokers', st.jokers.length?st.jokers.map(j=>cap(j)).join(', '):(st.unknownJokers?.join(', ')||'⚠ לא זוהה')],
+    ['Shop / Packs', st.shop.length?st.shop.map(s=>`${s.name}${s.eternal?' (Eternal)':''}`).join(', '):'⚠ לא זוהה'],
+  ];
+  return rows.map(([l,v])=>`
+    <div class="info-cell">
+      <div class="lbl">${l}</div>
+      <div>${v}</div>
+    </div>`).join('');
+}
+
+function buildName(dir){
+  const m={flush:'♠ Flush',fullhouse:'🏠 Full House',facecard:'👑 Face Cards',
+    flushhouse:'🌊 Flush House',economy:'💰 Economy',scaling:'📈 Scaling'};
+  return m[dir]||dir;
+}
+
+function cap(s){return s.split(' ').map(w=>w.charAt(0).toUpperCase()+w.slice(1)).join(' ')}
+
+function highlightEn(s){
+  // Already written for Hebrew UI — just return as-is, HTML safe
+  return s;
+}
+
+function updateBuildTags(build){
+  const all = ['flush','fullhouse','facecard','flushhouse','economy','scaling'];
+  const tagMap = {'flush':'tag-flush','fullhouse':'tag-fh','facecard':'tag-fc',
+    'flushhouse':'tag-flushhouse','economy':'tag-econ','scaling':'tag-scale'};
+  for(const d of all){
+    const el = document.getElementById(tagMap[d]);
+    if(el){
+      el.style.opacity = build.dirs.includes(d)?'1':'0.3';
+      el.style.transform = build.primary===d?'scale(1.08)':'scale(1)';
+    }
+  }
+  const dangerEl = document.getElementById('tag-danger');
+  if(dangerEl) dangerEl.style.display = 'none'; // shown below if needed
+}
+
+/* ============================================================
+   MAIN ANALYZE
+   ============================================================ */
+function getInput(){
+  const activeTab = document.getElementById('tabImg').classList.contains('on') ? 'img' : 'text';
+  if(activeTab==='img'){
+    const t1 = document.getElementById('stateInput').value.trim();
+    const t2 = document.getElementById('stateInput2').value.trim();
+    return (t1+' '+t2).trim();
+  }
+  return document.getElementById('stateInput').value.trim();
+}
+
+function analyze(){
+  const raw = getInput();
+  if(!raw){alert('הכנס פרטי מצב ריצה תחילה.');return;}
+
+  const btn = document.querySelector('.btn-analyze');
+  btn.disabled = true;
+  btn.textContent = '⏳ מנתח...';
+
+  setTimeout(()=>{
+    try {
+      const st = parseState(raw);
+      const build = detectBuild(st);
+      const rec = recommend(st, build);
+
+      // Update tags
+      updateBuildTags(build);
+      const dangerEl = document.getElementById('tag-danger');
+      if(rec.dangerEternal && dangerEl){dangerEl.style.display='inline-block';}
+
+      // Render info grid
+      document.getElementById('infoGrid').innerHTML = renderInfo(st,build);
+
+      // Best move
+      document.getElementById('bestMove').innerHTML = rec.bestMove;
+
+      // Warnings above why box
+      let whyHTML = '';
+      if(rec.warnings.length>0){
+        whyHTML += rec.warnings.map(w=>`<div class="warn-banner">${w}</div>`).join('');
+      }
+      whyHTML += `<div class="out-body">${rec.why}</div>`;
+      document.getElementById('whyBox').innerHTML = whyHTML;
+
+      // Not box
+      const notHTML = rec.notDo.map(n=>`<div>❌ ${n}</div>`).join('');
+      document.getElementById('notBox').innerHTML = notHTML || 'לא זוהו מלכודות ספציפיות.';
+
+      // Target grid
+      document.getElementById('targetGrid').innerHTML = `
+        <div class="tcard"><div class="tlbl">🃏 Jokers</div><div class="tval">${rec.nextJokers.join('<br>')}</div></div>
+        <div class="tcard"><div class="tlbl">🔮 Tarot</div><div class="tval">${rec.nextTarot}</div></div>
+        <div class="tcard"><div class="tlbl">🌍 Planet</div><div class="tval">${rec.nextPlanet}</div></div>
+        <div class="tcard"><div class="tlbl">✨ שדרוג קלפים</div><div class="tval">${rec.nextEnhance}</div></div>
+      `;
+
+      // Hand plan
+      document.getElementById('handPlan').innerHTML = rec.handPlan;
+
+      // Confidence
+      const pct = Math.round((rec.confidence/10)*100);
+      let confColor = rec.confidence>=7?'#34d399':rec.confidence>=4?'#ffd166':'#ff5470';
+      let confHTML = `
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+          <span style="font-family:Rubik;font-weight:900;font-size:28px;color:${confColor}">${rec.confidence}/10</span>
+          <span style="color:var(--muted);font-size:13px">${confLabel(rec.confidence)}</span>
+        </div>
+        <div class="conf-bar"><div class="conf-fill" style="width:${pct}%;background:${confColor}"></div></div>`;
+      if(rec.missing.length>0){
+        confHTML += `<div class="missing">⚠ מידע חסר: ${rec.missing.join(', ')}. שלח פרטים אלו לניתוח מדויק יותר.</div>`;
+      }
+      document.getElementById('confBox').innerHTML = confHTML;
+
+      // Show output
+      document.getElementById('output').style.display='block';
+      document.getElementById('output').scrollIntoView({behavior:'smooth',block:'start'});
+
+      // Save to history
+      saveHistory(st, build, rec, raw);
+
+    } catch(e){
+      alert('שגיאה בניתוח: '+e.message);
+      console.error(e);
+    }
+
+    btn.disabled = false;
+    btn.textContent = '🔍 נתח את המצב';
+  }, 80);
+}
+
+function confLabel(c){
+  if(c>=9) return 'ביטחון גבוה מאוד';
+  if(c>=7) return 'ביטחון טוב';
+  if(c>=5) return 'ביטחון בינוני';
+  if(c>=3) return 'מידע חסר';
+  return 'מידע לא מספיק';
+}
+
+/* ============================================================
+   TABS
+   ============================================================ */
+function switchTab(t){
+  const isText = t==='text';
+  document.getElementById('paneText').style.display = isText?'block':'none';
+  document.getElementById('paneImg').style.display  = isText?'none':'block';
+  document.getElementById('tabText').className = 'tab'+(isText?' on':'');
+  document.getElementById('tabImg').className  = 'tab'+(!isText?' on':'');
+}
+
+function handleImg(e){
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ev=>{
+    const img = document.getElementById('imgPreview');
+    img.src = ev.target.result;
+    img.style.display = 'block';
+    document.getElementById('imgHint').style.display = 'block';
+  };
+  reader.readAsDataURL(file);
+}
+
+/* ============================================================
+   HISTORY
+   ============================================================ */
+function saveHistory(st, build, rec, raw){
+  const hist = JSON.parse(localStorage.getItem('balatro_history')||'[]');
+  const entry = {
+    ts: Date.now(),
+    ante: st.ante,
+    blind: st.blind,
+    build: build.primary,
+    input: raw.slice(0,200),
+    bestMove: rec.bestMove,
+    confidence: rec.confidence,
+  };
+  hist.unshift(entry);
+  if(hist.length>10) hist.length=10;
+  localStorage.setItem('balatro_history', JSON.stringify(hist));
+  renderHistory();
+}
+
+function renderHistory(){
+  const hist = JSON.parse(localStorage.getItem('balatro_history')||'[]');
+  const panel = document.getElementById('histPanel');
+  const list  = document.getElementById('histList');
+  if(!hist.length){panel.style.display='none';return;}
+  panel.style.display='block';
+  list.innerHTML = hist.map((h,i)=>{
+    const d = new Date(h.ts);
+    const ts = d.toLocaleDateString('he-IL')+' '+d.toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'});
+    const lbl = h.ante?`Ante ${h.ante}${h.blind?' · '+h.blind:''}`:'ריצה';
+    return `
+      <div class="hist-item">
+        <div class="hist-head" onclick="toggleHist(${i})">
+          <span class="hist-label">${lbl}</span>
+          <span class="btag ${h.build}" style="font-size:11px;padding:3px 9px">${buildName(h.build)}</span>
+          <span class="hist-ts">${ts}</span>
+          <span style="color:var(--muted)">▾</span>
+        </div>
+        <div class="hist-body" id="hb${i}">
+          <div class="hist-inner">
+            <div style="color:var(--muted);font-size:11.5px;margin-bottom:6px">${h.input}</div>
+            <b>המלצה:</b> ${h.bestMove}<br>
+            <b>ביטחון:</b> ${h.confidence}/10
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function toggleHist(i){
+  const el = document.getElementById('hb'+i);
+  el.classList.toggle('open');
+}
+
+function clearHistory(){
+  localStorage.removeItem('balatro_history');
+  document.getElementById('histPanel').style.display='none';
+  document.getElementById('histList').innerHTML='';
+}
+
+/* ============================================================
+   INIT
+   ============================================================ */
+renderHistory();
+</script>
+</body>
+</html>
