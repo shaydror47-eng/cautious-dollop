@@ -994,10 +994,46 @@ tr:hover {
   <div class="modal-content">
     <div class="modal-title" id="confirmTitle"></div>
     <div id="confirmMessage" style="margin-bottom: 20px; color: var(--text); font-size: 14px;"></div>
-    <div class="modal-buttons">
+    <div id="confirmModalButtons" style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:20px;">
       <button class="btn" onclick="closeConfirmModal()">ביטול</button>
       <button class="btn btn-primary" onclick="executeConfirm()">אישור</button>
     </div>
+  </div>
+</div>
+
+<!-- Simulation Modal - standalone, no shared state -->
+<div class="modal" id="simModal">
+  <div class="modal-content">
+    <div class="modal-title">🎲 הדמיה מתקדמת</div>
+
+    <!-- Step 1: choose count -->
+    <div id="simStep1">
+      <div style="margin-bottom:14px; font-size:14px; color:var(--muted);">בחר כמות יידות להרצה:</div>
+      <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:20px;">
+        <button class="btn sim-count-btn" onclick="runSim(10)">10</button>
+        <button class="btn sim-count-btn" onclick="runSim(25)">25</button>
+        <button class="btn sim-count-btn" onclick="runSim(50)">50</button>
+        <button class="btn sim-count-btn" onclick="runSim(100)">100</button>
+        <button class="btn sim-count-btn" onclick="runSim(200)">200</button>
+        <button class="btn sim-count-btn" onclick="runSim(500)">500</button>
+      </div>
+      <button class="btn" style="width:100%;" onclick="closeSimModal()">ביטול</button>
+    </div>
+
+    <!-- Step 2: results -->
+    <div id="simStep2" style="display:none;">
+      <div id="simResults"></div>
+      <button class="btn btn-primary" style="width:100%; margin-top:16px;" onclick="closeSimModal()">✓ סגור</button>
+    </div>
+  </div>
+</div>
+
+<!-- Accuracy Modal - standalone -->
+<div class="modal" id="accuracyModal">
+  <div class="modal-content">
+    <div class="modal-title">📐 בדיקת דיוק</div>
+    <div id="accuracyResults"></div>
+    <button class="btn btn-primary" style="width:100%; margin-top:16px;" onclick="document.getElementById('accuracyModal').classList.remove('show')">✓ סגור</button>
   </div>
 </div>
 
@@ -1597,15 +1633,17 @@ function handleFileImport(e) {
 }
 
 function showConfirmImport(data) {
-  const confirmModal = document.getElementById('confirmModal');
   document.getElementById('confirmTitle').textContent = 'ייבוא משחק';
   document.getElementById('confirmMessage').textContent = `יש לייבא ${data.rounds.length} יידות. זה יחליף את המשחק הנוכחי.`;
-
+  document.getElementById('confirmModalButtons').innerHTML = `
+    <button class="btn" onclick="closeConfirmModal()">ביטול</button>
+    <button class="btn btn-primary" onclick="doImport()">ייבא</button>
+  `;
   window.importData = data;
   document.getElementById('confirmModal').classList.add('show');
 }
 
-function executeConfirm() {
+function doImport() {
   if (window.importData) {
     gameState.rounds = window.importData.rounds;
     gameState.currentPlayer = [];
@@ -1614,14 +1652,12 @@ function executeConfirm() {
     updateUI();
     closeImportModal();
     closeConfirmModal();
-  } else if (window.confirmAction === 'newSession') {
-    gameState.rounds = [];
-    gameState.currentPlayer = [];
-    gameState.currentBanker = [];
-    saveToLocalStorage();
-    updateUI();
-    closeConfirmModal();
   }
+}
+
+function executeConfirm() {
+  // legacy fallback
+  doImport();
 }
 
 function closeConfirmModal() {
@@ -1631,87 +1667,91 @@ function closeConfirmModal() {
 }
 
 function newSession() {
-  const confirmModal = document.getElementById('confirmModal');
   document.getElementById('confirmTitle').textContent = 'סשן חדש';
   document.getElementById('confirmMessage').textContent = 'זה ימחק את כל ההיסטוריה של המשחק הנוכחי. בטוח?';
-  window.confirmAction = 'newSession';
-  confirmModal.classList.add('show');
-}
-
-// Simulation Mode
-function startSimulation() {
-  const confirmModal = document.getElementById('confirmModal');
-  document.getElementById('confirmTitle').textContent = '🎲 הדמיה מתקדמת';
-  document.getElementById('confirmMessage').innerHTML = `
-    <div style="margin-bottom: 16px; font-size: 13px; color: var(--text);">בחר כמות יידות להדמיה:</div>
-    <select id="simCount" style="width: 100%; padding: 10px; background: var(--bg-darker); border: 1px solid var(--line); color: var(--text); border-radius: 6px; margin-bottom: 16px; font-size: 14px;">
-      <option value="10">🎰 10 יידות</option>
-      <option value="25">🎰 25 יידות</option>
-      <option value="50">🎰 50 יידות</option>
-      <option value="100">🎰 100 יידות</option>
-      <option value="200">🎰 200 יידות</option>
-      <option value="500">🎰 500 יידות</option>
-    </select>
+  document.getElementById('confirmModalButtons').innerHTML = `
+    <button class="btn" onclick="closeConfirmModal()">ביטול</button>
+    <button class="btn btn-danger" onclick="doNewSession()">כן, מחק הכל</button>
   `;
-
-  const buttons = document.querySelector('#confirmModal .modal-buttons');
-  if (buttons) {
-    buttons.innerHTML = `
-      <button class="btn" onclick="closeConfirmModal()">⬅️ ביטול</button>
-      <button class="btn btn-primary" onclick="executeSimulation()">▶️ הרץ הדמיה</button>
-    `;
-  }
-
-  confirmModal.classList.add('show');
+  window.confirmAction = 'newSession';
+  document.getElementById('confirmModal').classList.add('show');
 }
 
-function executeSimulation() {
-  const countSelect = document.getElementById('simCount');
-  if (!countSelect) {
-    alert('בחר כמות יידות');
-    return;
-  }
+function doNewSession() {
+  gameState.rounds = [];
+  gameState.currentPlayer = [];
+  gameState.currentBanker = [];
+  saveToLocalStorage();
+  updateUI();
+  closeConfirmModal();
+}
 
-  const count = parseInt(countSelect.value) || 50;
+// Simulation Mode - standalone modal
+function startSimulation() {
+  document.getElementById('simStep1').style.display = 'block';
+  document.getElementById('simStep2').style.display = 'none';
+  document.getElementById('simModal').classList.add('show');
+}
+
+function closeSimModal() {
+  document.getElementById('simModal').classList.remove('show');
+}
+
+function runSim(count) {
   let playerWins = 0, bankerWins = 0, ties = 0;
 
   for (let i = 0; i < count; i++) {
-    const playerCards = [getRandomCard(), getRandomCard()];
-    const bankerCards = [getRandomCard(), getRandomCard()];
-
-    const result = calculateWinner(playerCards, bankerCards);
+    const pc = [getRandomCard(), getRandomCard()];
+    const bc = [getRandomCard(), getRandomCard()];
+    const result = calculateWinner(pc, bc);
     if (result.winner === 'player') playerWins++;
     else if (result.winner === 'banker') bankerWins++;
     else ties++;
   }
 
-  // Show results
-  const total = playerWins + bankerWins + ties;
-  const nonTieTotal = playerWins + bankerWins;
-  const playerPct = (nonTieTotal > 0 ? (playerWins / nonTieTotal) * 100 : 0).toFixed(1);
-  const bankerPct = (nonTieTotal > 0 ? (bankerWins / nonTieTotal) * 100 : 0).toFixed(1);
-  const tiePct = ((ties / total) * 100).toFixed(1);
+  const total = count;
+  const nonTie = playerWins + bankerWins;
+  const pPct  = nonTie > 0 ? (playerWins / nonTie * 100).toFixed(1) : '0.0';
+  const bPct  = nonTie > 0 ? (bankerWins / nonTie * 100).toFixed(1) : '0.0';
+  const tPct  = (ties / total * 100).toFixed(1);
 
-  const confirmModal = document.getElementById('confirmModal');
-  document.getElementById('confirmTitle').textContent = '📊 תוצאות הדמיה';
-  document.getElementById('confirmMessage').innerHTML = `
-    <div style="font-size: 14px; line-height: 1.8;">
-      <div><strong>סך יידות:</strong> ${count}</div>
-      <div><strong>פלייר ניצח:</strong> ${playerWins} (${playerPct}%)</div>
-      <div><strong>בנקר ניצח:</strong> ${bankerWins} (${bankerPct}%)</div>
-      <div><strong>תיקו:</strong> ${ties} (${tiePct}%)</div>
-      <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); font-size: 12px; color: var(--muted);">
-        ✓ ההדמיה מראה התפלגות של כ-50.68% פלייר, 49.32% בנקר, 5.06% תיקו על פי הסטטיסטיקה של באקרה.
+  function bar(pct, color) {
+    return `<div style="background:${color};height:8px;border-radius:4px;width:${pct}%;margin-top:4px;"></div>`;
+  }
+
+  document.getElementById('simResults').innerHTML = `
+    <div style="font-size:13px; line-height:1.9;">
+      <div style="font-size:15px; font-weight:700; color:var(--gold); margin-bottom:12px;">תוצאות הדמיה: ${count} יידות</div>
+
+      <div style="background:var(--bg-darker); border-radius:8px; padding:12px; margin-bottom:8px;">
+        <div style="display:flex; justify-content:space-between;">
+          <span>🎰 פלייר ניצח</span><strong>${playerWins} יד (${pPct}%)</strong>
+        </div>
+        ${bar(pPct, '#34d399')}
+      </div>
+
+      <div style="background:var(--bg-darker); border-radius:8px; padding:12px; margin-bottom:8px;">
+        <div style="display:flex; justify-content:space-between;">
+          <span>🏛️ בנקר ניצח</span><strong>${bankerWins} יד (${bPct}%)</strong>
+        </div>
+        ${bar(bPct, '#d4af37')}
+      </div>
+
+      <div style="background:var(--bg-darker); border-radius:8px; padding:12px; margin-bottom:12px;">
+        <div style="display:flex; justify-content:space-between;">
+          <span>🤝 תיקו</span><strong>${ties} יד (${tPct}%)</strong>
+        </div>
+        ${bar(tPct, '#9aa3b5')}
+      </div>
+
+      <div style="font-size:11px; color:var(--muted); border-top:1px solid var(--line); padding-top:10px;">
+        הסטטיסטיקה הצפויה: פלייר 50.68% | בנקר 49.32% | תיקו 5.06%
       </div>
     </div>
   `;
 
-  const modalButtons = document.querySelector('.modal-buttons');
-  if (modalButtons) {
-    modalButtons.innerHTML = `
-      <button class="btn btn-primary" style="grid-column: 1/-1;" onclick="closeConfirmModal()">סגור</button>
-    `;
-  }
+  document.getElementById('simStep1').style.display = 'none';
+  document.getElementById('simStep2').style.display = 'block';
 }
 
 function getRandomCard() {
@@ -1729,86 +1769,50 @@ function getRandomCard() {
   return { suit: randomSuit, value: randomValue };
 }
 
-// Accuracy Test
+// Accuracy Test - standalone modal
 function runAccuracyTest() {
-  if (gameState.rounds.length < 5) {
+  const stats = calculateStats();
+  if (stats.total < 5) {
     alert('צריך לפחות 5 יידות בהיסטוריה לבדוק דיוק');
     return;
   }
 
-  const confirmModal = document.getElementById('confirmModal');
-  document.getElementById('confirmTitle').textContent = '✓ בדיקת דיוק';
-
-  // Run simulation with the same expected distribution
-  const simCount = Math.max(gameState.rounds.length * 10, 500);
-  let simPlayerWins = 0, simBankerWins = 0, simTies = 0;
-
-  for (let i = 0; i < simCount; i++) {
-    const playerCards = [getRandomCard(), getRandomCard()];
-    const bankerCards = [getRandomCard(), getRandomCard()];
-
-    const result = calculateWinner(playerCards, bankerCards);
-    if (result.winner === 'player') simPlayerWins++;
-    else if (result.winner === 'banker') simBankerWins++;
-    else simTies++;
-  }
-
-  // Calculate actual stats from game
-  const stats = calculateStats();
-  const totalNonTie = stats.playerWins + stats.bankerWins;
-
-  // Expected Baccarat distribution
   const expectedPlayer = 50.68;
   const expectedBanker = 49.32;
-  const expectedTie = 5.06;
 
-  // Simulated stats
-  const simTotal = simPlayerWins + simBankerWins;
-  const simPlayerPct = (simPlayerWins / simTotal * 100).toFixed(2);
-  const simBankerPct = (simBankerWins / simTotal * 100).toFixed(2);
-  const simTiePct = (simTies / simCount * 100).toFixed(2);
+  const totalNonTie = stats.playerWins + stats.bankerWins;
+  const actualPlayerPct = totalNonTie > 0 ? (stats.playerWins / totalNonTie * 100) : 0;
+  const actualBankerPct = totalNonTie > 0 ? (stats.bankerWins / totalNonTie * 100) : 0;
+  const actualTiePct    = stats.total > 0  ? (stats.ties / stats.total * 100) : 0;
 
-  // Actual game stats
-  const actualPlayerPct = totalNonTie > 0 ? (stats.playerWins / totalNonTie * 100).toFixed(2) : 0;
-  const actualBankerPct = totalNonTie > 0 ? (stats.bankerWins / totalNonTie * 100).toFixed(2) : 0;
-  const actualTiePct = (stats.ties / stats.total * 100).toFixed(2);
+  const playerDiff = Math.abs(actualPlayerPct - expectedPlayer).toFixed(1);
+  const bankerDiff = Math.abs(actualBankerPct - expectedBanker).toFixed(1);
+  const overallAccuracy = Math.max(0, 100 - (parseFloat(playerDiff) + parseFloat(bankerDiff)) / 2).toFixed(1);
 
-  // Calculate accuracy
-  const playerAccuracy = (100 - Math.abs(actualPlayerPct - expectedPlayer)).toFixed(1);
-  const bankerAccuracy = (100 - Math.abs(actualBankerPct - expectedBanker)).toFixed(1);
-  const overallAccuracy = ((parseFloat(playerAccuracy) + parseFloat(bankerAccuracy)) / 2).toFixed(1);
+  const grade = overallAccuracy >= 90 ? '🟢 מעולה' : overallAccuracy >= 75 ? '🟡 טוב' : '🔴 צריך עוד יידות';
 
-  document.getElementById('confirmMessage').innerHTML = `
-    <div style="font-size: 13px; line-height: 1.8;">
-      <div style="margin-bottom: 12px;"><strong>הסטטיסטיקה של באקרה:</strong></div>
-      <div>• פלייר: ${expectedPlayer}%</div>
-      <div>• בנקר: ${expectedBanker}%</div>
-      <div>• תיקו: ${expectedTie}%</div>
-
-      <div style="margin: 16px 0; padding: 12px; background: rgba(212, 175, 55, 0.1); border-radius: 6px;">
-        <strong style="color: var(--gold);">המשחק שלך (${stats.total} יידות):</strong>
-        <div>• פלייר: ${actualPlayerPct}% (דיוק: ${playerAccuracy}%)</div>
-        <div>• בנקר: ${actualBankerPct}% (דיוק: ${bankerAccuracy}%)</div>
-        <div>• תיקו: ${actualTiePct}%</div>
+  document.getElementById('accuracyResults').innerHTML = `
+    <div style="font-size:13px; line-height:1.9;">
+      <div style="margin-bottom:12px; color:var(--muted);">הסטטיסטיקה הצפויה של באקרה:</div>
+      <div style="background:var(--bg-darker); border-radius:8px; padding:12px; margin-bottom:12px;">
+        <div>פלייר: 50.68% | בנקר: 49.32% | תיקו: 5.06%</div>
       </div>
 
-      <div style="padding: 12px; background: rgba(52, 211, 153, 0.1); border-radius: 6px; border-left: 3px solid var(--success);">
-        <strong style="color: var(--success);">דיוק כללי: ${overallAccuracy}%</strong>
-        <div style="font-size: 11px; color: var(--muted); margin-top: 4px;">
-          ${overallAccuracy >= 90 ? '✓ דיוק מעולה!' : overallAccuracy >= 80 ? '✓ דיוק טוב' : 'צריך עוד יידות'}
-        </div>
+      <div style="margin-bottom:8px; color:var(--gold); font-weight:700;">המשחק שלך (${stats.total} יידות):</div>
+      <div style="background:var(--bg-darker); border-radius:8px; padding:12px; margin-bottom:12px;">
+        <div>פלייר: ${actualPlayerPct.toFixed(1)}% <span style="color:var(--muted); font-size:11px;">(סטייה ${playerDiff}%)</span></div>
+        <div>בנקר: ${actualBankerPct.toFixed(1)}% <span style="color:var(--muted); font-size:11px;">(סטייה ${bankerDiff}%)</span></div>
+        <div>תיקו: ${actualTiePct.toFixed(1)}%</div>
+      </div>
+
+      <div style="background:rgba(52,211,153,0.1); border:1px solid var(--success); border-radius:8px; padding:14px; text-align:center;">
+        <div style="font-size:20px; font-weight:900; color:var(--success);">${overallAccuracy}%</div>
+        <div style="font-size:13px; margin-top:4px;">${grade}</div>
       </div>
     </div>
   `;
 
-  const modalButtons = document.querySelector('#confirmModal .modal-buttons');
-  if (modalButtons) {
-    modalButtons.innerHTML = `
-      <button class="btn btn-primary" style="grid-column: 1/-1;" onclick="closeConfirmModal()">✓ סגור</button>
-    `;
-  }
-
-  confirmModal.classList.add('show');
+  document.getElementById('accuracyModal').classList.add('show');
 }
 
 // Initialize on load
