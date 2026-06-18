@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>מה אוכלים? — מתכנן ארוחות חכם</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@700;900&family=Heebo:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0b0d14; --card:#141826; --card2:#1a2030;
+    --text:#f4f6fb; --muted:#9aa3b5;
+    --accent:#fb7e3c; --accent2:#f43f5e; --ok:#34d399; --gold:#fbbf24;
+    --line:rgba(255,255,255,.10); --shadow:rgba(0,0,0,.5);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
+  body{
+    background:
+      radial-gradient(circle at 20% 6%, #221426 0%, transparent 55%),
+      radial-gradient(circle at 85% 95%, #101626 0%, transparent 50%),
+      var(--bg);
+    background-attachment:fixed;
+    color:var(--text);font-family:"Heebo",system-ui,sans-serif;
+    min-height:100vh;display:flex;flex-direction:column;align-items:center;
+    padding:24px 16px 90px;line-height:1.5;overflow-x:hidden;
+  }
+  .wrap{width:100%;max-width:460px}
+  header{text-align:center;margin-bottom:18px}
+  .logo{font-family:"Rubik";font-weight:900;font-size:36px;letter-spacing:-1px;
+    background:linear-gradient(92deg,#ffd166,#fb7e3c 45%,#f43f5e);
+    -webkit-background-clip:text;background-clip:text;color:transparent}
+  .tag{color:var(--muted);font-size:14.5px;margin-top:5px}
+  .tag b{color:var(--text)}
+
+  .card{background:var(--card);border-radius:18px;padding:18px;box-shadow:0 10px 30px var(--shadow);margin-bottom:14px;border:1px solid var(--line)}
+  label{display:block;font-size:13px;font-weight:700;margin:0 0 8px;color:var(--muted)}
+  .field{margin-bottom:16px}
+  .field:last-child{margin-bottom:0}
+  input[type=text],input[type=password],textarea{width:100%;font-family:inherit;font-size:16px;color:var(--text);
+    background:#0e1220;border:1.5px solid var(--line);border-radius:11px;padding:12px 13px;outline:none;transition:.15s}
+  input:focus,textarea:focus{border-color:var(--accent)}
+  textarea{resize:vertical;min-height:46px}
+  .hint{font-size:12px;color:var(--muted);margin-top:6px}
+
+  .row{display:flex;gap:10px}
+  .row .field{flex:1}
+
+  .stepper{display:flex;align-items:center;gap:10px}
+  .stepper button{width:44px;height:44px;border-radius:12px;border:1.5px solid var(--line);cursor:pointer;
+    background:#0e1220;color:var(--text);font-size:22px;font-weight:900;font-family:inherit;transition:.12s}
+  .stepper button:active{transform:scale(.9);background:#1f2333}
+  .stepper .val{flex:1;text-align:center;font-size:26px;font-weight:900}
+
+  .toggle{display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .switch{position:relative;width:54px;height:30px;flex:none}
+  .switch input{opacity:0;width:0;height:0}
+  .slider{position:absolute;inset:0;background:#2a3147;border-radius:30px;transition:.2s;cursor:pointer}
+  .slider:before{content:"";position:absolute;height:22px;width:22px;right:4px;top:4px;background:#fff;border-radius:50%;transition:.2s}
+  .switch input:checked + .slider{background:var(--ok)}
+  .switch input:checked + .slider:before{transform:translateX(-24px)}
+
+  .go{width:100%;border:0;border-radius:15px;padding:17px;font-family:inherit;font-weight:900;font-size:18px;cursor:pointer;
+    background:linear-gradient(92deg,#fb7e3c,#f43f5e);color:#fff;box-shadow:0 10px 26px rgba(244,63,94,.32);transition:.12s;margin-top:4px}
+  .go:active{transform:scale(.98)}
+  .go:disabled{background:#2a3147;color:#8893a8;box-shadow:none;cursor:not-allowed}
+
+  /* loading */
+  .loading{display:none;text-align:center;padding:30px 10px}
+  .loading.on{display:block}
+  .pan{font-size:54px;display:inline-block;animation:shake 1s ease-in-out infinite}
+  @keyframes shake{0%,100%{transform:rotate(-8deg)}50%{transform:rotate(8deg)}}
+  .loadmsg{margin-top:14px;color:var(--muted);font-size:15px;font-weight:700}
+
+  /* results */
+  #results{display:none}
+  #results.on{display:block;animation:in .35s ease}
+  @keyframes in{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+  .secttl{font-family:"Rubik";font-weight:900;font-size:20px;margin:6px 2px 12px}
+  .day{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:15px 16px;margin-bottom:11px;position:relative;overflow:hidden}
+  .day:before{content:"";position:absolute;top:0;right:0;width:5px;height:100%;background:linear-gradient(180deg,#fb7e3c,#f43f5e)}
+  .day .dname{font-size:12.5px;font-weight:800;color:var(--accent);letter-spacing:.3px}
+  .day .meal{font-family:"Rubik";font-weight:900;font-size:19px;margin:3px 0 6px}
+  .day .why{font-size:13.5px;color:var(--muted)}
+  .day .time{display:inline-block;margin-top:9px;background:#0e1220;border:1px solid var(--line);border-radius:20px;padding:4px 11px;font-size:12.5px;font-weight:700;color:var(--gold)}
+
+  .shop{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px}
+  .shop h3{font-family:"Rubik";font-weight:900;font-size:17px;margin-bottom:12px}
+  .shop .it{display:flex;align-items:center;gap:11px;padding:9px 4px;border-bottom:1px dashed rgba(255,255,255,.07);cursor:pointer;font-size:15px}
+  .shop .it:last-child{border-bottom:0}
+  .shop .it .box{width:22px;height:22px;border-radius:7px;border:2px solid var(--muted);flex:none;display:grid;place-items:center;font-size:14px;transition:.15s}
+  .shop .it.done .box{background:var(--ok);border-color:var(--ok);color:#06281c}
+  .shop .it.done .txt{text-decoration:line-through;color:var(--muted)}
+
+  .again{width:100%;margin-top:16px;border:1.5px solid var(--line);background:var(--card2);color:var(--text);
+    border-radius:14px;padding:14px;font-family:inherit;font-weight:800;font-size:15px;cursor:pointer}
+
+  .err{display:none;background:rgba(244,63,94,.12);border:1px solid rgba(244,63,94,.4);color:#fecaca;
+    border-radius:12px;padding:13px 15px;font-size:14px;font-weight:600;margin-bottom:14px}
+  .err.on{display:block}
+
+  /* key gate */
+  .keycard{border:1px solid rgba(251,191,36,.35);background:rgba(251,191,36,.06)}
+  .keycard .ktitle{font-family:"Rubik";font-weight:900;font-size:16px;margin-bottom:6px}
+  .keycard p{font-size:13px;color:var(--muted);margin-bottom:12px}
+  .keycard a{color:var(--gold);font-weight:700}
+  .save{width:100%;margin-top:10px;border:0;border-radius:12px;padding:13px;background:var(--gold);color:#231a02;
+    font-family:inherit;font-weight:900;font-size:15px;cursor:pointer}
+
+  .gear{position:fixed;bottom:18px;right:18px;z-index:50;width:46px;height:46px;border-radius:50%;
+    background:var(--card2);border:1px solid var(--line);color:var(--muted);font-size:20px;cursor:pointer;box-shadow:0 8px 20px var(--shadow)}
+  .home{position:fixed;bottom:18px;left:18px;z-index:50;background:linear-gradient(135deg,#8b5cf6,#6d28d9);color:#fff;border:none;
+    border-radius:30px;padding:11px 18px;font-family:Heebo,sans-serif;font-weight:700;font-size:14px;text-decoration:none;box-shadow:0 8px 24px var(--shadow)}
+  .powered{text-align:center;color:var(--muted);font-size:11.5px;margin-top:26px}
+  .hidden{display:none!important}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="logo">מה אוכלים? 🍳</div>
+    <div class="tag">הילדים בוחרים פעם אחת · <b>אתה רגוע כל השבוע</b></div>
+  </header>
+
+  <div class="err" id="err"></div>
+
+  <!-- API KEY GATE -->
+  <div class="card keycard" id="keyCard">
+    <div class="ktitle">🔑 חיבור חד-פעמי</div>
+    <p>כדי שה-AI יעבוד צריך מפתח של Anthropic. משיגים אותו בחינם תוך 2 דקות ב-<a href="https://console.anthropic.com/" target="_blank" rel="noopener">console.anthropic.com</a> (Settings → API Keys). המפתח נשמר <b>רק במכשיר שלך</b>.</p>
+    <input type="password" id="keyInput" placeholder="sk-ant-..." autocomplete="off">
+    <button class="save" id="saveKey">שמור והתחל</button>
+  </div>
+
+  <!-- FORM -->
+  <div id="form">
+    <div class="card">
+      <div class="field">
+        <label>כמה ילדים?</label>
+        <div class="stepper">
+          <button id="kMinus">−</button>
+          <div class="val" id="kVal">2</div>
+          <button id="kPlus">+</button>
+        </div>
+      </div>
+      <div class="field">
+        <label>גילאים (לדוגמה: 3, 6)</label>
+        <input type="text" id="ages" placeholder="3, 6" inputmode="numeric">
+      </div>
+      <div class="field">
+        <label>מה הם אוהבים לאכול? 😋</label>
+        <textarea id="loves" placeholder="פסטה, שניצל, פיצה, אורז..."></textarea>
+      </div>
+      <div class="field">
+        <label>מה הם לא אוהבים / אלרגיות? 🚫</label>
+        <textarea id="hates" placeholder="ירקות ירוקים, אגוזים, חריף..."></textarea>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="field">
+        <label>מה יש במקרר? (לא חובה)</label>
+        <textarea id="fridge" placeholder="עוף, ביצים, גבינה, עגבניות..."></textarea>
+        <div class="hint">אם תמלא — ה-AI ינסה להשתמש במה שכבר יש לך</div>
+      </div>
+      <div class="field toggle">
+        <label style="margin:0">כשר?</label>
+        <label class="switch"><input type="checkbox" id="kosher" checked><span class="slider"></span></label>
+      </div>
+      <div class="field" style="margin-top:16px">
+        <label>כמה ימים לתכנן?</label>
+        <div class="stepper">
+          <button id="dMinus">−</button>
+          <div class="val" id="dVal">5</div>
+          <button id="dPlus">+</button>
+        </div>
+      </div>
+    </div>
+
+    <button class="go" id="go">🍳 תכנן לי את השבוע</button>
+  </div>
+
+  <!-- LOADING -->
+  <div class="loading" id="loading">
+    <div class="pan">🍳</div>
+    <div class="loadmsg" id="loadmsg">חושב על ארוחות שהילדים יאהבו...</div>
+  </div>
+
+  <!-- RESULTS -->
+  <div id="results">
+    <div class="secttl">🗓️ התפריט שלך</div>
+    <div id="days"></div>
+    <div class="shop">
+      <h3>🛒 רשימת קניות</h3>
+      <div id="shop"></div>
+    </div>
+    <button class="again" id="again">↻ תכנן שבוע חדש</button>
+  </div>
+
+  <div class="powered">מופעל על ידי Claude · ה-AI שדורג כהכי בטוח לילדים 🛡️</div>
+</div>
+
+<button class="gear" id="gear" title="הגדרות מפתח">⚙️</button>
+<a href="../index.html" class="home">🏠 הביתה</a>
+
+<script>
+"use strict";
+const KEY_STORE = "anthropic_key";
+const $ = id => document.getElementById(id);
+
+/* ---------- API key handling ---------- */
+function getKey(){ return localStorage.getItem(KEY_STORE) || ""; }
+function showForm(){
+  const has = !!getKey();
+  $("keyCard").classList.toggle("hidden", has);
+  $("form").classList.toggle("hidden", !has);
+}
+$("saveKey").onclick = () => {
+  const k = $("keyInput").value.trim();
+  if(!k.startsWith("sk-ant-")){ showErr("המפתח לא נראה תקין — הוא מתחיל ב-sk-ant-"); return; }
+  localStorage.setItem(KEY_STORE, k);
+  hideErr(); showForm();
+};
+$("gear").onclick = () => {
+  $("keyInput").value = getKey();
+  $("keyCard").classList.remove("hidden");
+  $("form").classList.add("hidden");
+  $("results").classList.remove("on");
+  window.scrollTo(0,0);
+};
+showForm();
+
+/* ---------- steppers ---------- */
+let kids = 2, days = 5;
+$("kPlus").onclick = () => { kids = Math.min(8, kids+1); $("kVal").textContent = kids; };
+$("kMinus").onclick = () => { kids = Math.max(1, kids-1); $("kVal").textContent = kids; };
+$("dPlus").onclick = () => { days = Math.min(7, days+1); $("dVal").textContent = days; };
+$("dMinus").onclick = () => { days = Math.max(1, days-1); $("dVal").textContent = days; };
+
+/* ---------- errors ---------- */
+function showErr(m){ const e=$("err"); e.textContent=m; e.classList.add("on"); window.scrollTo(0,0); }
+function hideErr(){ $("err").classList.remove("on"); }
+
+/* ---------- loading messages ---------- */
+const LOAD_MSGS = [
+  "חושב על ארוחות שהילדים יאהבו...",
+  "מתאים את הארוחות לגילאים...",
+  "בודק מה יש במקרר...",
+  "בונה רשימת קניות חכמה...",
+  "כמעט מוכן! 🥘"
+];
+let loadTimer = null;
+function startLoad(){
+  $("form").classList.add("hidden");
+  $("results").classList.remove("on");
+  $("loading").classList.add("on");
+  let i = 0;
+  $("loadmsg").textContent = LOAD_MSGS[0];
+  loadTimer = setInterval(()=>{ i=(i+1)%LOAD_MSGS.length; $("loadmsg").textContent = LOAD_MSGS[i]; }, 2200);
+}
+function stopLoad(){ clearInterval(loadTimer); $("loading").classList.remove("on"); }
+
+/* ---------- the AI call ---------- */
+const SYSTEM = `אתה מתכנן ארוחות ערב מומחה למשפחות בישראל. המשתמש הוא הורה עסוק.
+תכנן ארוחות ערב מציאותיות, מהירות וזולות שילדים באמת אוהבים — בהתאם לגיל הילדים, מה שהם אוהבים, ומה שהם לא אוהבים או אלרגיים אליו.
+אם ההורה ציין מה יש במקרר — העדף ארוחות שמשתמשות בזה.
+לכל יום: שם הארוחה (dinner), משפט קצר וחם למה דווקא הילדים האלה יאהבו אותה (why), וזמן הכנה משוער כמו "20 דק'" (time).
+בנה גם רשימת קניות אחת מאוחדת, מאורגנת ובלי כפילויות (shopping).
+כל הטקסט בעברית. ענה אך ורק לפי הסכמה.`;
+
+const SCHEMA = {
+  type: "object",
+  properties: {
+    week: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          day:    { type: "string" },
+          dinner: { type: "string" },
+          why:    { type: "string" },
+          time:   { type: "string" }
+        },
+        required: ["day","dinner","why","time"],
+        additionalProperties: false
+      }
+    },
+    shopping: { type: "array", items: { type: "string" } }
+  },
+  required: ["week","shopping"],
+  additionalProperties: false
+};
+
+async function plan(){
+  hideErr();
+  const key = getKey();
+  if(!key){ $("gear").click(); return; }
+
+  const ages   = $("ages").value.trim() || "לא צוין";
+  const loves  = $("loves").value.trim() || "לא צוין";
+  const hates  = $("hates").value.trim() || "אין";
+  const fridge = $("fridge").value.trim() || "לא צוין";
+  const kosher = $("kosher").checked ? "כן" : "לא";
+
+  const userMsg =
+`מספר ילדים: ${kids}
+גילאים: ${ages}
+אוהבים: ${loves}
+לא אוהבים / אלרגיות: ${hates}
+יש במקרר: ${fridge}
+כשר: ${kosher}
+תכנן בדיוק ${days} ימים של ארוחות ערב.`;
+
+  startLoad();
+  try{
+    const res = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        "x-api-key": key,
+        "anthropic-version": "2023-06-01",
+        "anthropic-dangerous-direct-browser-access": "true"
+      },
+      body: JSON.stringify({
+        model: "claude-opus-4-8",
+        max_tokens: 3000,
+        system: SYSTEM,
+        messages: [{ role: "user", content: userMsg }],
+        output_config: { format: { type: "json_schema", schema: SCHEMA } }
+      })
+    });
+
+    if(!res.ok){
+      stopLoad(); $("form").classList.remove("hidden");
+      if(res.status === 401) return showErr("המפתח שגוי או פג תוקף. לחץ על ⚙️ והדבק מפתח תקין.");
+      if(res.status === 429) return showErr("יותר מדי בקשות כרגע — נסה שוב בעוד רגע.");
+      if(res.status === 400){ const j=await res.json().catch(()=>({})); return showErr("בקשה לא תקינה: " + (j?.error?.message || "נסה שוב")); }
+      return showErr("שגיאה מהשרת ("+res.status+"). נסה שוב עוד רגע.");
+    }
+
+    const data = await res.json();
+    const block = (data.content||[]).find(b=>b.type==="text");
+    let txt = block ? block.text : "";
+    txt = txt.trim().replace(/^```json/i,"").replace(/^```/,"").replace(/```$/,"").trim();
+    const parsed = JSON.parse(txt);
+
+    render(parsed);
+  }catch(e){
+    stopLoad(); $("form").classList.remove("hidden");
+    showErr("משהו השתבש: " + (e.message || e) + ". נסה שוב.");
+  }
+}
+
+/* ---------- render ---------- */
+function esc(s){ return String(s||"").replace(/[&<>"]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+
+function render(d){
+  stopLoad();
+  const days = Array.isArray(d.week) ? d.week : [];
+  const shop = Array.isArray(d.shopping) ? d.shopping : [];
+
+  $("days").innerHTML = days.map(x => `
+    <div class="day">
+      <div class="dname">${esc(x.day)}</div>
+      <div class="meal">${esc(x.dinner)}</div>
+      <div class="why">${esc(x.why)}</div>
+      <div class="time">⏱️ ${esc(x.time)}</div>
+    </div>`).join("");
+
+  $("shop").innerHTML = shop.map(item => `
+    <div class="it"><div class="box">✓</div><div class="txt">${esc(item)}</div></div>`).join("");
+
+  // tap to check off
+  document.querySelectorAll("#shop .it").forEach(el=>{
+    el.onclick = () => el.classList.toggle("done");
+  });
+
+  $("results").classList.add("on");
+  window.scrollTo(0,0);
+}
+
+$("go").onclick = plan;
+$("again").onclick = () => {
+  $("results").classList.remove("on");
+  $("form").classList.remove("hidden");
+  window.scrollTo(0,0);
+};
+</script>
+</body>
+</html>
