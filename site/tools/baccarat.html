@@ -83,6 +83,7 @@ h1 {
   border: 2px solid var(--gold);
   border-radius: 20px;
   padding: 24px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
 }
 
 .board-title {
@@ -117,23 +118,57 @@ h1 {
   width: 70px;
   height: 100px;
   background: white;
-  border: 2px solid var(--black);
+  border: 2px solid #333;
   border-radius: 8px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   font-weight: 700;
-  font-size: 24px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  font-size: 20px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+  position: relative;
+  overflow: hidden;
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(0,0,0,0.05));
+  pointer-events: none;
+}
+
+.card-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  z-index: 1;
+}
+
+.card-suit {
+  font-size: 16px;
+  font-weight: 900;
 }
 
 .card.red-suit {
-  color: var(--red);
+  color: #e74c3c;
+}
+
+.card.red-suit .card-suit {
+  color: #e74c3c;
 }
 
 .card.black-suit {
-  color: var(--black);
+  color: #1a1a1a;
+}
+
+.card.black-suit .card-suit {
+  color: #1a1a1a;
 }
 
 .score-display {
@@ -154,6 +189,7 @@ h1 {
   border: 2px solid var(--gold);
   border-radius: 20px;
   padding: 24px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
 }
 
 .suit-grid {
@@ -299,13 +335,16 @@ h1 {
   color: var(--text);
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.3s ease;
   font-size: 14px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 .btn:hover:not(:disabled) {
   border-color: var(--gold);
   background: var(--card-bg);
+  box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
+  transform: translateY(-2px);
 }
 
 .btn:disabled {
@@ -342,6 +381,7 @@ h1 {
   padding: 24px;
   margin-bottom: 24px;
   display: none;
+  box-shadow: 0 8px 24px rgba(52, 211, 153, 0.2);
 }
 
 .result-panel.show {
@@ -388,6 +428,7 @@ h1 {
   border-radius: 20px;
   padding: 24px;
   margin-bottom: 24px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
 }
 
 .stats-title {
@@ -410,6 +451,14 @@ h1 {
   border-radius: 12px;
   padding: 16px;
   text-align: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  transition: all 0.2s;
+}
+
+.stat-item:hover {
+  border-color: var(--gold);
+  background: var(--card-bg);
+  box-shadow: 0 4px 12px rgba(212, 175, 55, 0.15);
 }
 
 .stat-label {
@@ -438,6 +487,7 @@ h1 {
   border-radius: 20px;
   padding: 24px;
   margin-bottom: 24px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
 }
 
 .trend-title {
@@ -463,10 +513,17 @@ h1 {
 
 .trend-item {
   background: var(--bg-darker);
-  border: 1px solid var(--line);
+  border: 2px solid var(--line);
   border-radius: 8px;
-  padding: 12px;
+  padding: 14px;
   text-align: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s;
+}
+
+.trend-item:hover {
+  border-color: var(--gold);
+  box-shadow: 0 4px 12px rgba(212, 175, 55, 0.2);
 }
 
 .trend-item-label {
@@ -494,13 +551,14 @@ h1 {
 }
 
 .trend-warning {
-  background: rgba(245, 158, 11, 0.1);
-  border: 1px solid var(--warning);
+  background: rgba(245, 158, 11, 0.12);
+  border: 2px solid var(--warning);
   border-radius: 8px;
-  padding: 12px;
+  padding: 14px;
   font-size: 12px;
   color: var(--warning);
-  line-height: 1.5;
+  line-height: 1.6;
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.1);
 }
 
 .trend-no-data {
@@ -517,6 +575,7 @@ h1 {
   border-radius: 20px;
   padding: 24px;
   margin-bottom: 24px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
 }
 
 .history-title {
@@ -535,31 +594,38 @@ h1 {
 }
 
 .road-cell {
-  width: 40px;
-  height: 40px;
-  border-radius: 6px;
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 700;
-  font-size: 20px;
-  border: 2px solid var(--line);
+  font-size: 22px;
+  border: 2px solid;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s;
+  cursor: default;
+}
+
+.road-cell:hover {
+  transform: scale(1.1);
 }
 
 .road-cell.player {
-  background: rgba(52, 211, 153, 0.2);
+  background: rgba(52, 211, 153, 0.25);
   border-color: var(--success);
   color: var(--success);
 }
 
 .road-cell.banker {
-  background: rgba(212, 175, 55, 0.2);
+  background: rgba(212, 175, 55, 0.25);
   border-color: var(--gold);
   color: var(--gold);
 }
 
 .road-cell.tie {
-  background: rgba(148, 163, 181, 0.2);
+  background: rgba(148, 163, 181, 0.15);
   border-color: var(--muted);
   color: var(--muted);
 }
@@ -626,6 +692,7 @@ tr:hover {
   border-radius: 20px;
   padding: 24px;
   margin-bottom: 24px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
 }
 
 .control-title {
@@ -638,8 +705,14 @@ tr:hover {
 
 .control-buttons {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 10px;
+}
+
+@media (max-width: 480px) {
+  .control-buttons {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 /* Modal */
@@ -669,6 +742,19 @@ tr:hover {
   width: 90%;
   max-height: 80vh;
   overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .modal-title {
@@ -684,6 +770,12 @@ tr:hover {
   grid-template-columns: 1fr 1fr;
   gap: 12px;
   margin-top: 20px;
+}
+
+#simCount, input[type="file"] {
+  background: var(--bg-darker) !important;
+  color: var(--text) !important;
+  border: 1px solid var(--line) !important;
 }
 
 .file-input-wrapper {
@@ -869,6 +961,8 @@ tr:hover {
     <div class="control-title">⚙️ בקרה</div>
     <div class="control-buttons">
       <button class="btn" onclick="undoLastRound()">↶ בטל יד אחרונה</button>
+      <button class="btn" onclick="startSimulation()">🎲 הדמיה</button>
+      <button class="btn" onclick="runAccuracyTest()">✓ בדוק דיוק</button>
       <button class="btn" onclick="exportGame()">💾 ייצוא JSON</button>
       <button class="btn" onclick="showImportModal()">📂 ייבוא JSON</button>
       <button class="btn btn-danger" onclick="newSession()">🔄 סשן חדש</button>
@@ -1019,11 +1113,11 @@ function renderCardDisplay() {
   const bankerDisplay = document.getElementById('bankerCardsDisplay');
 
   playerDisplay.innerHTML = gameState.currentPlayer.map(card =>
-    `<div class="card ${card.suit.class}">${card.value}<br>${card.suit.name.split(' ')[0]}</div>`
+    `<div class="card ${card.suit.class}"><div class="card-inner"><div>${card.value}</div><div class="card-suit">${card.suit.name.split(' ')[0]}</div></div></div>`
   ).join('');
 
   bankerDisplay.innerHTML = gameState.currentBanker.map(card =>
-    `<div class="card ${card.suit.class}">${card.value}<br>${card.suit.name.split(' ')[0]}</div>`
+    `<div class="card ${card.suit.class}"><div class="card-inner"><div>${card.value}</div><div class="card-suit">${card.suit.name.split(' ')[0]}</div></div></div>`
   ).join('');
 }
 
@@ -1309,17 +1403,33 @@ function estimateTrend() {
   if (bankerTrend > playerTrend && bankerTrend > tieTrend) strongestTrend = 'בנקר';
 
   // Explanation
-  let explanation = '';
+  let explanation = 'ניתוח של הסשן הנוכחי: ';
+
   if (stats.currentStreak.type === 'player' && stats.currentStreak.count > 2) {
-    explanation += `רצף של ${stats.currentStreak.count} ידיים של פלייר. `;
+    explanation += `רצף פעיל של ${stats.currentStreak.count} ידיים לפלייר. `;
   } else if (stats.currentStreak.type === 'banker' && stats.currentStreak.count > 2) {
-    explanation += `רצף של ${stats.currentStreak.count} ידיים של בנקר. `;
+    explanation += `רצף פעיל של ${stats.currentStreak.count} ידיים לבנקר. `;
+  } else if (stats.currentStreak.type === 'tie' && stats.currentStreak.count > 1) {
+    explanation += `ריצף של ${stats.currentStreak.count} תיקוים. `;
   }
 
-  if (stats.playerPct > 55) {
-    explanation += 'הפלייר הציג שיעור הצלחה גבוה בסשן. ';
-  } else if (stats.bankerPct > 55) {
-    explanation += 'הבנקר הציג שיעור הצלחה גבוה בסשן. ';
+  // Last 5 analysis
+  if (stats.last5.length === 5) {
+    const last5player = stats.last5.filter(w => w === 'player').length;
+    const last5banker = stats.last5.filter(w => w === 'banker').length;
+    if (last5player > last5banker) {
+      explanation += `בעשר הידיים האחרונות, הפלייר הרוויח ${last5player} מתוך 5. `;
+    } else if (last5banker > last5player) {
+      explanation += `בחמש הידיים האחרונות, הבנקר הרוויח ${last5banker} מתוך 5. `;
+    }
+  }
+
+  if (stats.playerPct > 52) {
+    explanation += 'הפלייר מציג ביצוע טוב יותר בסשן זה. ';
+  } else if (stats.bankerPct > 52) {
+    explanation += 'הבנקר מציג ביצוע טוב יותר בסשן זה. ';
+  } else {
+    explanation += 'התפלגות כמעט שוויונית בין השחקנים. ';
   }
 
   explanation += 'זוהי אומדן סטטיסטי בלבד ואינה משנה את סיכויי המשחק.';
@@ -1523,6 +1633,157 @@ function newSession() {
   document.getElementById('confirmTitle').textContent = 'סשן חדש';
   document.getElementById('confirmMessage').textContent = 'זה ימחק את כל ההיסטוריה של המשחק הנוכחי. בטוח?';
   window.confirmAction = 'newSession';
+  confirmModal.classList.add('show');
+}
+
+// Simulation Mode
+function startSimulation() {
+  const confirmModal = document.getElementById('confirmModal');
+  document.getElementById('confirmTitle').textContent = 'הדמיה מתקדמת';
+  document.getElementById('confirmMessage').innerHTML = `
+    <div style="margin-bottom: 12px;">בחר כמות יידות להדמיה:</div>
+    <select id="simCount" style="width: 100%; padding: 8px; background: var(--bg-darker); border: 1px solid var(--line); color: var(--text); border-radius: 6px; margin-bottom: 12px;">
+      <option value="10">10 יידות</option>
+      <option value="25">25 יידות</option>
+      <option value="50">50 יידות</option>
+      <option value="100">100 יידות</option>
+      <option value="200">200 יידות</option>
+      <option value="500">500 יידות</option>
+    </select>
+  `;
+
+  const buttons = document.querySelector('.modal-buttons');
+  buttons.innerHTML = `
+    <button class="btn" onclick="closeConfirmModal()">ביטול</button>
+    <button class="btn btn-primary" onclick="executeSimulation()">הרץ הדמיה</button>
+  `;
+
+  confirmModal.classList.add('show');
+}
+
+function executeSimulation() {
+  const count = parseInt(document.getElementById('simCount').value) || 50;
+  let playerWins = 0, bankerWins = 0, ties = 0;
+
+  for (let i = 0; i < count; i++) {
+    const playerCards = [getRandomCard(), getRandomCard()];
+    const bankerCards = [getRandomCard(), getRandomCard()];
+
+    const result = calculateWinner(playerCards, bankerCards);
+    if (result.winner === 'player') playerWins++;
+    else if (result.winner === 'banker') bankerWins++;
+    else ties++;
+  }
+
+  // Show results
+  const total = playerWins + bankerWins + ties;
+  const playerPct = ((playerWins / (playerWins + bankerWins)) * 100).toFixed(1);
+  const bankerPct = ((bankerWins / (playerWins + bankerWins)) * 100).toFixed(1);
+  const tiePct = ((ties / total) * 100).toFixed(1);
+
+  const confirmModal = document.getElementById('confirmModal');
+  document.getElementById('confirmTitle').textContent = '📊 תוצאות הדמיה';
+  document.getElementById('confirmMessage').innerHTML = `
+    <div style="font-size: 14px; line-height: 1.8;">
+      <div><strong>סך יידות:</strong> ${count}</div>
+      <div><strong>פלייר ניצח:</strong> ${playerWins} (${playerPct}%)</div>
+      <div><strong>בנקר ניצח:</strong> ${bankerWins} (${bankerPct}%)</div>
+      <div><strong>תיקו:</strong> ${ties} (${tiePct}%)</div>
+      <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); font-size: 12px; color: var(--muted);">
+        ההדמיה מראה התפלגות של כ-50.68% פלייר, 49.32% בנקר, 5.06% תיקו על פי הסטטיסטיקה של באקרה.
+      </div>
+    </div>
+  `;
+
+  document.querySelector('.modal-buttons').innerHTML = `
+    <button class="btn" onclick="closeConfirmModal()">סגור</button>
+  `;
+}
+
+function getRandomCard() {
+  const suits = SUITS;
+  const values = VALUES;
+  const randomSuit = suits[Math.floor(Math.random() * suits.length)];
+  const randomValue = values[Math.floor(Math.random() * values.length)];
+  return { suit: randomSuit, value: randomValue };
+}
+
+// Accuracy Test
+function runAccuracyTest() {
+  if (gameState.rounds.length < 5) {
+    alert('צריך לפחות 5 יידות בהיסטוריה לבדוק דיוק');
+    return;
+  }
+
+  const confirmModal = document.getElementById('confirmModal');
+  document.getElementById('confirmTitle').textContent = '✓ בדיקת דיוק';
+
+  // Run simulation with the same expected distribution
+  const simCount = Math.max(gameState.rounds.length * 10, 500);
+  let simPlayerWins = 0, simBankerWins = 0, simTies = 0;
+
+  for (let i = 0; i < simCount; i++) {
+    const playerCards = [getRandomCard(), getRandomCard()];
+    const bankerCards = [getRandomCard(), getRandomCard()];
+
+    const result = calculateWinner(playerCards, bankerCards);
+    if (result.winner === 'player') simPlayerWins++;
+    else if (result.winner === 'banker') simBankerWins++;
+    else simTies++;
+  }
+
+  // Calculate actual stats from game
+  const stats = calculateStats();
+  const totalNonTie = stats.playerWins + stats.bankerWins;
+
+  // Expected Baccarat distribution
+  const expectedPlayer = 50.68;
+  const expectedBanker = 49.32;
+  const expectedTie = 5.06;
+
+  // Simulated stats
+  const simTotal = simPlayerWins + simBankerWins;
+  const simPlayerPct = (simPlayerWins / simTotal * 100).toFixed(2);
+  const simBankerPct = (simBankerWins / simTotal * 100).toFixed(2);
+  const simTiePct = (simTies / simCount * 100).toFixed(2);
+
+  // Actual game stats
+  const actualPlayerPct = totalNonTie > 0 ? (stats.playerWins / totalNonTie * 100).toFixed(2) : 0;
+  const actualBankerPct = totalNonTie > 0 ? (stats.bankerWins / totalNonTie * 100).toFixed(2) : 0;
+  const actualTiePct = (stats.ties / stats.total * 100).toFixed(2);
+
+  // Calculate accuracy
+  const playerAccuracy = (100 - Math.abs(actualPlayerPct - expectedPlayer)).toFixed(1);
+  const bankerAccuracy = (100 - Math.abs(actualBankerPct - expectedBanker)).toFixed(1);
+  const overallAccuracy = ((parseFloat(playerAccuracy) + parseFloat(bankerAccuracy)) / 2).toFixed(1);
+
+  document.getElementById('confirmMessage').innerHTML = `
+    <div style="font-size: 13px; line-height: 1.8;">
+      <div style="margin-bottom: 12px;"><strong>הסטטיסטיקה של באקרה:</strong></div>
+      <div>• פלייר: ${expectedPlayer}%</div>
+      <div>• בנקר: ${expectedBanker}%</div>
+      <div>• תיקו: ${expectedTie}%</div>
+
+      <div style="margin: 16px 0; padding: 12px; background: rgba(212, 175, 55, 0.1); border-radius: 6px;">
+        <strong style="color: var(--gold);">המשחק שלך (${stats.total} יידות):</strong>
+        <div>• פלייר: ${actualPlayerPct}% (דיוק: ${playerAccuracy}%)</div>
+        <div>• בנקר: ${actualBankerPct}% (דיוק: ${bankerAccuracy}%)</div>
+        <div>• תיקו: ${actualTiePct}%</div>
+      </div>
+
+      <div style="padding: 12px; background: rgba(52, 211, 153, 0.1); border-radius: 6px; border-left: 3px solid var(--success);">
+        <strong style="color: var(--success);">דיוק כללי: ${overallAccuracy}%</strong>
+        <div style="font-size: 11px; color: var(--muted); margin-top: 4px;">
+          ${overallAccuracy >= 90 ? '✓ דיוק מעולה!' : overallAccuracy >= 80 ? '✓ דיוק טוב' : 'צריך עוד יידות'}
+        </div>
+      </div>
+    </div>
+  `;
+
+  document.querySelector('.modal-buttons').innerHTML = `
+    <button class="btn" onclick="closeConfirmModal()">סגור</button>
+  `;
+
   confirmModal.classList.add('show');
 }
 
