@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>עוזר בלאק ג'ק 📷</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@500;700;900&family=Heebo:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#07120d; --text:#f4f6fb; --muted:#9fb3a6; --line:rgba(255,255,255,.10);
+  --felt0:#0c3a26; --felt1:#0a2e1e; --gold:#ffce3a; --green:#34d399; --red:#ff5470;
+  --blue:#46d6ff; --purple:#a78bfa; --chip:#152a20; --glass:rgba(255,255,255,.06);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{
+  background:radial-gradient(900px circle at 50% -5%,#14543699,transparent 60%),
+    linear-gradient(160deg,#0a2419,var(--bg));
+  background-attachment:fixed;
+  color:var(--text);font-family:'Heebo',system-ui,sans-serif;min-height:100vh;
+  padding:0 0 100px;overflow-x:hidden;
+}
+header{text-align:center;padding:10px 0 6px}
+h1{font-family:'Rubik';font-weight:900;font-size:24px;
+  background:linear-gradient(90deg,var(--gold),var(--green),var(--blue));
+  -webkit-background-clip:text;background-clip:text;color:transparent}
+.tag{color:var(--muted);font-size:12px;margin-top:2px}
+
+/* ── setup modal ── */
+#setup{position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:999;
+  display:flex;align-items:center;justify-content:center;padding:20px}
+.setup-box{background:#0f2419;border:1px solid var(--line);border-radius:20px;
+  padding:24px 20px;max-width:360px;width:100%;text-align:center}
+.setup-box h2{font-family:'Rubik';font-weight:900;font-size:20px;margin-bottom:6px;color:var(--gold)}
+.setup-box p{color:var(--muted);font-size:13px;margin-bottom:16px;line-height:1.5}
+.setup-box input{width:100%;background:rgba(255,255,255,.07);border:1px solid var(--line);
+  border-radius:10px;padding:11px 14px;color:var(--text);font-size:14px;
+  font-family:monospace;margin-bottom:10px;direction:ltr;text-align:left}
+.setup-box input::placeholder{color:var(--muted)}
+.decks-row{display:flex;gap:8px;justify-content:center;margin-bottom:14px}
+.deck-btn{background:var(--chip);border:1px solid var(--line);border-radius:10px;
+  color:var(--muted);padding:8px 16px;font:700 14px Heebo;cursor:pointer;transition:.15s}
+.deck-btn.sel{background:#1a4030;border-color:var(--green);color:var(--green)}
+.setup-start{width:100%;background:linear-gradient(135deg,var(--gold),#ff9a3c);
+  color:#2a1700;border:none;border-radius:14px;padding:14px;font-family:'Rubik';
+  font-weight:900;font-size:16px;cursor:pointer;margin-bottom:8px}
+.setup-skip{background:none;border:none;color:var(--muted);font-size:13px;
+  cursor:pointer;text-decoration:underline}
+.api-note{font-size:11px;color:#667;margin-top:4px;line-height:1.4}
+
+/* ── camera ── */
+.cam-wrap{position:relative;width:100%;max-height:260px;overflow:hidden;
+  background:#000;display:flex;align-items:center;justify-content:center}
+#video{width:100%;max-height:260px;object-fit:cover;display:block}
+#overlay{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.cam-status{position:absolute;top:8px;right:10px;background:rgba(0,0,0,.65);
+  border-radius:20px;padding:4px 10px;font-size:11px;font-weight:700;color:var(--muted)}
+.cam-status.scanning{color:var(--blue)}
+.cam-status.found{color:var(--green)}
+.cam-error{padding:40px 20px;text-align:center;color:var(--muted);font-size:13px}
+
+/* ── pending bar ── */
+#pending-bar{background:#0f2419;border-top:1px solid rgba(255,206,58,.4);
+  border-bottom:1px solid rgba(255,206,58,.4);padding:10px 14px;
+  display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:center}
+#pending-bar.hidden{display:none}
+#pending-label{font-family:'Rubik';font-weight:900;font-size:15px;color:var(--gold);
+  background:rgba(255,206,58,.12);border-radius:8px;padding:4px 10px}
+.pend-btn{border:none;border-radius:10px;padding:8px 14px;font-family:'Rubik';
+  font-weight:700;font-size:13px;cursor:pointer}
+.pend-dealer{background:rgba(70,214,255,.2);color:var(--blue)}
+.pend-player{background:rgba(52,211,153,.2);color:var(--green)}
+.pend-reject{background:rgba(255,84,112,.15);color:var(--red)}
+
+/* ── cards panel ── */
+.cards-panel{padding:10px 14px;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.hand{background:radial-gradient(120% 90% at 50% 0%,var(--felt0),var(--felt1));
+  border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:10px 8px;
+  display:flex;flex-direction:column;align-items:center;gap:6px;min-height:110px}
+.hand-label{font-size:11px;color:var(--muted);font-weight:700;letter-spacing:.5px}
+.cards-row{display:flex;gap:4px;flex-wrap:wrap;justify-content:center;min-height:60px;align-items:center}
+.card{width:36px;height:52px;border-radius:6px;background:#fbfbfd;color:#11131a;
+  display:flex;flex-direction:column;justify-content:space-between;padding:3px 4px;
+  font-family:'Rubik';font-weight:900;box-shadow:0 2px 6px rgba(0,0,0,.4);
+  animation:deal .2s ease}
+@keyframes deal{from{transform:translateY(-10px) scale(.9);opacity:0}to{transform:none;opacity:1}}
+.card.red{color:#d11d3c}
+.card .r{font-size:12px;line-height:1}
+.card .s{font-size:14px;text-align:left;line-height:1}
+.card.back{background:repeating-linear-gradient(45deg,#23408a,#23408a 5px,#1a2f66 5px,#1a2f66 10px);
+  border:2px solid #2c4ea0}
+.hand-total{font-family:'Rubik';font-weight:900;font-size:13px;
+  background:rgba(0,0,0,.35);border:1px solid var(--line);border-radius:12px;
+  padding:2px 10px;min-width:30px;text-align:center}
+.hand-total.bust{color:var(--red);border-color:var(--red)}
+.hand-total.bj{color:var(--gold);border-color:var(--gold)}
+
+/* ── recommendation ── */
+.rec-wrap{margin:4px 14px 6px;border-radius:18px;overflow:hidden}
+#recommendation{background:var(--chip);border:2px solid var(--line);border-radius:18px;
+  text-align:center;padding:16px 12px;transition:all .3s}
+#recommendation.rec-H{background:rgba(70,214,255,.1);border-color:var(--blue)}
+#recommendation.rec-S{background:rgba(255,84,112,.1);border-color:var(--red)}
+#recommendation.rec-D,#recommendation.rec-DS{background:rgba(167,139,250,.1);border-color:var(--purple)}
+#recommendation.rec-P{background:rgba(52,211,153,.1);border-color:var(--green)}
+#rec-action{font-family:'Rubik';font-weight:900;font-size:28px;letter-spacing:1px}
+.rec-H #rec-action{color:var(--blue)}
+.rec-S #rec-action{color:var(--red)}
+.rec-D #rec-action,.rec-DS #rec-action{color:var(--purple)}
+.rec-P #rec-action{color:var(--green)}
+#rec-detail{font-size:12px;color:var(--muted);margin-top:2px}
+
+/* ── count display ── */
+#count-display{text-align:center;font-size:12px;color:var(--muted);padding:2px 0 6px}
+
+/* ── controls ── */
+.controls{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;padding:6px 14px}
+.ctrl-btn{border:1px solid var(--line);background:var(--chip);color:var(--text);
+  border-radius:12px;padding:9px 16px;font:700 13px Heebo;cursor:pointer;transition:.15s}
+.ctrl-btn:hover{border-color:rgba(255,255,255,.3)}
+.ctrl-btn.reveal{border-color:var(--gold);color:var(--gold);background:rgba(255,206,58,.1)}
+.ctrl-btn.hidden{display:none}
+
+/* ── manual panel ── */
+#manual-panel{margin:0 14px;background:var(--glass);border:1px solid var(--line);
+  border-radius:14px;padding:12px;display:none}
+#manual-panel.open{display:block}
+.rank-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-bottom:10px}
+.rank-btn{background:rgba(255,255,255,.07);border:1px solid var(--line);border-radius:8px;
+  color:var(--text);font:700 14px Rubik;padding:8px 0;cursor:pointer;transition:.12s;text-align:center}
+.rank-btn:active{background:rgba(255,255,255,.15)}
+.rank-btn.sel{background:rgba(255,206,58,.2);border-color:var(--gold);color:var(--gold)}
+.add-row{display:flex;gap:8px}
+.add-btn{flex:1;border:none;border-radius:10px;padding:10px;font:700 14px Rubik;cursor:pointer}
+.add-dealer-btn{background:rgba(70,214,255,.2);color:var(--blue)}
+.add-player-btn{background:rgba(52,211,153,.2);color:var(--green)}
+.add-split-btn{background:rgba(167,139,250,.2);color:var(--purple);display:none}
+.split-row{display:flex;gap:8px;margin-top:6px}
+
+/* ── split hand ── */
+.split-hand{margin-top:-4px}
+.split-label{font-size:10px;color:var(--purple);font-weight:700;margin-bottom:3px;text-align:center}
+
+/* ── home button ── */
+.home{position:fixed;bottom:18px;left:18px;z-index:9999;
+  background:linear-gradient(135deg,#0d9488,#065f55);color:#fff;border:none;
+  border-radius:30px;padding:10px 18px;font:700 14px Heebo;text-decoration:none;
+  box-shadow:0 8px 24px rgba(0,0,0,.5)}
+.settings-btn{position:fixed;bottom:18px;right:18px;z-index:9999;background:var(--chip);
+  border:1px solid var(--line);color:var(--muted);border-radius:30px;padding:10px 14px;
+  font:700 12px Heebo;cursor:pointer}
+.toast{position:fixed;bottom:74px;left:50%;transform:translateX(-50%) translateY(20px);
+  background:var(--text);color:#06150e;padding:10px 18px;border-radius:30px;font-weight:700;font-size:14px;
+  opacity:0;transition:.3s;z-index:90;pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<!-- Setup Modal -->
+<div id="setup">
+  <div class="setup-box">
+    <h2>📷 עוזר בלאק ג'ק</h2>
+    <p>המצלמה מסתכלת על השולחן ומזהה קלפים אוטומטית.<br>כמה חפיסות בשו?</p>
+    <div class="decks-row">
+      <button class="deck-btn" data-d="4">4</button>
+      <button class="deck-btn sel" data-d="6">6</button>
+      <button class="deck-btn" data-d="8">8</button>
+    </div>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:8px">מפתח Roboflow לזיהוי אוטומטי (אופציונלי):</p>
+    <input type="text" id="api-key-input" placeholder="rf_xxxxxxxxx..." dir="ltr">
+    <p class="api-note">בלי מפתח — הכנסה ידנית בלבד. חשבון חינמי: roboflow.com</p>
+    <button class="setup-start" id="setup-start">התחל</button>
+    <br><button class="setup-skip" id="setup-skip">דלג (בלי מצלמה)</button>
+  </div>
+</div>
+
+<header>
+  <h1>עוזר בלאק ג'ק 📷</h1>
+  <div class="tag">מסתכל על השולחן · מחשב אסטרטגיה אוטומטית</div>
+</header>
+
+<!-- Camera -->
+<div class="cam-wrap" id="cam-wrap">
+  <video id="video" autoplay playsinline muted></video>
+  <canvas id="overlay"></canvas>
+  <div class="cam-status" id="cam-status">מאתחל...</div>
+</div>
+
+<!-- Pending Card Confirmation -->
+<div id="pending-bar" class="hidden">
+  <span id="pending-label">—</span>
+  <button class="pend-btn pend-dealer" id="confirm-dealer">✓ דילר</button>
+  <button class="pend-btn pend-player" id="confirm-player">✓ שלי</button>
+  <button class="pend-btn pend-reject" id="reject-card">✗ דלג</button>
+</div>
+
+<!-- Cards Display -->
+<div class="cards-panel">
+  <div class="hand">
+    <div class="hand-label">דילר</div>
+    <div class="cards-row" id="dealer-cards"></div>
+    <div class="hand-total" id="dealer-total">—</div>
+  </div>
+  <div class="hand">
+    <div class="hand-label">היד שלי</div>
+    <div class="cards-row" id="player-cards"></div>
+    <div class="hand-total" id="player-total">—</div>
+    <div class="split-hand" id="split-hand" style="display:none">
+      <div class="split-label">יד 2 (ספליט)</div>
+      <div class="cards-row" id="split-cards"></div>
+      <div class="hand-total" id="split-total">—</div>
+    </div>
+  </div>
+</div>
+
+<!-- Recommendation -->
+<div class="rec-wrap">
+  <div id="recommendation">
+    <div id="rec-action">—</div>
+    <div id="rec-detail">הכנס קלפים כדי לקבל המלצה</div>
+  </div>
+</div>
+
+<!-- Hi-Lo Count -->
+<div id="count-display"></div>
+
+<!-- Controls -->
+<div class="controls">
+  <button class="ctrl-btn reveal hidden" id="reveal-btn">🃏 חשוף קלף דילר</button>
+  <button class="ctrl-btn" id="reset-btn">🔄 סבב חדש</button>
+  <button class="ctrl-btn" id="manual-toggle">✏️ קלף ידני</button>
+</div>
+
+<!-- Manual Input Panel -->
+<div id="manual-panel">
+  <div class="rank-grid" id="rank-grid">
+    <!-- populated by JS -->
+  </div>
+  <div class="add-row">
+    <button class="add-btn add-dealer-btn" id="add-dealer-btn">➕ לדילר</button>
+    <button class="add-btn add-player-btn" id="add-player-btn">➕ שלי</button>
+  </div>
+  <div class="split-row" id="split-row" style="display:none">
+    <button class="add-btn add-split-btn" id="add-split-btn" style="display:flex;flex:1">➕ יד 2</button>
+  </div>
+</div>
+
+<a class="home" href="../index.html">🏠 הביתה</a>
+<button class="settings-btn" id="settings-btn">⚙️ הגדרות</button>
+<div class="toast" id="toast"></div>
+
+<script>
+"use strict";
+
+/* ═══════════════════════════════════════════
+   CARD UTILITIES (ported from blackjack.html)
+   ═══════════════════════════════════════════ */
+function cardValue(r){
+  if(r==="A") return 11;
+  if(r==="K"||r==="Q"||r==="J"||r==="10") return 10;
+  return parseInt(r,10);
+}
+function handValue(cards){
+  let total=0, aces=0;
+  for(const c of cards){ total+=cardValue(c.rank); if(c.rank==="A") aces++; }
+  while(total>21 && aces>0){ total-=10; aces--; }
+  return {total, soft: aces>0 && total<=21};
+}
+function isBlackjack(cards){
+  return cards.length===2 && handValue(cards).total===21;
+}
+function suitSymbol(s){
+  return {H:"♥",D:"♦",C:"♣",S:"♠"}[s] || s;
+}
+function suitRed(s){ return s==="H"||s==="D"; }
+
+/* ═══════════════════════════════════════════
+   BASIC STRATEGY TABLES
+   6 decks, dealer stands soft 17
+   Index = dealer upcard: 0=2,1=3,2=4,3=5,4=6,5=7,6=8,7=9,8=10,9=A
+   H=Hit S=Stand D=Double P=Split DS=Double/Stand R=Surrender(→H)
+   ═══════════════════════════════════════════ */
+const HARD = {
+  5: ['H','H','H','H','H','H','H','H','H','H'],
+  6: ['H','H','H','H','H','H','H','H','H','H'],
+  7: ['H','H','H','H','H','H','H','H','H','H'],
+  8: ['H','H','H','H','H','H','H','H','H','H'],
+  9: ['H','D','D','D','D','H','H','H','H','H'],
+ 10: ['D','D','D','D','D','D','D','D','H','H'],
+ 11: ['D','D','D','D','D','D','D','D','D','H'],
+ 12: ['H','H','S','S','S','H','H','H','H','H'],
+ 13: ['S','S','S','S','S','H','H','H','H','H'],
+ 14: ['S','S','S','S','S','H','H','H','H','H'],
+ 15: ['S','S','S','S','S','H','H','H','H','H'],
+ 16: ['S','S','S','S','S','H','H','H','H','H'],
+ 17: ['S','S','S','S','S','S','S','S','S','S'],
+ 18: ['S','S','S','S','S','S','S','S','S','S'],
+ 19: ['S','S','S','S','S','S','S','S','S','S'],
+ 20: ['S','S','S','S','S','S','S','S','S','S'],
+ 21: ['S','S','S','S','S','S','S','S','S','S'],
+};
+const SOFT = {
+ 13: ['H','H','H','D','D','H','H','H','H','H'],
+ 14: ['H','H','H','D','D','H','H','H','H','H'],
+ 15: ['H','H','D','D','D','H','H','H','H','H'],
+ 16: ['H','H','D','D','D','H','H','H','H','H'],
+ 17: ['H','D','D','D','D','H','H','H','H','H'],
+ 18: ['S','DS','DS','DS','DS','S','S','H','H','H'],
+ 19: ['S','S','S','S','S','S','S','S','S','S'],
+ 20: ['S','S','S','S','S','S','S','S','S','S'],
+};
+const PAIRS = {
+  'A': ['P','P','P','P','P','P','P','P','P','P'],
+ '10': ['S','S','S','S','S','S','S','S','S','S'],
+  'K': ['S','S','S','S','S','S','S','S','S','S'],
+  'Q': ['S','S','S','S','S','S','S','S','S','S'],
+  'J': ['S','S','S','S','S','S','S','S','S','S'],
+  '9': ['P','P','P','P','P','S','P','P','S','S'],
+  '8': ['P','P','P','P','P','P','P','P','P','P'],
+  '7': ['P','P','P','P','P','P','H','H','H','H'],
+  '6': ['P','P','P','P','P','H','H','H','H','H'],
+  '5': ['D','D','D','D','D','D','D','D','H','H'],
+  '4': ['H','H','H','P','P','H','H','H','H','H'],
+  '3': ['P','P','P','P','P','P','H','H','H','H'],
+  '2': ['P','P','P','P','P','P','H','H','H','H'],
+};
+function dealerUpcardIdx(rank){
+  if(rank==="A") return 9;
+  const v=cardValue(rank);
+  if(v>=10) return 8;
+  return v-2;
+}
+function isPair(cards){
+  if(cards.length!==2) return false;
+  const a=cardValue(cards[0].rank), b=cardValue(cards[1].rank);
+  return a===b;
+}
+function basicStrategy(playerCards, dealerUpcard){
+  if(!dealerUpcard || playerCards.length===0) return null;
+  const up=dealerUpcardIdx(dealerUpcard.rank);
+  const v=handValue(playerCards);
+  if(v.total>21) return 'BUST';
+  if(isBlackjack(playerCards)) return 'BJ';
+  if(isPair(playerCards)){
+    const r=playerCards[0].rank;
+    const row=PAIRS[r];
+    if(row) return row[up];
+  }
+  if(v.soft && v.total>=13 && v.total<=20){
+    const row=SOFT[v.total];
+    if(row) return row[up];
+  }
+  const total=Math.min(v.total,21);
+  const row=HARD[total]||HARD[17];
+  return row[up];
+}
+function strategyLabel(code){
+  const map={
+    H:'קח (HIT)',S:'עמוד (STAND)',D:'דאבל (DOUBLE)',
+    DS:'דאבל / עמוד',P:'ספליט (SPLIT)',
+    BJ:'בלאק ג\'ק! 🎉',BUST:'נשרפת 💥',
+    null:'—'
+  };
+  return map[code]||code;
+}
+function strategyClass(code){
+  const map={H:'rec-H',S:'rec-S',D:'rec-D',DS:'rec-DS',P:'rec-P'};
+  return map[code]||'';
+}
+
+/* ═══════════════════════════════════════════
+   STATE
+   ═══════════════════════════════════════════ */
+let state = {
+  dealerCards: [],       // [{rank, suit}], first = upcard, second may be {rank:'?',suit:'?'} (hole)
+  playerCards: [],       // [{rank, suit}]
+  splitCards: [],        // if split happened
+  hasSplit: false,
+  holeHidden: true,      // dealer's second card hidden
+  numDecks: 6,
+  confirmedCards: 0,     // total confirmed for count
+  runningCount: 0,
+  pendingQueue: [],      // cards awaiting confirmation
+  candidateMap: {},      // rank -> {count, zone, suit, bbox}
+};
+function hiLoValue(rank){
+  const v=cardValue(rank);
+  if(v>=2&&v<=6) return 1;
+  if(v>=10||rank==="A") return -1;
+  return 0;
+}
+function trueCount(){
+  const decksUsed = state.confirmedCards/52;
+  const decksLeft = Math.max(state.numDecks - decksUsed, 0.5);
+  return (state.runningCount/decksLeft).toFixed(1);
+}
+
+/* ═══════════════════════════════════════════
+   CONFIG
+   ═══════════════════════════════════════════ */
+let apiKey = localStorage.getItem('bjcv_apikey') || '';
+let selectedDecks = 6;
+const ROBOFLOW_MODEL = 'https://detect.roboflow.com/playing-cards-ow27d/4';
+const DETECT_INTERVAL = 2500; // ms between API calls
+let detectTimer = null;
+let cameraActive = false;
+
+/* ═══════════════════════════════════════════
+   DOM SHORTCUTS
+   ═══════════════════════════════════════════ */
+const $=id=>document.getElementById(id);
+
+/* ═══════════════════════════════════════════
+   RENDERING
+   ═══════════════════════════════════════════ */
+function cardHTML(c){
+  if(c.rank==="?") return `<div class="card back"></div>`;
+  const red=suitRed(c.suit);
+  const sym=suitSymbol(c.suit);
+  return `<div class="card ${red?'red':''}"><div class="r">${c.rank}</div><div class="s">${sym}</div></div>`;
+}
+function renderCards(){
+  // dealer
+  const dealerEl=$("dealer-cards");
+  dealerEl.innerHTML="";
+  state.dealerCards.forEach((c,i)=>{
+    if(i===1 && state.holeHidden && state.dealerCards.length>1){
+      dealerEl.insertAdjacentHTML("beforeend",`<div class="card back"></div>`);
+    } else {
+      dealerEl.insertAdjacentHTML("beforeend", cardHTML(c));
+    }
+  });
+  // dealer total
+  const dTotal=$("dealer-total");
+  if(state.dealerCards.length===0){ dTotal.textContent="—"; dTotal.className="hand-total"; }
+  else {
+    const visibleCards = state.holeHidden
+      ? [state.dealerCards[0]].filter(Boolean)
+      : state.dealerCards.filter(c=>c.rank!=="?");
+    const v=handValue(visibleCards);
+    dTotal.textContent = state.holeHidden && state.dealerCards.length>1
+      ? cardValue(state.dealerCards[0].rank)
+      : (v.total + (isBlackjack(state.dealerCards)?" BJ":""));
+    dTotal.className="hand-total"+(v.total>21?" bust":isBlackjack(state.dealerCards)?" bj":"");
+  }
+  // player
+  const playerEl=$("player-cards");
+  playerEl.innerHTML="";
+  state.playerCards.forEach(c=>{
+    playerEl.insertAdjacentHTML("beforeend", cardHTML(c));
+  });
+  const pTotal=$("player-total");
+  if(state.playerCards.length===0){ pTotal.textContent="—"; pTotal.className="hand-total"; }
+  else {
+    const v=handValue(state.playerCards);
+    pTotal.textContent = v.total + (isBlackjack(state.playerCards)?" BJ":"") + (v.soft&&v.total<21?" (רך)":"");
+    pTotal.className="hand-total"+(v.total>21?" bust":isBlackjack(state.playerCards)?" bj":"");
+  }
+  // split
+  $("split-hand").style.display = state.hasSplit ? "block" : "none";
+  if(state.hasSplit){
+    const splitEl=$("split-cards");
+    splitEl.innerHTML="";
+    state.splitCards.forEach(c=> splitEl.insertAdjacentHTML("beforeend", cardHTML(c)));
+    const sv=handValue(state.splitCards);
+    $("split-total").textContent=sv.total;
+    $("split-total").className="hand-total"+(sv.total>21?" bust":"");
+  }
+  // split add button visibility
+  $("split-row").style.display=state.hasSplit?"flex":"none";
+}
+function renderRecommendation(){
+  const rec=$("recommendation");
+  if(state.playerCards.length===0 || state.dealerCards.length===0){
+    rec.className="";
+    $("rec-action").textContent="—";
+    $("rec-detail").textContent="הכנס קלפים כדי לקבל המלצה";
+    return;
+  }
+  const dealerUp = state.dealerCards[0];
+  const code = basicStrategy(state.playerCards, dealerUp);
+  const displayCode = code==="DS"?"DS":code;
+  rec.className = strategyClass(displayCode);
+  $("rec-action").textContent = strategyLabel(code);
+  const pv=handValue(state.playerCards);
+  $("rec-detail").textContent = `${pv.total}${pv.soft?" (רך)":""} מול דילר ${dealerUp.rank}${suitSymbol(dealerUp.suit)}`;
+}
+function renderCount(){
+  if(state.confirmedCards===0){ $("count-display").textContent=""; return; }
+  const tc=trueCount();
+  const sign=state.runningCount>=0?"+":"";
+  $("count-display").textContent =
+    `ספירה: RC ${sign}${state.runningCount} · TC ${tc} (${state.confirmedCards} קלפים)`;
+}
+function renderPending(){
+  if(state.pendingQueue.length===0){
+    $("pending-bar").classList.add("hidden");
+    return;
+  }
+  const card=state.pendingQueue[0];
+  const sym=suitSymbol(card.suit);
+  const red=suitRed(card.suit);
+  $("pending-label").innerHTML=
+    `<span style="color:${red?"#ff5470":"var(--text)"}">קלף: ${card.rank}${sym}</span>
+     <span style="font-size:11px;color:var(--muted);margin-right:4px">(${card.zone==="dealer"?"דילר?":"שחקן?"})</span>`;
+  $("pending-bar").classList.remove("hidden");
+  // draw on overlay
+  drawPendingOverlay(card);
+}
+function renderAll(){
+  renderCards();
+  renderRecommendation();
+  renderCount();
+  renderPending();
+  // reveal button
+  const revealBtn=$("reveal-btn");
+  if(state.dealerCards.length>=2 && state.holeHidden){
+    revealBtn.classList.remove("hidden");
+  } else {
+    revealBtn.classList.add("hidden");
+  }
+}
+
+/* ═══════════════════════════════════════════
+   OVERLAY DRAWING
+   ═══════════════════════════════════════════ */
+function getOverlayCtx(){
+  const canvas=$("overlay");
+  const video=$("video");
+  canvas.width=video.videoWidth||video.clientWidth||320;
+  canvas.height=video.videoHeight||video.clientHeight||240;
+  return {ctx:canvas.getContext("2d"), w:canvas.width, h:canvas.height};
+}
+function drawZoneLine(){
+  const {ctx,w,h}=getOverlayCtx();
+  ctx.clearRect(0,0,w,h);
+  ctx.save();
+  ctx.setLineDash([8,5]);
+  ctx.strokeStyle="rgba(255,206,58,0.5)";
+  ctx.lineWidth=1.5;
+  ctx.beginPath();
+  ctx.moveTo(0,h/2);
+  ctx.lineTo(w,h/2);
+  ctx.stroke();
+  ctx.fillStyle="rgba(255,206,58,0.7)";
+  ctx.font="bold 11px Heebo, sans-serif";
+  ctx.textAlign="right";
+  ctx.fillText("דילר",w-6,h/2-5);
+  ctx.fillText("שחקן",w-6,h/2+14);
+  ctx.restore();
+}
+function drawPendingOverlay(card){
+  if(!card.bbox) return;
+  const canvas=$("overlay");
+  const {ctx,w,h}=getOverlayCtx();
+  drawZoneLine();
+  // scale bbox (Roboflow returns center x,y)
+  const imgW=card.bbox.imgW||640, imgH=card.bbox.imgH||480;
+  const scaleX=w/imgW, scaleY=h/imgH;
+  const x=(card.bbox.x - card.bbox.bw/2)*scaleX;
+  const y=(card.bbox.y - card.bbox.bh/2)*scaleY;
+  const bw=card.bbox.bw*scaleX, bh=card.bbox.bh*scaleY;
+  ctx.save();
+  ctx.strokeStyle="#ffce3a";
+  ctx.lineWidth=2.5;
+  ctx.shadowColor="#ffce3a";
+  ctx.shadowBlur=8;
+  ctx.strokeRect(x,y,bw,bh);
+  ctx.fillStyle="rgba(255,206,58,0.15)";
+  ctx.fillRect(x,y,bw,bh);
+  ctx.restore();
+}
+
+/* ═══════════════════════════════════════════
+   CARD STATE MUTATIONS
+   ═══════════════════════════════════════════ */
+function addCardToDealer(card){
+  // First card = upcard, second = hole card (hidden)
+  if(state.dealerCards.length>=2) return; // max 2 to start
+  state.dealerCards.push(card);
+  state.runningCount += hiLoValue(card.rank);
+  state.confirmedCards++;
+  renderAll();
+}
+function addCardToPlayer(card){
+  state.playerCards.push(card);
+  state.runningCount += hiLoValue(card.rank);
+  state.confirmedCards++;
+  renderAll();
+}
+function addCardToSplit(card){
+  if(!state.hasSplit) return;
+  state.splitCards.push(card);
+  state.runningCount += hiLoValue(card.rank);
+  state.confirmedCards++;
+  renderAll();
+}
+function revealHoleCard(card){
+  if(state.dealerCards.length>=2){
+    state.dealerCards[1]=card;
+  } else {
+    state.dealerCards.push(card);
+  }
+  state.holeHidden=false;
+  state.runningCount += hiLoValue(card.rank);
+  state.confirmedCards++;
+  renderAll();
+}
+function triggerSplit(){
+  if(state.playerCards.length<2) return;
+  state.hasSplit=true;
+  // Move second card to split hand
+  state.splitCards=[state.playerCards.pop()];
+  renderAll();
+  toast("ספליט! הוסף קלף לכל יד");
+}
+function resetRound(){
+  state.dealerCards=[];
+  state.playerCards=[];
+  state.splitCards=[];
+  state.hasSplit=false;
+  state.holeHidden=true;
+  state.pendingQueue=[];
+  state.candidateMap={};
+  const {ctx,w,h}=getOverlayCtx();
+  ctx.clearRect(0,0,w,h);
+  if(cameraActive) drawZoneLine();
+  renderAll();
+}
+
+/* ═══════════════════════════════════════════
+   CONFIRMATION FLOW
+   ═══════════════════════════════════════════ */
+function confirmCard(zone){
+  if(state.pendingQueue.length===0) return;
+  const card=state.pendingQueue.shift();
+  if(zone==="dealer") addCardToDealer(card);
+  else addCardToPlayer(card);
+  if(state.pendingQueue.length>0) renderPending();
+  else {
+    $("pending-bar").classList.add("hidden");
+    drawZoneLine();
+  }
+}
+function rejectCard(){
+  if(state.pendingQueue.length===0) return;
+  state.pendingQueue.shift();
+  if(state.pendingQueue.length>0) renderPending();
+  else {
+    $("pending-bar").classList.add("hidden");
+    drawZoneLine();
+  }
+}
+
+/* ═══════════════════════════════════════════
+   ROBOFLOW DETECTION
+   ═══════════════════════════════════════════ */
+function parseRoboflowClass(cls){
+  // e.g. "10H"->{rank:'10',suit:'H'}, "AH"->{rank:'A',suit:'H'}
+  if(!cls) return null;
+  cls=cls.trim().toUpperCase();
+  const suit=cls.slice(-1);
+  const rank=cls.slice(0,-1);
+  if(!['H','D','C','S'].includes(suit)) return null;
+  if(!['A','2','3','4','5','6','7','8','9','10','J','Q','K'].includes(rank)) return null;
+  return {rank, suit};
+}
+async function detectCardsInFrame(){
+  if(!apiKey || !cameraActive) return;
+  const video=$("video");
+  if(!video.videoWidth) return;
+  // capture frame
+  const cap=document.createElement("canvas");
+  cap.width=640; cap.height=480;
+  cap.getContext("2d").drawImage(video,0,0,640,480);
+  const b64=cap.toDataURL("image/jpeg",0.8).split(",")[1];
+  try{
+    const res=await fetch(`${ROBOFLOW_MODEL}?api_key=${apiKey}&confidence=60`,{
+      method:"POST",
+      headers:{"Content-Type":"application/x-www-form-urlencoded"},
+      body:b64,
+    });
+    if(!res.ok) return;
+    const data=await res.json();
+    processDetections(data);
+  }catch(e){
+    // silently ignore network errors
+  }
+}
+function processDetections(data){
+  if(!data||!data.predictions) return;
+  const imgW=data.image?.width||640;
+  const imgH=data.image?.height||480;
+  const midY=imgH/2;
+  const newCandidates={};
+  // collect all detected cards this frame
+  for(const pred of data.predictions){
+    if((pred.confidence||0)<0.60) continue;
+    const parsed=parseRoboflowClass(pred.class);
+    if(!parsed) continue;
+    const {rank,suit}=parsed;
+    const zone=pred.y < midY ? "dealer" : "player";
+    const key=rank+"_"+zone;
+    newCandidates[key]={rank,suit,zone,
+      bbox:{x:pred.x,y:pred.y,bw:pred.width,bh:pred.height,imgW,imgH}};
+  }
+  // find stable new cards (appeared in prev frame too)
+  for(const [key,card] of Object.entries(newCandidates)){
+    // skip already confirmed
+    const alreadyConfirmed =
+      (card.zone==="dealer" && state.dealerCards.some(c=>c.rank===card.rank)) ||
+      (card.zone==="player" && state.playerCards.some(c=>c.rank===card.rank));
+    if(alreadyConfirmed) continue;
+    // skip if already in pending queue
+    if(state.pendingQueue.some(c=>c.rank===card.rank&&c.zone===card.zone)) continue;
+    // check stability
+    const prev=state.candidateMap[key];
+    if(prev){
+      // stable → add to queue
+      state.pendingQueue.push(card);
+    }
+  }
+  state.candidateMap=newCandidates;
+  if(state.pendingQueue.length>0) renderPending();
+  // update status
+  const count=Object.keys(newCandidates).length;
+  const statusEl=$("cam-status");
+  if(count>0){
+    statusEl.textContent=`🔍 ${count} קלפים נראים`;
+    statusEl.className="cam-status found";
+  } else {
+    statusEl.textContent="📷 מחכה לקלפים...";
+    statusEl.className="cam-status scanning";
+  }
+}
+function startDetectionLoop(){
+  if(!apiKey) return;
+  detectTimer=setInterval(detectCardsInFrame, DETECT_INTERVAL);
+}
+function stopDetectionLoop(){
+  if(detectTimer){ clearInterval(detectTimer); detectTimer=null; }
+}
+
+/* ═══════════════════════════════════════════
+   CAMERA
+   ═══════════════════════════════════════════ */
+async function initCamera(){
+  const camWrap=$("cam-wrap");
+  const video=$("video");
+  const statusEl=$("cam-status");
+  try{
+    const stream=await navigator.mediaDevices.getUserMedia({
+      video:{facingMode:"environment",width:{ideal:1280},height:{ideal:720}}
+    });
+    video.srcObject=stream;
+    video.onloadedmetadata=()=>{
+      video.play();
+      cameraActive=true;
+      statusEl.textContent="📷 מחכה לקלפים...";
+      statusEl.className="cam-status scanning";
+      drawZoneLine();
+      if(apiKey) startDetectionLoop();
+    };
+  }catch(e){
+    cameraActive=false;
+    camWrap.innerHTML=`<div class="cam-error">📷 אין גישה למצלמה<br><small>${e.message}</small><br><small>השתמש בהכנסה ידנית</small></div>`;
+  }
+}
+
+/* ═══════════════════════════════════════════
+   MANUAL INPUT
+   ═══════════════════════════════════════════ */
+const RANKS=["A","2","3","4","5","6","7","8","9","10","J","Q","K"];
+let selRank=null;
+function buildRankGrid(){
+  const grid=$("rank-grid");
+  grid.innerHTML="";
+  RANKS.forEach(r=>{
+    const btn=document.createElement("button");
+    btn.className="rank-btn"; btn.textContent=r; btn.dataset.r=r;
+    btn.onclick=()=>{
+      selRank=r;
+      document.querySelectorAll(".rank-btn").forEach(b=>b.classList.toggle("sel",b.dataset.r===r));
+    };
+    grid.appendChild(btn);
+  });
+}
+function makeManualCard(rank){
+  return {rank, suit:"C"}; // suit doesn't matter for BJ value
+}
+$("add-dealer-btn").onclick=()=>{
+  if(!selRank){ toast("בחר ראנק תחילה"); return; }
+  addCardToDealer(makeManualCard(selRank));
+  selRank=null;
+  document.querySelectorAll(".rank-btn").forEach(b=>b.classList.remove("sel"));
+};
+$("add-player-btn").onclick=()=>{
+  if(!selRank){ toast("בחר ראנק תחילה"); return; }
+  addCardToPlayer(makeManualCard(selRank));
+  selRank=null;
+  document.querySelectorAll(".rank-btn").forEach(b=>b.classList.remove("sel"));
+};
+$("add-split-btn").onclick=()=>{
+  if(!selRank){ toast("בחר ראנק תחילה"); return; }
+  if(!state.hasSplit){ toast("עשה ספליט תחילה"); return; }
+  addCardToSplit(makeManualCard(selRank));
+  selRank=null;
+  document.querySelectorAll(".rank-btn").forEach(b=>b.classList.remove("sel"));
+};
+
+/* ═══════════════════════════════════════════
+   SETUP MODAL
+   ═══════════════════════════════════════════ */
+document.querySelectorAll(".deck-btn").forEach(btn=>{
+  btn.onclick=()=>{
+    document.querySelectorAll(".deck-btn").forEach(b=>b.classList.remove("sel"));
+    btn.classList.add("sel");
+    selectedDecks=parseInt(btn.dataset.d);
+  };
+});
+$("setup-start").onclick=async()=>{
+  const key=$("api-key-input").value.trim();
+  if(key){ apiKey=key; localStorage.setItem("bjcv_apikey",key); }
+  state.numDecks=selectedDecks;
+  $("setup").style.display="none";
+  await initCamera();
+};
+$("setup-skip").onclick=()=>{
+  state.numDecks=selectedDecks;
+  $("setup").style.display="none";
+  $("cam-wrap").innerHTML=`<div class="cam-error">📷 מצלמה כבויה · משתמש בהכנסה ידנית</div>`;
+  $("manual-panel").classList.add("open");
+};
+
+/* ═══════════════════════════════════════════
+   CONTROL BUTTONS
+   ═══════════════════════════════════════════ */
+$("confirm-dealer").onclick=()=>confirmCard("dealer");
+$("confirm-player").onclick=()=>confirmCard("player");
+$("reject-card").onclick=rejectCard;
+$("reset-btn").onclick=()=>{ resetRound(); toast("סבב חדש"); };
+$("manual-toggle").onclick=()=>{
+  const panel=$("manual-panel");
+  panel.classList.toggle("open");
+};
+$("reveal-btn").onclick=()=>{
+  // Reveal dealer hole card — user enters manually or we do a targeted scan
+  const rank=prompt("מה הקלף שהדילר חשף? (A/2-10/J/Q/K)","");
+  if(!rank) return;
+  const r=rank.trim().toUpperCase();
+  if(!RANKS.includes(r)){ toast("ראנק לא תקין"); return; }
+  revealHoleCard({rank:r, suit:"C"});
+};
+$("settings-btn").onclick=()=>{
+  const key=prompt("מפתח Roboflow (השאר ריק לבטל):", apiKey);
+  if(key===null) return;
+  apiKey=key.trim();
+  localStorage.setItem("bjcv_apikey",apiKey);
+  stopDetectionLoop();
+  if(apiKey && cameraActive) startDetectionLoop();
+  toast(apiKey ? "מפתח נשמר" : "זיהוי אוטומטי כבוי");
+};
+
+/* ═══════════════════════════════════════════
+   TOAST
+   ═══════════════════════════════════════════ */
+function toast(msg){
+  const t=$("toast"); t.textContent=msg; t.classList.add("show");
+  clearTimeout(toast._t); toast._t=setTimeout(()=>t.classList.remove("show"),2200);
+}
+
+/* ═══════════════════════════════════════════
+   INIT
+   ═══════════════════════════════════════════ */
+buildRankGrid();
+// pre-fill API key if saved
+if(apiKey) $("api-key-input").value=apiKey;
+// restore saved key silently
+renderAll();
+</script>
+</body>
+</html>
