@@ -685,6 +685,81 @@ tr:hover {
   background: rgba(231, 76, 60, 0.1);
 }
 
+/* Simulation Panel */
+.sim-panel {
+  background: var(--card-bg);
+  border: 2px solid #2a6b5a;
+  border-radius: 20px;
+  padding: 20px 24px;
+  margin-bottom: 16px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+}
+
+.sim-panel-header {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 16px;
+}
+
+.sim-panel-title {
+  font-family: 'Rubik';
+  font-weight: 700;
+  font-size: 17px;
+  color: var(--gold);
+}
+
+.sim-panel-sub {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.sim-count-grid {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 8px;
+  margin-bottom: 0;
+}
+
+@media (max-width: 768px) {
+  .sim-count-grid { grid-template-columns: repeat(4, 1fr); }
+}
+
+@media (max-width: 480px) {
+  .sim-count-grid { grid-template-columns: repeat(4, 1fr); }
+}
+
+.sim-btn {
+  padding: 10px 6px;
+  background: var(--bg-darker);
+  border: 2px solid var(--line);
+  border-radius: 8px;
+  color: var(--text);
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+}
+
+.sim-btn:hover {
+  background: var(--gold);
+  color: var(--black);
+  border-color: var(--gold);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(212,175,55,0.4);
+}
+
+.sim-result-bar {
+  background: var(--bg-darker);
+  border-radius: 8px;
+  padding: 12px 14px;
+  margin-top: 14px;
+  font-size: 13px;
+  line-height: 1.7;
+  border: 1px solid var(--line);
+}
+
 /* Control Panel */
 .control-panel {
   background: var(--card-bg);
@@ -956,13 +1031,31 @@ tr:hover {
     </div>
   </div>
 
+  <!-- Simulation Panel - inline, injects rounds into the game -->
+  <div class="sim-panel" id="simInlinePanel">
+    <div class="sim-panel-header">
+      <span class="sim-panel-title">🎲 הדמיה — הוסף ידיים אקראיות למשחק</span>
+      <span class="sim-panel-sub">בחר כמות ולחץ — הידיים יתווספו להיסטוריה ולסטטיסטיקות</span>
+    </div>
+    <div class="sim-count-grid">
+      <button class="sim-btn" onclick="injectSim(10)">10</button>
+      <button class="sim-btn" onclick="injectSim(25)">25</button>
+      <button class="sim-btn" onclick="injectSim(50)">50</button>
+      <button class="sim-btn" onclick="injectSim(100)">100</button>
+      <button class="sim-btn" onclick="injectSim(200)">200</button>
+      <button class="sim-btn" onclick="injectSim(500)">500</button>
+      <button class="sim-btn" onclick="injectSim(1000)">1,000</button>
+      <button class="sim-btn" onclick="injectSim(2000)">2,000</button>
+    </div>
+    <div id="simInlineResult" style="display:none;"></div>
+  </div>
+
   <!-- Control Panel -->
   <div class="control-panel">
     <div class="control-title">⚙️ בקרה</div>
     <div class="control-buttons">
       <button class="btn" onclick="undoLastRound()">↶ בטל יד אחרונה</button>
-      <button class="btn" onclick="startSimulation()">🎲 הדמיה</button>
-      <button class="btn" onclick="runAccuracyTest()">✓ בדוק דיוק</button>
+      <button class="btn" onclick="runAccuracyTest()">📐 בדוק דיוק</button>
       <button class="btn" onclick="exportGame()">💾 ייצוא JSON</button>
       <button class="btn" onclick="showImportModal()">📂 ייבוא JSON</button>
       <button class="btn btn-danger" onclick="newSession()">🔄 סשן חדש</button>
@@ -997,33 +1090,6 @@ tr:hover {
     <div id="confirmModalButtons" style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:20px;">
       <button class="btn" onclick="closeConfirmModal()">ביטול</button>
       <button class="btn btn-primary" onclick="executeConfirm()">אישור</button>
-    </div>
-  </div>
-</div>
-
-<!-- Simulation Modal - standalone, no shared state -->
-<div class="modal" id="simModal">
-  <div class="modal-content">
-    <div class="modal-title">🎲 הדמיה מתקדמת</div>
-
-    <!-- Step 1: choose count -->
-    <div id="simStep1">
-      <div style="margin-bottom:14px; font-size:14px; color:var(--muted);">בחר כמות יידות להרצה:</div>
-      <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:20px;">
-        <button class="btn sim-count-btn" onclick="runSim(10)">10</button>
-        <button class="btn sim-count-btn" onclick="runSim(25)">25</button>
-        <button class="btn sim-count-btn" onclick="runSim(50)">50</button>
-        <button class="btn sim-count-btn" onclick="runSim(100)">100</button>
-        <button class="btn sim-count-btn" onclick="runSim(200)">200</button>
-        <button class="btn sim-count-btn" onclick="runSim(500)">500</button>
-      </div>
-      <button class="btn" style="width:100%;" onclick="closeSimModal()">ביטול</button>
-    </div>
-
-    <!-- Step 2: results -->
-    <div id="simStep2" style="display:none;">
-      <div id="simResults"></div>
-      <button class="btn btn-primary" style="width:100%; margin-top:16px;" onclick="closeSimModal()">✓ סגור</button>
     </div>
   </div>
 </div>
@@ -1686,72 +1752,59 @@ function doNewSession() {
   closeConfirmModal();
 }
 
-// Simulation Mode - standalone modal
-function startSimulation() {
-  document.getElementById('simStep1').style.display = 'block';
-  document.getElementById('simStep2').style.display = 'none';
-  document.getElementById('simModal').classList.add('show');
-}
-
-function closeSimModal() {
-  document.getElementById('simModal').classList.remove('show');
-}
-
-function runSim(count) {
+// Simulation — injects random rounds directly into the game history
+function injectSim(count) {
+  const startRound = gameState.rounds.length + 1;
   let playerWins = 0, bankerWins = 0, ties = 0;
 
   for (let i = 0; i < count; i++) {
     const pc = [getRandomCard(), getRandomCard()];
     const bc = [getRandomCard(), getRandomCard()];
     const result = calculateWinner(pc, bc);
+
+    gameState.rounds.push({
+      roundNum: startRound + i,
+      playerCards: pc,
+      bankerCards: bc,
+      playerScore: result.playerScore,
+      bankerScore: result.bankerScore,
+      winner: result.winner,
+      timestamp: new Date().toISOString(),
+      simulated: true
+    });
+
     if (result.winner === 'player') playerWins++;
     else if (result.winner === 'banker') bankerWins++;
     else ties++;
   }
 
-  const total = count;
+  saveToLocalStorage();
+  updateUI();
+
+  // Show inline summary
   const nonTie = playerWins + bankerWins;
-  const pPct  = nonTie > 0 ? (playerWins / nonTie * 100).toFixed(1) : '0.0';
-  const bPct  = nonTie > 0 ? (bankerWins / nonTie * 100).toFixed(1) : '0.0';
-  const tPct  = (ties / total * 100).toFixed(1);
+  const pPct = nonTie > 0 ? (playerWins / nonTie * 100).toFixed(1) : '0.0';
+  const bPct = nonTie > 0 ? (bankerWins / nonTie * 100).toFixed(1) : '0.0';
+  const tPct = (ties / count * 100).toFixed(1);
 
-  function bar(pct, color) {
-    return `<div style="background:${color};height:8px;border-radius:4px;width:${pct}%;margin-top:4px;"></div>`;
-  }
-
-  document.getElementById('simResults').innerHTML = `
-    <div style="font-size:13px; line-height:1.9;">
-      <div style="font-size:15px; font-weight:700; color:var(--gold); margin-bottom:12px;">תוצאות הדמיה: ${count} יידות</div>
-
-      <div style="background:var(--bg-darker); border-radius:8px; padding:12px; margin-bottom:8px;">
-        <div style="display:flex; justify-content:space-between;">
-          <span>🎰 פלייר ניצח</span><strong>${playerWins} יד (${pPct}%)</strong>
-        </div>
-        ${bar(pPct, '#34d399')}
+  const resultDiv = document.getElementById('simInlineResult');
+  resultDiv.style.display = 'block';
+  resultDiv.innerHTML = `
+    <div class="sim-result-bar">
+      <div style="color:var(--gold); font-weight:700; margin-bottom:8px;">✓ נוספו ${count} ידיות הדמיה למשחק</div>
+      <div style="display:flex; gap:20px; flex-wrap:wrap; font-size:13px;">
+        <span>🎰 פלייר: <strong>${playerWins} (${pPct}%)</strong></span>
+        <span>🏛️ בנקר: <strong>${bankerWins} (${bPct}%)</strong></span>
+        <span>🤝 תיקו: <strong>${ties} (${tPct}%)</strong></span>
       </div>
-
-      <div style="background:var(--bg-darker); border-radius:8px; padding:12px; margin-bottom:8px;">
-        <div style="display:flex; justify-content:space-between;">
-          <span>🏛️ בנקר ניצח</span><strong>${bankerWins} יד (${bPct}%)</strong>
-        </div>
-        ${bar(bPct, '#d4af37')}
-      </div>
-
-      <div style="background:var(--bg-darker); border-radius:8px; padding:12px; margin-bottom:12px;">
-        <div style="display:flex; justify-content:space-between;">
-          <span>🤝 תיקו</span><strong>${ties} יד (${tPct}%)</strong>
-        </div>
-        ${bar(tPct, '#9aa3b5')}
-      </div>
-
-      <div style="font-size:11px; color:var(--muted); border-top:1px solid var(--line); padding-top:10px;">
-        הסטטיסטיקה הצפויה: פלייר 50.68% | בנקר 49.32% | תיקו 5.06%
+      <div style="font-size:11px; color:var(--muted); margin-top:6px;">
+        הצפוי לפי באקרה: פלייר 50.68% | בנקר 49.32% | תיקו 5.06%
       </div>
     </div>
   `;
 
-  document.getElementById('simStep1').style.display = 'none';
-  document.getElementById('simStep2').style.display = 'block';
+  // Scroll to stats
+  document.querySelector('.stats-panel').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 function getRandomCard() {
