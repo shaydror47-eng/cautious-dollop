@@ -1112,13 +1112,15 @@ function renderCardDisplay() {
   const playerDisplay = document.getElementById('playerCardsDisplay');
   const bankerDisplay = document.getElementById('bankerCardsDisplay');
 
-  playerDisplay.innerHTML = gameState.currentPlayer.map(card =>
-    `<div class="card ${card.suit.class}"><div class="card-inner"><div>${card.value}</div><div class="card-suit">${card.suit.name.split(' ')[0]}</div></div></div>`
-  ).join('');
+  playerDisplay.innerHTML = gameState.currentPlayer.map(card => {
+    const isRed = card.suit.code === 'H' || card.suit.code === 'D';
+    return `<div class="card ${isRed ? 'red-suit' : 'black-suit'}"><div class="card-inner"><div>${card.value}</div><div class="card-suit">${card.suit.name.split(' ')[0]}</div></div></div>`;
+  }).join('');
 
-  bankerDisplay.innerHTML = gameState.currentBanker.map(card =>
-    `<div class="card ${card.suit.class}"><div class="card-inner"><div>${card.value}</div><div class="card-suit">${card.suit.name.split(' ')[0]}</div></div></div>`
-  ).join('');
+  bankerDisplay.innerHTML = gameState.currentBanker.map(card => {
+    const isRed = card.suit.code === 'H' || card.suit.code === 'D';
+    return `<div class="card ${isRed ? 'red-suit' : 'black-suit'}"><div class="card-inner"><div>${card.value}</div><div class="card-suit">${card.suit.name.split(' ')[0]}</div></div></div>`;
+  }).join('');
 }
 
 function renderSelectedCards() {
@@ -1639,30 +1641,38 @@ function newSession() {
 // Simulation Mode
 function startSimulation() {
   const confirmModal = document.getElementById('confirmModal');
-  document.getElementById('confirmTitle').textContent = 'הדמיה מתקדמת';
+  document.getElementById('confirmTitle').textContent = '🎲 הדמיה מתקדמת';
   document.getElementById('confirmMessage').innerHTML = `
-    <div style="margin-bottom: 12px;">בחר כמות יידות להדמיה:</div>
-    <select id="simCount" style="width: 100%; padding: 8px; background: var(--bg-darker); border: 1px solid var(--line); color: var(--text); border-radius: 6px; margin-bottom: 12px;">
-      <option value="10">10 יידות</option>
-      <option value="25">25 יידות</option>
-      <option value="50">50 יידות</option>
-      <option value="100">100 יידות</option>
-      <option value="200">200 יידות</option>
-      <option value="500">500 יידות</option>
+    <div style="margin-bottom: 16px; font-size: 13px; color: var(--text);">בחר כמות יידות להדמיה:</div>
+    <select id="simCount" style="width: 100%; padding: 10px; background: var(--bg-darker); border: 1px solid var(--line); color: var(--text); border-radius: 6px; margin-bottom: 16px; font-size: 14px;">
+      <option value="10">🎰 10 יידות</option>
+      <option value="25">🎰 25 יידות</option>
+      <option value="50">🎰 50 יידות</option>
+      <option value="100">🎰 100 יידות</option>
+      <option value="200">🎰 200 יידות</option>
+      <option value="500">🎰 500 יידות</option>
     </select>
   `;
 
-  const buttons = document.querySelector('.modal-buttons');
-  buttons.innerHTML = `
-    <button class="btn" onclick="closeConfirmModal()">ביטול</button>
-    <button class="btn btn-primary" onclick="executeSimulation()">הרץ הדמיה</button>
-  `;
+  const buttons = document.querySelector('#confirmModal .modal-buttons');
+  if (buttons) {
+    buttons.innerHTML = `
+      <button class="btn" onclick="closeConfirmModal()">⬅️ ביטול</button>
+      <button class="btn btn-primary" onclick="executeSimulation()">▶️ הרץ הדמיה</button>
+    `;
+  }
 
   confirmModal.classList.add('show');
 }
 
 function executeSimulation() {
-  const count = parseInt(document.getElementById('simCount').value) || 50;
+  const countSelect = document.getElementById('simCount');
+  if (!countSelect) {
+    alert('בחר כמות יידות');
+    return;
+  }
+
+  const count = parseInt(countSelect.value) || 50;
   let playerWins = 0, bankerWins = 0, ties = 0;
 
   for (let i = 0; i < count; i++) {
@@ -1677,8 +1687,9 @@ function executeSimulation() {
 
   // Show results
   const total = playerWins + bankerWins + ties;
-  const playerPct = ((playerWins / (playerWins + bankerWins)) * 100).toFixed(1);
-  const bankerPct = ((bankerWins / (playerWins + bankerWins)) * 100).toFixed(1);
+  const nonTieTotal = playerWins + bankerWins;
+  const playerPct = (nonTieTotal > 0 ? (playerWins / nonTieTotal) * 100 : 0).toFixed(1);
+  const bankerPct = (nonTieTotal > 0 ? (bankerWins / nonTieTotal) * 100 : 0).toFixed(1);
   const tiePct = ((ties / total) * 100).toFixed(1);
 
   const confirmModal = document.getElementById('confirmModal');
@@ -1690,21 +1701,31 @@ function executeSimulation() {
       <div><strong>בנקר ניצח:</strong> ${bankerWins} (${bankerPct}%)</div>
       <div><strong>תיקו:</strong> ${ties} (${tiePct}%)</div>
       <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); font-size: 12px; color: var(--muted);">
-        ההדמיה מראה התפלגות של כ-50.68% פלייר, 49.32% בנקר, 5.06% תיקו על פי הסטטיסטיקה של באקרה.
+        ✓ ההדמיה מראה התפלגות של כ-50.68% פלייר, 49.32% בנקר, 5.06% תיקו על פי הסטטיסטיקה של באקרה.
       </div>
     </div>
   `;
 
-  document.querySelector('.modal-buttons').innerHTML = `
-    <button class="btn" onclick="closeConfirmModal()">סגור</button>
-  `;
+  const modalButtons = document.querySelector('.modal-buttons');
+  if (modalButtons) {
+    modalButtons.innerHTML = `
+      <button class="btn btn-primary" style="grid-column: 1/-1;" onclick="closeConfirmModal()">סגור</button>
+    `;
+  }
 }
 
 function getRandomCard() {
-  const suits = SUITS;
-  const values = VALUES;
-  const randomSuit = suits[Math.floor(Math.random() * suits.length)];
-  const randomValue = values[Math.floor(Math.random() * values.length)];
+  const suitList = [
+    { name: '♥ לב', class: 'red-suit', code: 'H' },
+    { name: '♦ יהלום', class: 'red-suit', code: 'D' },
+    { name: '♣ תלתל', class: 'black-suit', code: 'C' },
+    { name: '♠ עלה', class: 'black-suit', code: 'S' }
+  ];
+  const valueList = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+
+  const randomSuit = suitList[Math.floor(Math.random() * suitList.length)];
+  const randomValue = valueList[Math.floor(Math.random() * valueList.length)];
+
   return { suit: randomSuit, value: randomValue };
 }
 
@@ -1780,9 +1801,12 @@ function runAccuracyTest() {
     </div>
   `;
 
-  document.querySelector('.modal-buttons').innerHTML = `
-    <button class="btn" onclick="closeConfirmModal()">סגור</button>
-  `;
+  const modalButtons = document.querySelector('#confirmModal .modal-buttons');
+  if (modalButtons) {
+    modalButtons.innerHTML = `
+      <button class="btn btn-primary" style="grid-column: 1/-1;" onclick="closeConfirmModal()">✓ סגור</button>
+    `;
+  }
 
   confirmModal.classList.add('show');
 }
