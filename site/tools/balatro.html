@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>עוזר ריצה — Balatro</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@500;700;900&family=Heebo:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#07090f;--text:#f0f2f8;--muted:#8a93aa;--line:rgba(255,255,255,.09);
+  --card:#10141f;--card2:#141926;--gold:#ffd166;--green:#34d399;
+  --red:#ff5470;--blue:#38bdf8;--purple:#c084fc;--orange:#fb923c;
+  --glass:rgba(255,255,255,.05);--danger:#ff3b5c;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{
+  background:
+    radial-gradient(ellipse 90% 55% at 50% -8%,#1e0a4488,transparent 58%),
+    radial-gradient(ellipse 55% 40% at 85% 100%,#0a2a1a55,transparent 55%),
+    var(--bg);
+  background-attachment:fixed;
+  color:var(--text);font-family:'Heebo',system-ui,sans-serif;
+  min-height:100vh;padding:14px 12px 90px;overflow-x:hidden;
+}
+.wrap{max-width:820px;margin:0 auto}
+
+/* HEADER */
+header{text-align:center;padding:8px 0 14px}
+h1{font-family:'Rubik';font-weight:900;font-size:32px;letter-spacing:-.5px;
+  background:linear-gradient(90deg,var(--gold),var(--orange),var(--purple),var(--blue));
+  -webkit-background-clip:text;background-clip:text;color:transparent}
+.sub{color:var(--muted);font-size:13px;margin-top:4px}
+
+/* BUILD TAGS */
+.tags-row{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 14px;justify-content:center}
+.btag{padding:5px 13px;border-radius:20px;font-size:12px;font-weight:700;border:1.5px solid transparent;transition:.2s}
+.btag.flush    {background:#0d2b47;border-color:#38bdf8;color:#38bdf8}
+.btag.fullhouse{background:#0e2b18;border-color:#34d399;color:#34d399}
+.btag.facecard {background:#2b1a00;border-color:#ffd166;color:#ffd166}
+.btag.flushhouse{background:#1a0c2d;border-color:#c084fc;color:#c084fc}
+.btag.economy  {background:#0e1e0d;border-color:#86efac;color:#86efac}
+.btag.scaling  {background:#1e0f09;border-color:#fb923c;color:#fb923c}
+.btag.danger   {background:#2b090e;border-color:#ff3b5c;color:#ff3b5c;animation:pulse 1.5s ease infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 #ff3b5c33}50%{box-shadow:0 0 0 6px transparent}}
+.dim{opacity:.3}
+
+/* PANEL */
+.panel{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:18px 16px;margin-bottom:14px}
+.phead{font-family:'Rubik';font-weight:700;font-size:15px;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.phead .icon{font-size:18px}
+
+/* API KEY PANEL */
+#keyPanel{border-color:#38bdf833}
+.key-status{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.key-set{font-size:13px;color:var(--green);font-weight:700}
+.key-input-row{display:flex;gap:8px;margin-top:10px}
+.key-input-row input{
+  flex:1;background:#0c1018;border:1.5px solid var(--line);border-radius:12px;
+  color:var(--text);font:14px 'Heebo';padding:10px 13px;outline:none;
+  transition:border-color .15s;direction:ltr;
+}
+.key-input-row input:focus{border-color:rgba(255,255,255,.3)}
+.btn-sm{padding:9px 14px;border-radius:12px;border:none;cursor:pointer;
+  font:700 13px 'Heebo';transition:.15s}
+.btn-save{background:#1a3a6a;color:#38bdf8}
+.btn-save:hover{background:#1e4585}
+.btn-clear{background:#2a1215;color:var(--red)}
+.btn-clear:hover{background:#3a1a1e}
+.key-hint{color:var(--muted);font-size:12px;margin-top:7px}
+.key-hint a{color:#38bdf8;text-decoration:none}
+.key-hint a:hover{text-decoration:underline}
+
+/* TABS */
+.tabs{display:flex;gap:6px;margin-bottom:14px}
+.tab{flex:1;padding:9px;border-radius:12px;border:1.5px solid var(--line);background:transparent;
+  color:var(--muted);font:700 13px 'Heebo';cursor:pointer;transition:.15s}
+.tab.on{background:var(--glass);border-color:rgba(255,255,255,.22);color:var(--text)}
+
+/* INPUT */
+textarea{
+  width:100%;background:#0c1018;border:1.5px solid var(--line);border-radius:14px;
+  color:var(--text);font:14px/1.65 'Heebo';padding:13px 14px;resize:vertical;
+  min-height:110px;outline:none;transition:border-color .15s;direction:ltr;text-align:left;
+}
+textarea:focus{border-color:rgba(255,255,255,.3)}
+textarea::placeholder{color:var(--muted);opacity:.7}
+.input-hint{color:var(--muted);font-size:11.5px;margin-top:6px;direction:rtl}
+
+/* UPLOAD */
+.upload-zone{
+  border:2px dashed var(--line);border-radius:14px;padding:30px 16px;text-align:center;
+  cursor:pointer;transition:.15s;position:relative;overflow:hidden;
+}
+.upload-zone:hover{border-color:rgba(255,255,255,.28);background:var(--glass)}
+.upload-zone.has-img{border-color:#38bdf855;background:#0d1a2a44}
+.upload-zone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.upload-icon{font-size:38px;margin-bottom:8px}
+.upload-lbl{color:var(--muted);font-size:13px}
+.upload-lbl b{color:var(--text)}
+#imgPreview{width:100%;border-radius:12px;margin-top:12px;display:none;max-height:340px;object-fit:contain;border:1px solid var(--line)}
+.img-extra{margin-top:12px;display:none}
+.img-extra-lbl{font-size:12.5px;color:var(--muted);margin-bottom:6px;direction:rtl}
+
+/* ANALYZE BUTTON */
+.btn-analyze{
+  width:100%;padding:15px;border-radius:16px;border:none;cursor:pointer;
+  background:linear-gradient(135deg,#7c3aed,#4338ca);color:#fff;
+  font:900 16px 'Rubik';letter-spacing:.3px;transition:.18s;margin-top:10px;
+  display:flex;align-items:center;justify-content:center;gap:10px;
+}
+.btn-analyze:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 8px 28px -8px #7c3aed99}
+.btn-analyze:active:not(:disabled){transform:scale(.98)}
+.btn-analyze:disabled{opacity:.45;cursor:not-allowed}
+
+/* SPINNER */
+.spinner{width:20px;height:20px;border:3px solid rgba(255,255,255,.25);
+  border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;flex:none}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ERROR */
+.err-box{background:#1a0509;border:1.5px solid var(--danger);border-radius:12px;
+  padding:12px 15px;font-size:13.5px;color:#ff7a8a;line-height:1.6;margin-top:10px;display:none}
+.err-box b{color:var(--danger)}
+
+/* OUTPUT */
+#output{display:none}
+.out-section{margin-bottom:16px}
+.out-title{font-family:'Rubik';font-weight:700;font-size:12.5px;letter-spacing:.6px;
+  text-transform:uppercase;color:var(--muted);margin-bottom:8px;display:flex;align-items:center;gap:7px}
+.out-title .dot{width:8px;height:8px;border-radius:50%;flex:none}
+
+/* Current read grid */
+.info-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+@media(max-width:440px){.info-grid{grid-template-columns:1fr}}
+.info-cell{background:#0c1018;border:1px solid var(--line);border-radius:10px;padding:9px 12px;font-size:13px}
+.info-cell .lbl{color:var(--muted);font-size:10.5px;font-weight:700;margin-bottom:3px;letter-spacing:.4px}
+
+/* Best move */
+.best-move{
+  background:linear-gradient(135deg,#0c2b1a,#0c1f30);
+  border:1.5px solid #34d399;border-radius:14px;
+  padding:15px 17px;font-size:15px;font-weight:700;line-height:1.65;
+}
+
+/* Why / body */
+.out-body{background:#0c1018;border:1px solid var(--line);border-radius:12px;
+  padding:13px 15px;font-size:14px;line-height:1.75;white-space:pre-wrap;direction:rtl}
+
+/* Danger box */
+.danger-box{background:#190409;border:1.5px solid #ff3b5c55;border-radius:12px;
+  padding:12px 15px;font-size:13.5px;line-height:1.7;white-space:pre-wrap;direction:rtl}
+
+/* Target grid */
+.target-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+@media(max-width:440px){.target-grid{grid-template-columns:1fr}}
+.tcard{background:#0c1018;border:1px solid var(--line);border-radius:10px;padding:10px 13px}
+.tcard .tlbl{color:var(--muted);font-size:10.5px;font-weight:700;margin-bottom:5px;letter-spacing:.4px}
+.tcard .tval{font-size:13px;line-height:1.6;white-space:pre-wrap}
+
+/* Confidence */
+.conf-row{display:flex;align-items:center;gap:12px;margin-bottom:7px}
+.conf-num{font-family:'Rubik';font-weight:900;font-size:32px}
+.conf-lbl{color:var(--muted);font-size:13px}
+.conf-bar{background:#1a1a2e;border-radius:20px;height:7px;overflow:hidden}
+.conf-fill{height:100%;border-radius:20px;transition:width .5s ease}
+.conf-missing{color:var(--orange);font-size:12.5px;margin-top:8px;font-style:italic;line-height:1.6}
+
+/* Warning banner */
+.warn{background:#1e1000;border:1px solid #fb923c55;border-radius:10px;
+  padding:9px 13px;font-size:13px;color:var(--orange);margin-bottom:10px;line-height:1.6}
+
+/* Sep */
+.sep{height:1px;background:var(--line);margin:16px 0}
+
+/* RAW toggle */
+.raw-toggle{color:var(--muted);font-size:12px;cursor:pointer;text-decoration:underline;
+  background:none;border:none;font-family:'Heebo';margin-top:10px;padding:0}
+#rawBox{display:none;margin-top:10px;background:#06080e;border:1px solid var(--line);
+  border-radius:10px;padding:12px;font-size:12px;line-height:1.6;white-space:pre-wrap;
+  direction:ltr;text-align:left;max-height:400px;overflow-y:auto;color:var(--muted)}
+
+/* HISTORY */
+#histPanel{display:none}
+.hist-item{background:var(--card2);border:1px solid var(--line);border-radius:14px;margin-bottom:8px;overflow:hidden}
+.hist-head{display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer;transition:background .15s}
+.hist-head:hover{background:var(--glass)}
+.hist-ts{color:var(--muted);font-size:11.5px;flex:1;text-align:left}
+.hist-label{font-weight:700;font-size:13px}
+.hist-body{padding:0 14px;max-height:0;overflow:hidden;transition:max-height .3s ease}
+.hist-body.open{max-height:400px}
+.hist-inner{padding:10px 0 14px;border-top:1px solid var(--line);font-size:13px;line-height:1.6;direction:rtl}
+.clr-hist{background:transparent;border:1px solid var(--line);color:var(--muted);
+  border-radius:10px;padding:6px 12px;font:600 12px 'Heebo';cursor:pointer;
+  margin-right:auto;transition:.15s}
+.clr-hist:hover{border-color:var(--red);color:var(--red)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>🃏 Balatro Run Assistant</h1>
+  <div class="sub">Checkered Deck · Purple Stake · עוזר החלטות מבוסס AI</div>
+</header>
+
+<!-- BUILD DIRECTION TAGS -->
+<div class="tags-row" id="buildTags">
+  <span class="btag flush dim" id="tag-flush">♠ Flush</span>
+  <span class="btag fullhouse dim" id="tag-fh">🏠 Full House</span>
+  <span class="btag facecard dim" id="tag-fc">👑 Face Cards</span>
+  <span class="btag flushhouse dim" id="tag-flushhouse">🌊 Flush House</span>
+  <span class="btag economy dim" id="tag-econ">💰 Economy</span>
+  <span class="btag scaling dim" id="tag-scale">📈 Scaling</span>
+  <span class="btag danger" id="tag-danger" style="display:none">⚠ Danger</span>
+</div>
+
+<!-- API KEY PANEL -->
+<div class="panel" id="keyPanel">
+  <div class="phead"><span class="icon">🔑</span> Anthropic API Key</div>
+  <div id="keySetRow" style="display:none">
+    <div class="key-status">
+      <span class="key-set">✓ מפתח שמור</span>
+      <button class="btn-sm btn-clear" onclick="clearKey()">הסר מפתח</button>
+    </div>
+  </div>
+  <div id="keyInputRow">
+    <div class="key-input-row">
+      <input type="password" id="keyInput" placeholder="sk-ant-api03-..." autocomplete="off">
+      <button class="btn-sm btn-save" onclick="saveKey()">שמור</button>
+    </div>
+    <div class="key-hint">
+      המפתח נשמר רק בדפדפן שלך (localStorage) ונשלח ישירות ל-Anthropic. לא נשמר בשרת.<br>
+      קבל מפתח: <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener">console.anthropic.com</a>
+    </div>
+  </div>
+</div>
+
+<!-- INPUT PANEL -->
+<div class="panel">
+  <div class="phead"><span class="icon">📝</span> מצב הריצה</div>
+
+  <div class="tabs">
+    <button class="tab on" id="tabText" onclick="switchTab('text')">⌨ הקלד מצב</button>
+    <button class="tab" id="tabImg" onclick="switchTab('img')">📸 העלה צילום מסך</button>
+  </div>
+
+  <!-- TEXT TAB -->
+  <div id="paneText">
+    <textarea id="stateInput" rows="5"
+      placeholder="Ante 3, $18, 2 hands, 1 discard&#10;jokers: Photograph, Hanging Chad, Business Card&#10;shop: Earth, Arcana Pack, Eternal Joker X, Jupiter"></textarea>
+    <div class="input-hint">כתוב כל מה שאתה רואה: Ante, כסף, ידיים, discards, jokers, shop, packs, enhancements</div>
+  </div>
+
+  <!-- SCREENSHOT TAB -->
+  <div id="paneImg" style="display:none">
+    <div class="upload-zone" id="uploadZone">
+      <input type="file" id="imgInput" accept="image/*" onchange="handleImg(event)">
+      <div class="upload-icon" id="uploadIcon">📸</div>
+      <div class="upload-lbl" id="uploadLbl"><b>לחץ או גרור</b> צילום מסך של המשחק</div>
+    </div>
+    <img id="imgPreview" alt="preview">
+    <div class="img-extra" id="imgExtra">
+      <div class="img-extra-lbl">הוסף הערות (אופציונלי) — פרטים שקשה לקרוא מהתמונה:</div>
+      <textarea id="stateInput2" rows="3" placeholder="לדוגמה: יש לי עוד Joker לא נראה בחנות, Ante 4..."></textarea>
+    </div>
+  </div>
+
+  <div class="err-box" id="errBox"></div>
+  <button class="btn-analyze" id="analyzeBtn" onclick="analyze()">
+    <span id="btnTxt">🔍 נתח את המצב</span>
+  </button>
+</div>
+
+<!-- OUTPUT PANEL -->
+<div id="output">
+<div class="panel">
+  <div class="phead"><span class="icon">🎯</span> BALATRO RUN DECISION</div>
+
+  <!-- 1 -->
+  <div class="out-section">
+    <div class="out-title"><span class="dot" style="background:#38bdf8"></span>1 · מצב נוכחי</div>
+    <div class="info-grid" id="infoGrid"></div>
+  </div>
+  <div class="sep"></div>
+
+  <!-- 2 -->
+  <div class="out-section">
+    <div class="out-title"><span class="dot" style="background:#34d399"></span>2 · המהלך הטוב ביותר עכשיו</div>
+    <div class="best-move" id="bestMove"></div>
+  </div>
+  <div class="sep"></div>
+
+  <!-- 3 -->
+  <div class="out-section">
+    <div class="out-title"><span class="dot" style="background:#ffd166"></span>3 · למה זה הכי טוב</div>
+    <div id="whyWrap"></div>
+  </div>
+  <div class="sep"></div>
+
+  <!-- 4 -->
+  <div class="out-section">
+    <div class="out-title"><span class="dot" style="background:#ff5470"></span>4 · מה לא לעשות</div>
+    <div class="danger-box" id="notBox"></div>
+  </div>
+  <div class="sep"></div>
+
+  <!-- 5 -->
+  <div class="out-section">
+    <div class="out-title"><span class="dot" style="background:#c084fc"></span>5 · יעד הבא</div>
+    <div class="target-grid" id="targetGrid"></div>
+  </div>
+  <div class="sep"></div>
+
+  <!-- 6 -->
+  <div class="out-section">
+    <div class="out-title"><span class="dot" style="background:#fb923c"></span>6 · תוכנית יד לBlind הבא</div>
+    <div class="out-body" id="handPlan"></div>
+  </div>
+  <div class="sep"></div>
+
+  <!-- 7 -->
+  <div class="out-section">
+    <div class="out-title"><span class="dot" style="background:#86efac"></span>7 · ביטחון</div>
+    <div id="confBox"></div>
+  </div>
+
+  <button class="raw-toggle" onclick="toggleRaw()">הצג תגובה גולמית מ-Claude</button>
+  <div id="rawBox"></div>
+</div>
+</div>
+
+<!-- HISTORY -->
+<div id="histPanel">
+  <div class="panel">
+    <div class="phead">
+      <span class="icon">🕐</span> היסטוריה
+      <button class="clr-hist" onclick="clearHistory()">מחק הכל</button>
+    </div>
+    <div id="histList"></div>
+  </div>
+</div>
+
+</div><!-- /wrap -->
+<script>
+/* ── KEY MANAGEMENT ─────────────────────────────────────── */
+function loadKey(){return localStorage.getItem('balatro_api_key')||''}
+function saveKey(){
+  const v=document.getElementById('keyInput').value.trim();
+  if(!v.startsWith('sk-ant-')){showErr('מפתח חייב להתחיל ב- sk-ant-');return;}
+  localStorage.setItem('balatro_api_key',v);
+  renderKeyUI();
+}
+function clearKey(){
+  localStorage.removeItem('balatro_api_key');
+  document.getElementById('keyInput').value='';
+  renderKeyUI();
+}
+function renderKeyUI(){
+  const k=loadKey();
+  document.getElementById('keySetRow').style.display=k?'block':'none';
+  document.getElementById('keyInputRow').style.display=k?'none':'block';
+}
+renderKeyUI();
+
+/* ── TABS ───────────────────────────────────────────────── */
+let imgBase64=null, imgType=null;
+
+function switchTab(t){
+  const isText=t==='text';
+  document.getElementById('paneText').style.display=isText?'block':'none';
+  document.getElementById('paneImg').style.display=isText?'none':'block';
+  document.getElementById('tabText').className='tab'+(isText?' on':'');
+  document.getElementById('tabImg').className='tab'+(!isText?' on':'');
+}
+
+function handleImg(e){
+  const file=e.target.files[0];
+  if(!file)return;
+  imgType=file.type||'image/png';
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    imgBase64=ev.target.result.split(',')[1];
+    const prev=document.getElementById('imgPreview');
+    prev.src=ev.target.result;
+    prev.style.display='block';
+    document.getElementById('imgExtra').style.display='block';
+    document.getElementById('uploadZone').classList.add('has-img');
+    document.getElementById('uploadIcon').textContent='✅';
+    document.getElementById('uploadLbl').innerHTML='<b>תמונה הועלתה</b> — לחץ להחלפה';
+  };
+  reader.readAsDataURL(file);
+}
+
+/* ── ERROR ──────────────────────────────────────────────── */
+function showErr(msg){
+  const b=document.getElementById('errBox');
+  b.innerHTML=msg;
+  b.style.display='block';
+}
+function hideErr(){document.getElementById('errBox').style.display='none';}
+
+/* ── ANALYZE ────────────────────────────────────────────── */
+async function analyze(){
+  hideErr();
+  const key=loadKey();
+  if(!key){showErr('הכנס מפתח Anthropic API לפני הניתוח.');return;}
+
+  const activeTab=document.getElementById('tabImg').classList.contains('on')?'img':'text';
+  const text1=document.getElementById('stateInput').value.trim();
+  const text2=document.getElementById('stateInput2').value.trim();
+  const extraText=activeTab==='img'?text2:(text1);
+
+  if(activeTab==='text'&&!text1){showErr('כתוב את מצב הריצה לפני הניתוח.');return;}
+  if(activeTab==='img'&&!imgBase64){showErr('העלה צילום מסך לפני הניתוח.');return;}
+
+  // loading state
+  const btn=document.getElementById('analyzeBtn');
+  const btnTxt=document.getElementById('btnTxt');
+  btn.disabled=true;
+  btnTxt.innerHTML='<div class="spinner"></div> Claude מנתח...';
+
+  try{
+    const body={};
+    if(imgBase64){body.image_base64=imgBase64;body.image_type=imgType;}
+    if(extraText) body.extra_text=extraText;
+
+    const res=await fetch('/.netlify/functions/balatro',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':key},
+      body:JSON.stringify(body),
+    });
+    const data=await res.json();
+
+    if(data.error){showErr('<b>שגיאה:</b> '+data.error);return;}
+
+    const raw=data.result||'';
+    renderOutput(raw);
+    saveHistory(raw, activeTab==='img'?'📸 Screenshot':'⌨ Text');
+
+  }catch(err){
+    showErr('שגיאת רשת: '+err.message);
+  }finally{
+    btn.disabled=false;
+    btnTxt.textContent='🔍 נתח את המצב';
+  }
+}
+
+/* ── PARSE CLAUDE RESPONSE ──────────────────────────────── */
+function parseSection(raw, sectionNum){
+  // match between section N header and next section or end
+  const re=new RegExp(`${sectionNum}\\.\\s+[^\\n]+\\n([\\s\\S]*?)(?=\\n\\d+\\.|---END---|$)`,'i');
+  const m=raw.match(re);
+  return m?m[1].trim():'';
+}
+
+function extractCurrentReadFields(sec1){
+  const fields={};
+  const lines=sec1.split('\n');
+  for(const ln of lines){
+    const m=ln.match(/^([^:]+):\s*(.+)/);
+    if(m) fields[m[1].trim().toLowerCase()]=m[2].trim();
+  }
+  return fields;
+}
+
+function detectBuildFromText(raw){
+  const t=raw.toLowerCase();
+  const dirs=[];
+  if(t.includes('flush house')) dirs.push('flushhouse');
+  if(t.includes('full house'))  dirs.push('fullhouse');
+  if(t.includes('face card'))   dirs.push('facecard');
+  if(t.includes('flush'))       dirs.push('flush');
+  if(t.includes('economy')||t.includes('כלכלה')) dirs.push('economy');
+  if(t.includes('scaling')||t.includes('סקיילינג')) dirs.push('scaling');
+  const danger=t.includes('eternal')||t.includes('spectral')||t.includes('danger')||t.includes('סכנה');
+  return {dirs:[...new Set(dirs)], danger};
+}
+
+/* ── RENDER ─────────────────────────────────────────────── */
+function renderOutput(raw){
+  // store raw
+  document.getElementById('rawBox').textContent=raw;
+
+  const sec1=parseSection(raw,1);
+  const sec2=parseSection(raw,2);
+  const sec3=parseSection(raw,3);
+  const sec4=parseSection(raw,4);
+  const sec5=parseSection(raw,5);
+  const sec6=parseSection(raw,6);
+  const sec7=parseSection(raw,7);
+
+  // --- 1. Info grid ---
+  const fields=extractCurrentReadFields(sec1);
+  const fieldMap=[
+    ['ante','Ante'],['blind','Blind'],['money','כסף'],
+    ['hands','Hands'],['discards','Discards'],
+    ['main hand direction','Build Direction'],
+    ['current jokers','Jokers'],['shop/pack options','Shop'],
+  ];
+  document.getElementById('infoGrid').innerHTML=fieldMap.map(([key,lbl])=>{
+    const val=fields[key]||fields[lbl.toLowerCase()]||'—';
+    return `<div class="info-cell"><div class="lbl">${lbl}</div><div>${esc(val)}</div></div>`;
+  }).join('');
+
+  // --- Build tags ---
+  const {dirs,danger}=detectBuildFromText(raw);
+  ['flush','fullhouse','facecard','flushhouse','economy','scaling'].forEach(d=>{
+    const tagId={flush:'tag-flush',fullhouse:'tag-fh',facecard:'tag-fc',
+      flushhouse:'tag-flushhouse',economy:'tag-econ',scaling:'tag-scale'}[d];
+    const el=document.getElementById(tagId);
+    if(el){
+      if(dirs.includes(d)) el.classList.remove('dim');
+      else el.classList.add('dim');
+    }
+  });
+  const dangerEl=document.getElementById('tag-danger');
+  if(dangerEl) dangerEl.style.display=danger?'inline-block':'none';
+
+  // --- 2. Best move ---
+  document.getElementById('bestMove').textContent=sec2||'—';
+
+  // --- 3. Why ---
+  document.getElementById('whyWrap').innerHTML=`<div class="out-body">${esc(sec3)||'—'}</div>`;
+
+  // --- 4. Not do ---
+  document.getElementById('notBox').textContent=sec4||'—';
+
+  // --- 5. Next target ---
+  const targetLines=sec5.split('\n').filter(Boolean);
+  const targets={jokers:[],tarot:[],planet:[],upgrades:[]};
+  let cur=null;
+  for(const ln of targetLines){
+    const lc=ln.toLowerCase();
+    if(lc.startsWith('joker')) cur='jokers';
+    else if(lc.startsWith('tarot')) cur='tarot';
+    else if(lc.startsWith('planet')) cur='planet';
+    else if(lc.startsWith('card')) cur='upgrades';
+    else if(cur) targets[cur].push(ln.replace(/^[-*•]\s*/,''));
+  }
+  document.getElementById('targetGrid').innerHTML=`
+    <div class="tcard"><div class="tlbl">🃏 Jokers</div><div class="tval">${esc(targets.jokers.join('\n'))||esc(sec5)||'—'}</div></div>
+    <div class="tcard"><div class="tlbl">🔮 Tarot</div><div class="tval">${esc(targets.tarot.join('\n'))||'—'}</div></div>
+    <div class="tcard"><div class="tlbl">🌍 Planet</div><div class="tval">${esc(targets.planet.join('\n'))||'—'}</div></div>
+    <div class="tcard"><div class="tlbl">✨ שדרוג קלפים</div><div class="tval">${esc(targets.upgrades.join('\n'))||'—'}</div></div>`;
+
+  // --- 6. Hand plan ---
+  document.getElementById('handPlan').textContent=sec6||'—';
+
+  // --- 7. Confidence ---
+  const confM=sec7.match(/(\d+)\s*\/\s*10|^(\d+)/m);
+  const conf=confM?parseInt(confM[1]||confM[2]):5;
+  const pct=(conf/10)*100;
+  const clr=conf>=7?'#34d399':conf>=4?'#ffd166':'#ff5470';
+  const lbl=conf>=9?'ביטחון גבוה מאוד':conf>=7?'ביטחון טוב':conf>=5?'ביטחון בינוני':conf>=3?'מידע חסר':'מידע לא מספיק';
+  const missingText=sec7.replace(/^\d+\s*\/\s*10\s*/,'').trim();
+  document.getElementById('confBox').innerHTML=`
+    <div class="conf-row">
+      <span class="conf-num" style="color:${clr}">${conf}/10</span>
+      <span class="conf-lbl">${lbl}</span>
+    </div>
+    <div class="conf-bar"><div class="conf-fill" style="width:${pct}%;background:${clr}"></div></div>
+    ${missingText?`<div class="conf-missing">${esc(missingText)}</div>`:''}`;
+
+  // show output
+  document.getElementById('output').style.display='block';
+  document.getElementById('output').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function esc(s){
+  return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+/* ── RAW TOGGLE ─────────────────────────────────────────── */
+function toggleRaw(){
+  const b=document.getElementById('rawBox');
+  b.style.display=b.style.display==='none'?'block':'none';
+}
+
+/* ── HISTORY ────────────────────────────────────────────── */
+function saveHistory(raw, mode){
+  const hist=JSON.parse(localStorage.getItem('balatro_history')||'[]');
+  const sec2=parseSection(raw,2);
+  const sec1=parseSection(raw,1);
+  const anteM=sec1.match(/ante[:\s]+([^\n]+)/i);
+  const blindM=sec1.match(/blind[:\s]+([^\n]+)/i);
+  const label=(anteM?anteM[1].trim():'?')+(blindM?' · '+blindM[1].trim():'');
+  const {dirs}=detectBuildFromText(raw);
+  hist.unshift({ts:Date.now(),label,dirs,bestMove:sec2.slice(0,160),mode});
+  if(hist.length>10)hist.length=10;
+  localStorage.setItem('balatro_history',JSON.stringify(hist));
+  renderHistory();
+}
+
+function renderHistory(){
+  const hist=JSON.parse(localStorage.getItem('balatro_history')||'[]');
+  const panel=document.getElementById('histPanel');
+  const list=document.getElementById('histList');
+  if(!hist.length){panel.style.display='none';return;}
+  panel.style.display='block';
+  list.innerHTML=hist.map((h,i)=>{
+    const d=new Date(h.ts);
+    const ts=d.toLocaleDateString('he-IL')+' '+d.toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'});
+    const tags=(h.dirs||[]).map(d=>{
+      const nm={flush:'Flush',fullhouse:'Full House',facecard:'Face Cards',flushhouse:'Flush House',economy:'Economy',scaling:'Scaling'}[d]||d;
+      return `<span class="btag ${d}" style="font-size:10.5px;padding:3px 9px">${nm}</span>`;
+    }).join('');
+    return `<div class="hist-item">
+      <div class="hist-head" onclick="toggleHist(${i})">
+        <span class="hist-label">${esc(h.label)}</span>
+        ${tags}
+        <span style="color:var(--muted);font-size:11px">${h.mode||''}</span>
+        <span class="hist-ts">${ts}</span>
+        <span style="color:var(--muted)">▾</span>
+      </div>
+      <div class="hist-body" id="hb${i}">
+        <div class="hist-inner">${esc(h.bestMove)}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+function toggleHist(i){document.getElementById('hb'+i).classList.toggle('open');}
+function clearHistory(){
+  localStorage.removeItem('balatro_history');
+  document.getElementById('histPanel').style.display='none';
+  document.getElementById('histList').innerHTML='';
+}
+
+renderHistory();
+</script>
+</body>
+</html>
