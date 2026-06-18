@@ -1,0 +1,1875 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>שולחן בקרה - באקרה</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@500;700;900&family=Heebo:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a3a2e;
+  --bg-darker: #062220;
+  --text: #f4f6fb;
+  --muted: #9aa3b5;
+  --card-bg: #0f4a3f;
+  --line: rgba(255, 255, 255, 0.08);
+  --gold: #d4af37;
+  --red: #e74c3c;
+  --black: #1a1a1a;
+  --success: #34d399;
+  --warning: #f59e0b;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Heebo', system-ui, sans-serif;
+  min-height: 100vh;
+  padding: 16px;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Header */
+header {
+  text-align: center;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid var(--gold);
+}
+
+h1 {
+  font-family: 'Rubik';
+  font-weight: 900;
+  font-size: 32px;
+  color: var(--gold);
+  margin-bottom: 8px;
+}
+
+.round-counter {
+  font-size: 18px;
+  color: var(--muted);
+  font-weight: 500;
+}
+
+/* Main Grid */
+.main-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+@media (max-width: 768px) {
+  .main-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Game Board */
+.game-board {
+  background: var(--card-bg);
+  border: 2px solid var(--gold);
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.board-title {
+  font-family: 'Rubik';
+  font-weight: 700;
+  font-size: 20px;
+  margin-bottom: 16px;
+  color: var(--gold);
+}
+
+.hand-section {
+  margin-bottom: 24px;
+}
+
+.hand-label {
+  font-weight: 600;
+  color: var(--muted);
+  margin-bottom: 12px;
+  font-size: 14px;
+}
+
+.cards-display {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 12px;
+  flex-direction: row-reverse;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.card {
+  width: 70px;
+  height: 100px;
+  background: white;
+  border: 2px solid #333;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 20px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+  position: relative;
+  overflow: hidden;
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(0,0,0,0.05));
+  pointer-events: none;
+}
+
+.card-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  z-index: 1;
+}
+
+.card-suit {
+  font-size: 16px;
+  font-weight: 900;
+}
+
+.card.red-suit {
+  color: #e74c3c;
+}
+
+.card.red-suit .card-suit {
+  color: #e74c3c;
+}
+
+.card.black-suit {
+  color: #1a1a1a;
+}
+
+.card.black-suit .card-suit {
+  color: #1a1a1a;
+}
+
+.score-display {
+  background: var(--bg-darker);
+  border: 2px solid var(--gold);
+  border-radius: 12px;
+  padding: 12px;
+  text-align: center;
+  font-family: 'Rubik';
+  font-weight: 900;
+  font-size: 28px;
+  color: var(--gold);
+}
+
+/* Card Selection */
+.card-selector {
+  background: var(--card-bg);
+  border: 2px solid var(--gold);
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.suit-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.suit-btn {
+  padding: 16px;
+  background: var(--bg-darker);
+  border: 2px solid var(--line);
+  border-radius: 12px;
+  color: var(--text);
+  font-weight: 600;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+}
+
+.suit-btn:hover {
+  background: var(--card-bg);
+  border-color: var(--gold);
+}
+
+.suit-btn.active {
+  background: var(--gold);
+  color: var(--black);
+  border-color: var(--gold);
+}
+
+.value-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.value-btn {
+  padding: 12px 8px;
+  background: var(--bg-darker);
+  border: 2px solid var(--line);
+  border-radius: 8px;
+  color: var(--text);
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.value-btn:hover:not(:disabled) {
+  background: var(--card-bg);
+  border-color: var(--gold);
+}
+
+.value-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.value-btn.selected {
+  background: var(--gold);
+  color: var(--black);
+  border-color: var(--gold);
+}
+
+.selected-cards {
+  background: var(--bg-darker);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 12px;
+  margin-bottom: 16px;
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.selected-cards-empty {
+  color: var(--muted);
+}
+
+.card-chip {
+  background: var(--gold);
+  color: var(--black);
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.hand-selector {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.hand-option {
+  padding: 12px;
+  background: var(--bg-darker);
+  border: 2px solid var(--line);
+  border-radius: 8px;
+  color: var(--text);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+}
+
+.hand-option:hover {
+  border-color: var(--gold);
+}
+
+.hand-option.active {
+  background: var(--gold);
+  color: var(--black);
+  border-color: var(--gold);
+}
+
+.controls {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+@media (max-width: 480px) {
+  .controls {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.btn {
+  padding: 12px 16px;
+  border: 2px solid var(--line);
+  border-radius: 8px;
+  background: var(--bg-darker);
+  color: var(--text);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 14px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.btn:hover:not(:disabled) {
+  border-color: var(--gold);
+  background: var(--card-bg);
+  box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
+  transform: translateY(-2px);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background: var(--gold);
+  color: var(--black);
+  border-color: var(--gold);
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: #e8c547;
+  border-color: #e8c547;
+}
+
+.btn-danger {
+  border-color: var(--red);
+  color: var(--red);
+}
+
+.btn-danger:hover:not(:disabled) {
+  background: rgba(231, 76, 60, 0.1);
+  border-color: var(--red);
+}
+
+/* Result Panel */
+.result-panel {
+  background: var(--card-bg);
+  border: 2px solid var(--success);
+  border-radius: 20px;
+  padding: 24px;
+  margin-bottom: 24px;
+  display: none;
+  box-shadow: 0 8px 24px rgba(52, 211, 153, 0.2);
+}
+
+.result-panel.show {
+  display: block;
+}
+
+.result-title {
+  font-family: 'Rubik';
+  font-weight: 900;
+  font-size: 24px;
+  color: var(--success);
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.result-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.result-item {
+  text-align: center;
+}
+
+.result-label {
+  color: var(--muted);
+  font-size: 12px;
+  margin-bottom: 4px;
+}
+
+.result-value {
+  font-family: 'Rubik';
+  font-weight: 700;
+  font-size: 20px;
+  color: var(--gold);
+}
+
+/* Statistics Panel */
+.stats-panel {
+  background: var(--card-bg);
+  border: 2px solid var(--gold);
+  border-radius: 20px;
+  padding: 24px;
+  margin-bottom: 24px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.stats-title {
+  font-family: 'Rubik';
+  font-weight: 700;
+  font-size: 20px;
+  color: var(--gold);
+  margin-bottom: 16px;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 16px;
+}
+
+.stat-item {
+  background: var(--bg-darker);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 16px;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  transition: all 0.2s;
+}
+
+.stat-item:hover {
+  border-color: var(--gold);
+  background: var(--card-bg);
+  box-shadow: 0 4px 12px rgba(212, 175, 55, 0.15);
+}
+
+.stat-label {
+  color: var(--muted);
+  font-size: 12px;
+  margin-bottom: 8px;
+}
+
+.stat-value {
+  font-family: 'Rubik';
+  font-weight: 700;
+  font-size: 22px;
+  color: var(--gold);
+}
+
+.stat-percent {
+  font-size: 14px;
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+/* Trend Panel */
+.trend-panel {
+  background: var(--card-bg);
+  border: 2px solid var(--warning);
+  border-radius: 20px;
+  padding: 24px;
+  margin-bottom: 24px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.trend-title {
+  font-family: 'Rubik';
+  font-weight: 700;
+  font-size: 18px;
+  color: var(--warning);
+  margin-bottom: 12px;
+}
+
+.trend-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+@media (max-width: 480px) {
+  .trend-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.trend-item {
+  background: var(--bg-darker);
+  border: 2px solid var(--line);
+  border-radius: 8px;
+  padding: 14px;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s;
+}
+
+.trend-item:hover {
+  border-color: var(--gold);
+  box-shadow: 0 4px 12px rgba(212, 175, 55, 0.2);
+}
+
+.trend-item-label {
+  color: var(--muted);
+  font-size: 11px;
+  margin-bottom: 6px;
+}
+
+.trend-item-value {
+  font-family: 'Rubik';
+  font-weight: 700;
+  font-size: 20px;
+  color: var(--gold);
+}
+
+.trend-explanation {
+  background: var(--bg-darker);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 13px;
+  line-height: 1.5;
+  margin-bottom: 12px;
+  color: var(--text);
+}
+
+.trend-warning {
+  background: rgba(245, 158, 11, 0.12);
+  border: 2px solid var(--warning);
+  border-radius: 8px;
+  padding: 14px;
+  font-size: 12px;
+  color: var(--warning);
+  line-height: 1.6;
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.1);
+}
+
+.trend-no-data {
+  color: var(--muted);
+  text-align: center;
+  padding: 12px;
+  font-style: italic;
+}
+
+/* History Panel */
+.history-panel {
+  background: var(--card-bg);
+  border: 2px solid var(--gold);
+  border-radius: 20px;
+  padding: 24px;
+  margin-bottom: 24px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.history-title {
+  font-family: 'Rubik';
+  font-weight: 700;
+  font-size: 18px;
+  color: var(--gold);
+  margin-bottom: 16px;
+}
+
+.road-display {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
+  gap: 6px;
+  margin-bottom: 20px;
+}
+
+.road-cell {
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 22px;
+  border: 2px solid;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s;
+  cursor: default;
+}
+
+.road-cell:hover {
+  transform: scale(1.1);
+}
+
+.road-cell.player {
+  background: rgba(52, 211, 153, 0.25);
+  border-color: var(--success);
+  color: var(--success);
+}
+
+.road-cell.banker {
+  background: rgba(212, 175, 55, 0.25);
+  border-color: var(--gold);
+  color: var(--gold);
+}
+
+.road-cell.tie {
+  background: rgba(148, 163, 181, 0.15);
+  border-color: var(--muted);
+  color: var(--muted);
+}
+
+.history-table {
+  overflow-x: auto;
+  margin-top: 16px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+th {
+  background: var(--bg-darker);
+  padding: 12px;
+  text-align: right;
+  color: var(--gold);
+  font-weight: 600;
+  border-bottom: 2px solid var(--line);
+}
+
+td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--line);
+}
+
+tr:hover {
+  background: rgba(212, 175, 55, 0.05);
+}
+
+.action-btn {
+  padding: 4px 8px;
+  margin-left: 4px;
+  font-size: 11px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--bg-darker);
+  color: var(--text);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.action-btn:hover {
+  border-color: var(--gold);
+  color: var(--gold);
+}
+
+.action-btn.delete {
+  color: var(--red);
+  border-color: var(--red);
+}
+
+.action-btn.delete:hover {
+  background: rgba(231, 76, 60, 0.1);
+}
+
+/* Simulation Panel */
+.sim-panel {
+  background: var(--card-bg);
+  border: 2px solid #2a6b5a;
+  border-radius: 20px;
+  padding: 20px 24px;
+  margin-bottom: 16px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+}
+
+.sim-panel-header {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 16px;
+}
+
+.sim-panel-title {
+  font-family: 'Rubik';
+  font-weight: 700;
+  font-size: 17px;
+  color: var(--gold);
+}
+
+.sim-panel-sub {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.sim-count-grid {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 8px;
+  margin-bottom: 0;
+}
+
+@media (max-width: 768px) {
+  .sim-count-grid { grid-template-columns: repeat(4, 1fr); }
+}
+
+@media (max-width: 480px) {
+  .sim-count-grid { grid-template-columns: repeat(4, 1fr); }
+}
+
+.sim-btn {
+  padding: 10px 6px;
+  background: var(--bg-darker);
+  border: 2px solid var(--line);
+  border-radius: 8px;
+  color: var(--text);
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+}
+
+.sim-btn:hover {
+  background: var(--gold);
+  color: var(--black);
+  border-color: var(--gold);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(212,175,55,0.4);
+}
+
+.sim-result-bar {
+  background: var(--bg-darker);
+  border-radius: 8px;
+  padding: 12px 14px;
+  margin-top: 14px;
+  font-size: 13px;
+  line-height: 1.7;
+  border: 1px solid var(--line);
+}
+
+/* Control Panel */
+.control-panel {
+  background: var(--card-bg);
+  border: 2px solid var(--gold);
+  border-radius: 20px;
+  padding: 24px;
+  margin-bottom: 24px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.control-title {
+  font-family: 'Rubik';
+  font-weight: 700;
+  font-size: 18px;
+  color: var(--gold);
+  margin-bottom: 16px;
+}
+
+.control-buttons {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 10px;
+}
+
+@media (max-width: 480px) {
+  .control-buttons {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Modal */
+.modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal.show {
+  display: flex;
+}
+
+.modal-content {
+  background: var(--card-bg);
+  border: 2px solid var(--gold);
+  border-radius: 20px;
+  padding: 24px;
+  max-width: 500px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modal-title {
+  font-family: 'Rubik';
+  font-weight: 700;
+  font-size: 20px;
+  color: var(--gold);
+  margin-bottom: 16px;
+}
+
+.modal-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+#simCount, input[type="file"] {
+  background: var(--bg-darker) !important;
+  color: var(--text) !important;
+  border: 1px solid var(--line) !important;
+}
+
+.file-input-wrapper {
+  position: relative;
+  overflow: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+.file-input-wrapper input {
+  position: absolute;
+  left: -9999px;
+}
+
+/* Home Link */
+.home-btn {
+  position: fixed;
+  bottom: 18px;
+  left: 18px;
+  z-index: 999;
+  color: #fff;
+  border: none;
+  text-decoration: none;
+  background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+  border-radius: 30px;
+  padding: 13px 20px;
+  font: 800 14.5px 'Heebo';
+  box-shadow: 0 10px 24px rgba(109, 40, 217, 0.5);
+  transition: transform 0.15s;
+}
+
+.home-btn:active {
+  transform: scale(0.93);
+}
+
+@media (max-width: 480px) {
+  h1 {
+    font-size: 24px;
+  }
+
+  .card {
+    width: 60px;
+    height: 85px;
+    font-size: 18px;
+  }
+
+  .value-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .suit-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--card-bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--gold);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #e8c547;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <h1>♠ שולחן באקרה ♦</h1>
+    <div class="round-counter">יד מס׳ <span id="roundNum">0</span></div>
+  </header>
+
+  <div class="main-grid">
+    <!-- Game Board -->
+    <div>
+      <div class="game-board">
+        <div class="board-title">🎰 שולחן המשחק</div>
+
+        <div class="hand-section">
+          <div class="hand-label">כרטיסי הפלייר:</div>
+          <div class="cards-display" id="playerCardsDisplay"></div>
+          <div class="score-display" id="playerScore">-</div>
+        </div>
+
+        <div class="hand-section">
+          <div class="hand-label">כרטיסי הבנקר:</div>
+          <div class="cards-display" id="bankerCardsDisplay"></div>
+          <div class="score-display" id="bankerScore">-</div>
+        </div>
+      </div>
+
+      <div class="result-panel" id="resultPanel">
+        <div class="result-title" id="resultTitle"></div>
+        <div class="result-grid">
+          <div class="result-item">
+            <div class="result-label">פלייר</div>
+            <div class="result-value" id="resultPlayer"></div>
+          </div>
+          <div class="result-item">
+            <div class="result-label">בנקר</div>
+            <div class="result-value" id="resultBanker"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card Selection -->
+    <div>
+      <div class="card-selector">
+        <div class="board-title">🎴 בחירת קרטיסים</div>
+
+        <div class="hand-selector">
+          <div class="hand-option active" onclick="selectHand('player')" id="handPlayer">
+            🎰 בחירה לפלייר
+          </div>
+          <div class="hand-option" onclick="selectHand('banker')" id="handBanker">
+            🏛️ בחירה לבנקר
+          </div>
+        </div>
+
+        <div class="suit-grid" id="suitGrid"></div>
+        <div class="value-grid" id="valueGrid"></div>
+
+        <div class="selected-cards" id="selectedCards">
+          <span class="selected-cards-empty">לא נבחרו כרטיסים עדיין</span>
+        </div>
+
+        <div class="controls">
+          <button class="btn" onclick="undoLastCard()">↶ בטל</button>
+          <button class="btn btn-danger" onclick="clearCurrentHand()">🗑️ נקה</button>
+          <button class="btn btn-primary" onclick="confirmRound()">✔️ אישור</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Statistics Panel -->
+  <div class="stats-panel">
+    <div class="stats-title">📊 סטטיסטיקות</div>
+    <div class="stats-grid" id="statsGrid"></div>
+  </div>
+
+  <!-- Trend Panel -->
+  <div class="trend-panel">
+    <div class="trend-title">🎲 הערכת מגמה לסבב הבא</div>
+    <div id="trendContent"></div>
+  </div>
+
+  <!-- History Panel -->
+  <div class="history-panel">
+    <div class="history-title">📈 היסטוריית המשחק</div>
+    <div class="road-display" id="roadDisplay"></div>
+    <div class="history-table">
+      <table id="historyTable">
+        <thead>
+          <tr>
+            <th>יד</th>
+            <th>פלייר</th>
+            <th>בנקר</th>
+            <th>ניקוד</th>
+            <th>זוכה</th>
+            <th>פעולות</th>
+          </tr>
+        </thead>
+        <tbody id="historyBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Simulation Panel - inline, injects rounds into the game -->
+  <div class="sim-panel" id="simInlinePanel">
+    <div class="sim-panel-header">
+      <span class="sim-panel-title">🎲 הדמיה — הוסף ידיים אקראיות למשחק</span>
+      <span class="sim-panel-sub">בחר כמות ולחץ — הידיים יתווספו להיסטוריה ולסטטיסטיקות</span>
+    </div>
+    <div class="sim-count-grid">
+      <button class="sim-btn" onclick="injectSim(10)">10</button>
+      <button class="sim-btn" onclick="injectSim(25)">25</button>
+      <button class="sim-btn" onclick="injectSim(50)">50</button>
+      <button class="sim-btn" onclick="injectSim(100)">100</button>
+      <button class="sim-btn" onclick="injectSim(200)">200</button>
+      <button class="sim-btn" onclick="injectSim(500)">500</button>
+      <button class="sim-btn" onclick="injectSim(1000)">1,000</button>
+      <button class="sim-btn" onclick="injectSim(2000)">2,000</button>
+    </div>
+    <div id="simInlineResult" style="display:none;"></div>
+  </div>
+
+  <!-- Control Panel -->
+  <div class="control-panel">
+    <div class="control-title">⚙️ בקרה</div>
+    <div class="control-buttons">
+      <button class="btn" onclick="undoLastRound()">↶ בטל יד אחרונה</button>
+      <button class="btn" onclick="runAccuracyTest()">📐 בדוק דיוק</button>
+      <button class="btn" onclick="exportGame()">💾 ייצוא JSON</button>
+      <button class="btn" onclick="showImportModal()">📂 ייבוא JSON</button>
+      <button class="btn btn-danger" onclick="newSession()">🔄 סשן חדש</button>
+    </div>
+  </div>
+</div>
+
+<!-- Import Modal -->
+<div class="modal" id="importModal">
+  <div class="modal-content">
+    <div class="modal-title">📂 ייבוא סשן שמור</div>
+    <div style="margin-bottom: 16px; color: var(--muted); font-size: 14px;">
+      בחר קובץ JSON שנשמר בעבר כדי לטעון את המשחק:
+    </div>
+    <div class="file-input-wrapper">
+      <input type="file" id="fileInput" accept=".json" onchange="handleFileImport(event)">
+      <button class="btn btn-primary" style="width: 100%; cursor: pointer;" onclick="document.getElementById('fileInput').click()">
+        ✓ בחר קובץ
+      </button>
+    </div>
+    <div class="modal-buttons">
+      <button class="btn" onclick="closeImportModal()">ביטול</button>
+    </div>
+  </div>
+</div>
+
+<!-- Confirmation Modal -->
+<div class="modal" id="confirmModal">
+  <div class="modal-content">
+    <div class="modal-title" id="confirmTitle"></div>
+    <div id="confirmMessage" style="margin-bottom: 20px; color: var(--text); font-size: 14px;"></div>
+    <div id="confirmModalButtons" style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:20px;">
+      <button class="btn" onclick="closeConfirmModal()">ביטול</button>
+      <button class="btn btn-primary" onclick="executeConfirm()">אישור</button>
+    </div>
+  </div>
+</div>
+
+<!-- Accuracy Modal - standalone -->
+<div class="modal" id="accuracyModal">
+  <div class="modal-content">
+    <div class="modal-title">📐 בדיקת דיוק</div>
+    <div id="accuracyResults"></div>
+    <button class="btn btn-primary" style="width:100%; margin-top:16px;" onclick="document.getElementById('accuracyModal').classList.remove('show')">✓ סגור</button>
+  </div>
+</div>
+
+<a class="home-btn" href="../index.html">🏠 הביתה</a>
+
+<script>
+// Game State
+let gameState = {
+  rounds: [],
+  currentPlayer: [],
+  currentBanker: [],
+  selectedHand: 'player'
+};
+
+const SUITS = [
+  { name: '♥ לב', class: 'red-suit', code: 'H' },
+  { name: '♦ יהלום', class: 'red-suit', code: 'D' },
+  { name: '♣ תלתל', class: 'black-suit', code: 'C' },
+  { name: '♠ עלה', class: 'black-suit', code: 'S' }
+];
+
+const VALUES = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+
+const HEBREW_RESULTS = {
+  player: 'הפלייר ניצח 🎰',
+  banker: 'הבנקר ניצח 🏛️',
+  tie: 'תיקו 🤝'
+};
+
+// Initialize
+function init() {
+  loadFromLocalStorage();
+  renderSuitGrid();
+  renderValueGrid();
+  updateUI();
+}
+
+// Card Management
+function renderSuitGrid() {
+  const grid = document.getElementById('suitGrid');
+  grid.innerHTML = SUITS.map((suit, i) => `
+    <button class="suit-btn" onclick="selectSuit(${i})">${suit.name}</button>
+  `).join('');
+}
+
+function renderValueGrid() {
+  const grid = document.getElementById('valueGrid');
+  grid.innerHTML = VALUES.map((val, i) => `
+    <button class="value-btn" onclick="selectValue(${i})">${val}</button>
+  `).join('');
+}
+
+let selectedSuit = null;
+
+function selectSuit(idx) {
+  selectedSuit = idx;
+  document.querySelectorAll('.suit-btn').forEach((btn, i) => {
+    btn.classList.toggle('active', i === idx);
+  });
+  renderValueGrid();
+}
+
+function selectValue(idx) {
+  if (selectedSuit === null) {
+    alert('בחר סוג קלף תחילה');
+    return;
+  }
+
+  const card = {
+    suit: SUITS[selectedSuit],
+    value: VALUES[idx],
+    display: `${VALUES[idx]}${SUITS[selectedSuit].name.split(' ')[0]}`
+  };
+
+  const hand = gameState.selectedHand === 'player' ? gameState.currentPlayer : gameState.currentBanker;
+  if (hand.length < 3) {
+    hand.push(card);
+    selectedSuit = null;
+    updateUI();
+  }
+}
+
+function selectHand(hand) {
+  gameState.selectedHand = hand;
+  document.getElementById('handPlayer').classList.toggle('active', hand === 'player');
+  document.getElementById('handBanker').classList.toggle('active', hand === 'banker');
+  selectedSuit = null;
+  updateUI();
+}
+
+function undoLastCard() {
+  const hand = gameState.selectedHand === 'player' ? gameState.currentPlayer : gameState.currentBanker;
+  if (hand.length > 0) {
+    hand.pop();
+    selectedSuit = null;
+    updateUI();
+  }
+}
+
+function clearCurrentHand() {
+  if (gameState.selectedHand === 'player') {
+    gameState.currentPlayer = [];
+  } else {
+    gameState.currentBanker = [];
+  }
+  selectedSuit = null;
+  updateUI();
+}
+
+// Card Display
+function renderCardDisplay() {
+  const playerDisplay = document.getElementById('playerCardsDisplay');
+  const bankerDisplay = document.getElementById('bankerCardsDisplay');
+
+  playerDisplay.innerHTML = gameState.currentPlayer.map(card => {
+    const isRed = card.suit.code === 'H' || card.suit.code === 'D';
+    return `<div class="card ${isRed ? 'red-suit' : 'black-suit'}"><div class="card-inner"><div>${card.value}</div><div class="card-suit">${card.suit.name.split(' ')[0]}</div></div></div>`;
+  }).join('');
+
+  bankerDisplay.innerHTML = gameState.currentBanker.map(card => {
+    const isRed = card.suit.code === 'H' || card.suit.code === 'D';
+    return `<div class="card ${isRed ? 'red-suit' : 'black-suit'}"><div class="card-inner"><div>${card.value}</div><div class="card-suit">${card.suit.name.split(' ')[0]}</div></div></div>`;
+  }).join('');
+}
+
+function renderSelectedCards() {
+  const display = document.getElementById('selectedCards');
+  const hand = gameState.selectedHand === 'player' ? gameState.currentPlayer : gameState.currentBanker;
+
+  if (hand.length === 0) {
+    display.innerHTML = '<span class="selected-cards-empty">לא נבחרו כרטיסים עדיין</span>';
+  } else {
+    display.innerHTML = hand.map(card => `<div class="card-chip">${card.value}${card.suit.name.split(' ')[0]}</div>`).join('');
+  }
+}
+
+// Baccarat Scoring
+function getCardValue(card) {
+  if (card.value === 'A') return 1;
+  if (card.value === 'J' || card.value === 'Q' || card.value === 'K') return 0;
+  if (card.value === '10') return 0;
+  return parseInt(card.value);
+}
+
+function calculateScore(cards) {
+  const sum = cards.reduce((acc, card) => acc + getCardValue(card), 0);
+  return sum % 10;
+}
+
+function calculateWinner(playerCards, bankerCards) {
+  const playerScore = calculateScore(playerCards);
+  const bankerScore = calculateScore(bankerCards);
+
+  let winner = 'tie';
+  if (playerScore > bankerScore) winner = 'player';
+  if (bankerScore > playerScore) winner = 'banker';
+
+  const playerNatural = playerCards.length === 2 && (playerScore === 8 || playerScore === 9);
+  const bankerNatural = bankerCards.length === 2 && (bankerScore === 8 || bankerScore === 9);
+
+  return {
+    playerScore,
+    bankerScore,
+    winner,
+    playerNatural,
+    bankerNatural
+  };
+}
+
+// Round Management
+function confirmRound() {
+  if (gameState.currentPlayer.length < 2 || gameState.currentBanker.length < 2) {
+    alert('יש לבחור לפחות 2 קרטיסים לכל יד');
+    return;
+  }
+
+  const result = calculateWinner(gameState.currentPlayer, gameState.currentBanker);
+  const roundNum = gameState.rounds.length + 1;
+
+  gameState.rounds.push({
+    roundNum,
+    playerCards: JSON.parse(JSON.stringify(gameState.currentPlayer)),
+    bankerCards: JSON.parse(JSON.stringify(gameState.currentBanker)),
+    playerScore: result.playerScore,
+    bankerScore: result.bankerScore,
+    winner: result.winner,
+    timestamp: new Date().toISOString()
+  });
+
+  gameState.currentPlayer = [];
+  gameState.currentBanker = [];
+  selectedSuit = null;
+  saveToLocalStorage();
+  updateUI();
+  showResultPanel(result);
+}
+
+function undoLastRound() {
+  if (gameState.rounds.length === 0) {
+    alert('אין ידות להחזרה');
+    return;
+  }
+  gameState.rounds.pop();
+  saveToLocalStorage();
+  updateUI();
+}
+
+function editRound(idx) {
+  const round = gameState.rounds[idx];
+  gameState.currentPlayer = JSON.parse(JSON.stringify(round.playerCards));
+  gameState.currentBanker = JSON.parse(JSON.stringify(round.bankerCards));
+  gameState.rounds.splice(idx, 1);
+  saveToLocalStorage();
+  updateUI();
+  document.querySelector('.card-selector').scrollIntoView({ behavior: 'smooth' });
+}
+
+function deleteRound(idx) {
+  gameState.rounds.splice(idx, 1);
+  saveToLocalStorage();
+  updateUI();
+}
+
+// UI Updates
+function updateUI() {
+  renderCardDisplay();
+  renderSelectedCards();
+  updateScores();
+  updateRoundCounter();
+  renderStats();
+  renderTrend();
+  renderHistory();
+  updateConfirmButton();
+}
+
+function updateScores() {
+  document.getElementById('playerScore').textContent = gameState.currentPlayer.length > 0
+    ? calculateScore(gameState.currentPlayer)
+    : '-';
+  document.getElementById('bankerScore').textContent = gameState.currentBanker.length > 0
+    ? calculateScore(gameState.currentBanker)
+    : '-';
+}
+
+function updateRoundCounter() {
+  document.getElementById('roundNum').textContent = gameState.rounds.length + 1;
+}
+
+function updateConfirmButton() {
+  const btn = document.querySelector('.btn-primary');
+  btn.disabled = gameState.currentPlayer.length < 2 || gameState.currentBanker.length < 2;
+}
+
+function showResultPanel(result) {
+  const panel = document.getElementById('resultPanel');
+  document.getElementById('resultTitle').textContent = HEBREW_RESULTS[result.winner];
+  document.getElementById('resultPlayer').textContent = result.playerScore;
+  document.getElementById('resultBanker').textContent = result.bankerScore;
+  panel.classList.add('show');
+  setTimeout(() => panel.classList.remove('show'), 3000);
+}
+
+// Statistics
+function calculateStats() {
+  const total = gameState.rounds.length;
+  if (total === 0) {
+    return {
+      total: 0,
+      playerWins: 0,
+      bankerWins: 0,
+      ties: 0,
+      playerPct: 0,
+      bankerPct: 0,
+      tiePct: 0,
+      currentStreak: { type: 'none', count: 0 },
+      longestPlayerStreak: 0,
+      longestBankerStreak: 0,
+      last5: [],
+      last10: []
+    };
+  }
+
+  const playerWins = gameState.rounds.filter(r => r.winner === 'player').length;
+  const bankerWins = gameState.rounds.filter(r => r.winner === 'banker').length;
+  const ties = gameState.rounds.filter(r => r.winner === 'tie').length;
+
+  const nonTieTotal = playerWins + bankerWins;
+  const playerPct = nonTieTotal > 0 ? (playerWins / nonTieTotal * 100).toFixed(1) : 0;
+  const bankerPct = nonTieTotal > 0 ? (bankerWins / nonTieTotal * 100).toFixed(1) : 0;
+  const tiePct = (ties / total * 100).toFixed(1);
+
+  // Current streak
+  let currentStreak = { type: 'none', count: 0 };
+  if (total > 0) {
+    const last = gameState.rounds[total - 1].winner;
+    let count = 1;
+    for (let i = total - 2; i >= 0; i--) {
+      if (gameState.rounds[i].winner === last) count++;
+      else break;
+    }
+    currentStreak = { type: last, count };
+  }
+
+  // Longest streaks
+  let longestPlayerStreak = 0, longestBankerStreak = 0;
+  let playerCount = 0, bankerCount = 0;
+  gameState.rounds.forEach(r => {
+    if (r.winner === 'player') {
+      playerCount++;
+      bankerCount = 0;
+      longestPlayerStreak = Math.max(longestPlayerStreak, playerCount);
+    } else if (r.winner === 'banker') {
+      bankerCount++;
+      playerCount = 0;
+      longestBankerStreak = Math.max(longestBankerStreak, bankerCount);
+    } else {
+      playerCount = 0;
+      bankerCount = 0;
+    }
+  });
+
+  const last5 = gameState.rounds.slice(-5).map(r => r.winner);
+  const last10 = gameState.rounds.slice(-10).map(r => r.winner);
+
+  return {
+    total,
+    playerWins,
+    bankerWins,
+    ties,
+    playerPct,
+    bankerPct,
+    tiePct,
+    currentStreak,
+    longestPlayerStreak,
+    longestBankerStreak,
+    last5,
+    last10
+  };
+}
+
+function renderStats() {
+  const stats = calculateStats();
+  const grid = document.getElementById('statsGrid');
+
+  const statsList = [
+    { label: 'סך יד', value: stats.total },
+    { label: 'פלייר ניצח', value: stats.playerWins },
+    { label: 'בנקר ניצח', value: stats.bankerWins },
+    { label: 'תיקו', value: stats.ties },
+    { label: '% פלייר', value: stats.playerPct + '%' },
+    { label: '% בנקר', value: stats.bankerPct + '%' },
+    { label: '% תיקו', value: stats.tiePct + '%' },
+    { label: 'רצף נוכחי', value: stats.currentStreak.count > 0 ? stats.currentStreak.count : '-' },
+    { label: 'רצף פלייר מקסימום', value: stats.longestPlayerStreak },
+    { label: 'רצף בנקר מקסימום', value: stats.longestBankerStreak }
+  ];
+
+  grid.innerHTML = statsList.map(stat => `
+    <div class="stat-item">
+      <div class="stat-label">${stat.label}</div>
+      <div class="stat-value">${stat.value}</div>
+    </div>
+  `).join('');
+}
+
+// Trend Estimation
+function estimateTrend() {
+  const stats = calculateStats();
+
+  if (stats.total < 5) {
+    return {
+      noData: true,
+      message: 'אין עדיין מספיק נתונים ליצירת הערכת מגמה משמעותית.'
+    };
+  }
+
+  let playerTrend = parseFloat(stats.playerPct);
+  let bankerTrend = parseFloat(stats.bankerPct);
+  let tieTrend = parseFloat(stats.tiePct);
+
+  // Streak bonus
+  if (stats.currentStreak.type === 'player' && stats.currentStreak.count > 0) {
+    playerTrend += Math.min(stats.currentStreak.count * 2, 10);
+  }
+  if (stats.currentStreak.type === 'banker' && stats.currentStreak.count > 0) {
+    bankerTrend += Math.min(stats.currentStreak.count * 2, 10);
+  }
+
+  // Recent pattern influence
+  const last5Player = stats.last5.filter(w => w === 'player').length;
+  const last5Banker = stats.last5.filter(w => w === 'banker').length;
+  playerTrend += (last5Player / stats.last5.length * 5);
+  bankerTrend += (last5Banker / stats.last5.length * 5);
+
+  // Normalize
+  const total = playerTrend + bankerTrend + tieTrend;
+  playerTrend = (playerTrend / total * 100).toFixed(1);
+  bankerTrend = (bankerTrend / total * 100).toFixed(1);
+  tieTrend = (tieTrend / total * 100).toFixed(1);
+
+  // Strongest trend
+  const values = [parseFloat(playerTrend), parseFloat(bankerTrend), parseFloat(tieTrend)];
+  let strongestTrend = 'תיקו';
+  if (playerTrend > bankerTrend && playerTrend > tieTrend) strongestTrend = 'פלייר';
+  if (bankerTrend > playerTrend && bankerTrend > tieTrend) strongestTrend = 'בנקר';
+
+  // Explanation
+  let explanation = 'ניתוח של הסשן הנוכחי: ';
+
+  if (stats.currentStreak.type === 'player' && stats.currentStreak.count > 2) {
+    explanation += `רצף פעיל של ${stats.currentStreak.count} ידיים לפלייר. `;
+  } else if (stats.currentStreak.type === 'banker' && stats.currentStreak.count > 2) {
+    explanation += `רצף פעיל של ${stats.currentStreak.count} ידיים לבנקר. `;
+  } else if (stats.currentStreak.type === 'tie' && stats.currentStreak.count > 1) {
+    explanation += `ריצף של ${stats.currentStreak.count} תיקוים. `;
+  }
+
+  // Last 5 analysis
+  if (stats.last5.length === 5) {
+    const last5player = stats.last5.filter(w => w === 'player').length;
+    const last5banker = stats.last5.filter(w => w === 'banker').length;
+    if (last5player > last5banker) {
+      explanation += `בעשר הידיים האחרונות, הפלייר הרוויח ${last5player} מתוך 5. `;
+    } else if (last5banker > last5player) {
+      explanation += `בחמש הידיים האחרונות, הבנקר הרוויח ${last5banker} מתוך 5. `;
+    }
+  }
+
+  if (stats.playerPct > 52) {
+    explanation += 'הפלייר מציג ביצוע טוב יותר בסשן זה. ';
+  } else if (stats.bankerPct > 52) {
+    explanation += 'הבנקר מציג ביצוע טוב יותר בסשן זה. ';
+  } else {
+    explanation += 'התפלגות כמעט שוויונית בין השחקנים. ';
+  }
+
+  explanation += 'זוהי אומדן סטטיסטי בלבד ואינה משנה את סיכויי המשחק.';
+
+  return {
+    noData: false,
+    playerTrend,
+    bankerTrend,
+    tieTrend,
+    strongestTrend,
+    explanation
+  };
+}
+
+function renderTrend() {
+  const trend = estimateTrend();
+  const content = document.getElementById('trendContent');
+
+  if (trend.noData) {
+    content.innerHTML = `<div class="trend-no-data">${trend.message}</div>`;
+    return;
+  }
+
+  content.innerHTML = `
+    <div class="trend-grid">
+      <div class="trend-item">
+        <div class="trend-item-label">מגמת פלייר</div>
+        <div class="trend-item-value">${trend.playerTrend}%</div>
+      </div>
+      <div class="trend-item">
+        <div class="trend-item-label">מגמת בנקר</div>
+        <div class="trend-item-value">${trend.bankerTrend}%</div>
+      </div>
+      <div class="trend-item">
+        <div class="trend-item-label">מגמת תיקו</div>
+        <div class="trend-item-value">${trend.tieTrend}%</div>
+      </div>
+    </div>
+    <div class="trend-explanation"><strong>מגמה חזקה ביותר:</strong> ${trend.strongestTrend}</div>
+    <div class="trend-explanation">${trend.explanation}</div>
+    <div class="trend-warning">
+      ⚠️ ההערכה מבוססת על מגמות סטטיסטיות מהתוצאות שהוזנו בלבד. היא אינה מבטיחה את תוצאת היד הבאה ואינה משנה את הסיכויים האמיתיים של המשחק.
+    </div>
+  `;
+}
+
+// History
+function renderHistory() {
+  renderRoad();
+  renderHistoryTable();
+}
+
+function renderRoad() {
+  const display = document.getElementById('roadDisplay');
+  if (gameState.rounds.length === 0) {
+    display.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: var(--muted); padding: 20px;">אין יתוכן עדיין</div>';
+    return;
+  }
+
+  display.innerHTML = gameState.rounds.map((round, i) => {
+    const type = round.winner;
+    const symbols = { player: '🎰', banker: '🏛️', tie: '🤝' };
+    return `<div class="road-cell ${type}" title="יד ${round.roundNum}">${symbols[type]}</div>`;
+  }).join('');
+}
+
+function renderHistoryTable() {
+  const tbody = document.getElementById('historyBody');
+  if (gameState.rounds.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--muted);">אין יד שהוזנה עדיין</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = gameState.rounds.map((round, i) => {
+    const playerCards = round.playerCards.map(c => `${c.value}${c.suit.name.split(' ')[0]}`).join(' ');
+    const bankerCards = round.bankerCards.map(c => `${c.value}${c.suit.name.split(' ')[0]}`).join(' ');
+    const score = `${round.playerScore}-${round.bankerScore}`;
+    const winnerText = HEBREW_RESULTS[round.winner];
+
+    return `
+      <tr>
+        <td>${round.roundNum}</td>
+        <td>${playerCards}</td>
+        <td>${bankerCards}</td>
+        <td>${score}</td>
+        <td>${winnerText}</td>
+        <td>
+          <button class="action-btn" onclick="editRound(${i})">עריכה</button>
+          <button class="action-btn delete" onclick="deleteRound(${i})">מחק</button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+// Data Persistence
+function saveToLocalStorage() {
+  const data = {
+    rounds: gameState.rounds,
+    createdAt: new Date().toISOString()
+  };
+  localStorage.setItem('baccarat_game', JSON.stringify(data));
+}
+
+function loadFromLocalStorage() {
+  const data = localStorage.getItem('baccarat_game');
+  if (data) {
+    try {
+      const parsed = JSON.parse(data);
+      gameState.rounds = parsed.rounds || [];
+    } catch (e) {
+      console.error('Error loading game:', e);
+    }
+  }
+  gameState.currentPlayer = [];
+  gameState.currentBanker = [];
+}
+
+// Import/Export
+function exportGame() {
+  const data = {
+    rounds: gameState.rounds,
+    exportedAt: new Date().toISOString()
+  };
+
+  const json = JSON.stringify(data, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `baccarat-${new Date().toISOString().slice(0, 10)}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function showImportModal() {
+  document.getElementById('importModal').classList.add('show');
+}
+
+function closeImportModal() {
+  document.getElementById('importModal').classList.remove('show');
+  document.getElementById('fileInput').value = '';
+}
+
+function handleFileImport(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = (event) => {
+    try {
+      const data = JSON.parse(event.target.result);
+      if (data.rounds && Array.isArray(data.rounds)) {
+        showConfirmImport(data);
+      } else {
+        alert('קובץ לא תקין. בודק קובץ JSON תקני של משחק באקרה.');
+      }
+    } catch (err) {
+      alert('שגיאה בקריאת הקובץ');
+    }
+  };
+  reader.readAsText(file);
+}
+
+function showConfirmImport(data) {
+  document.getElementById('confirmTitle').textContent = 'ייבוא משחק';
+  document.getElementById('confirmMessage').textContent = `יש לייבא ${data.rounds.length} יידות. זה יחליף את המשחק הנוכחי.`;
+  document.getElementById('confirmModalButtons').innerHTML = `
+    <button class="btn" onclick="closeConfirmModal()">ביטול</button>
+    <button class="btn btn-primary" onclick="doImport()">ייבא</button>
+  `;
+  window.importData = data;
+  document.getElementById('confirmModal').classList.add('show');
+}
+
+function doImport() {
+  if (window.importData) {
+    gameState.rounds = window.importData.rounds;
+    gameState.currentPlayer = [];
+    gameState.currentBanker = [];
+    saveToLocalStorage();
+    updateUI();
+    closeImportModal();
+    closeConfirmModal();
+  }
+}
+
+function executeConfirm() {
+  // legacy fallback
+  doImport();
+}
+
+function closeConfirmModal() {
+  document.getElementById('confirmModal').classList.remove('show');
+  window.importData = null;
+  window.confirmAction = null;
+}
+
+function newSession() {
+  document.getElementById('confirmTitle').textContent = 'סשן חדש';
+  document.getElementById('confirmMessage').textContent = 'זה ימחק את כל ההיסטוריה של המשחק הנוכחי. בטוח?';
+  document.getElementById('confirmModalButtons').innerHTML = `
+    <button class="btn" onclick="closeConfirmModal()">ביטול</button>
+    <button class="btn btn-danger" onclick="doNewSession()">כן, מחק הכל</button>
+  `;
+  window.confirmAction = 'newSession';
+  document.getElementById('confirmModal').classList.add('show');
+}
+
+function doNewSession() {
+  gameState.rounds = [];
+  gameState.currentPlayer = [];
+  gameState.currentBanker = [];
+  saveToLocalStorage();
+  updateUI();
+  closeConfirmModal();
+}
+
+// Simulation — injects random rounds directly into the game history
+function injectSim(count) {
+  const startRound = gameState.rounds.length + 1;
+  let playerWins = 0, bankerWins = 0, ties = 0;
+
+  for (let i = 0; i < count; i++) {
+    const pc = [getRandomCard(), getRandomCard()];
+    const bc = [getRandomCard(), getRandomCard()];
+    const result = calculateWinner(pc, bc);
+
+    gameState.rounds.push({
+      roundNum: startRound + i,
+      playerCards: pc,
+      bankerCards: bc,
+      playerScore: result.playerScore,
+      bankerScore: result.bankerScore,
+      winner: result.winner,
+      timestamp: new Date().toISOString(),
+      simulated: true
+    });
+
+    if (result.winner === 'player') playerWins++;
+    else if (result.winner === 'banker') bankerWins++;
+    else ties++;
+  }
+
+  saveToLocalStorage();
+  updateUI();
+
+  // Show inline summary
+  const nonTie = playerWins + bankerWins;
+  const pPct = nonTie > 0 ? (playerWins / nonTie * 100).toFixed(1) : '0.0';
+  const bPct = nonTie > 0 ? (bankerWins / nonTie * 100).toFixed(1) : '0.0';
+  const tPct = (ties / count * 100).toFixed(1);
+
+  const resultDiv = document.getElementById('simInlineResult');
+  resultDiv.style.display = 'block';
+  resultDiv.innerHTML = `
+    <div class="sim-result-bar">
+      <div style="color:var(--gold); font-weight:700; margin-bottom:8px;">✓ נוספו ${count} ידיות הדמיה למשחק</div>
+      <div style="display:flex; gap:20px; flex-wrap:wrap; font-size:13px;">
+        <span>🎰 פלייר: <strong>${playerWins} (${pPct}%)</strong></span>
+        <span>🏛️ בנקר: <strong>${bankerWins} (${bPct}%)</strong></span>
+        <span>🤝 תיקו: <strong>${ties} (${tPct}%)</strong></span>
+      </div>
+      <div style="font-size:11px; color:var(--muted); margin-top:6px;">
+        הצפוי לפי באקרה: פלייר 50.68% | בנקר 49.32% | תיקו 5.06%
+      </div>
+    </div>
+  `;
+
+  // Scroll to stats
+  document.querySelector('.stats-panel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function getRandomCard() {
+  const suitList = [
+    { name: '♥ לב', class: 'red-suit', code: 'H' },
+    { name: '♦ יהלום', class: 'red-suit', code: 'D' },
+    { name: '♣ תלתל', class: 'black-suit', code: 'C' },
+    { name: '♠ עלה', class: 'black-suit', code: 'S' }
+  ];
+  const valueList = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+
+  const randomSuit = suitList[Math.floor(Math.random() * suitList.length)];
+  const randomValue = valueList[Math.floor(Math.random() * valueList.length)];
+
+  return { suit: randomSuit, value: randomValue };
+}
+
+// Accuracy Test - standalone modal
+function runAccuracyTest() {
+  const stats = calculateStats();
+  if (stats.total < 5) {
+    alert('צריך לפחות 5 יידות בהיסטוריה לבדוק דיוק');
+    return;
+  }
+
+  const expectedPlayer = 50.68;
+  const expectedBanker = 49.32;
+
+  const totalNonTie = stats.playerWins + stats.bankerWins;
+  const actualPlayerPct = totalNonTie > 0 ? (stats.playerWins / totalNonTie * 100) : 0;
+  const actualBankerPct = totalNonTie > 0 ? (stats.bankerWins / totalNonTie * 100) : 0;
+  const actualTiePct    = stats.total > 0  ? (stats.ties / stats.total * 100) : 0;
+
+  const playerDiff = Math.abs(actualPlayerPct - expectedPlayer).toFixed(1);
+  const bankerDiff = Math.abs(actualBankerPct - expectedBanker).toFixed(1);
+  const overallAccuracy = Math.max(0, 100 - (parseFloat(playerDiff) + parseFloat(bankerDiff)) / 2).toFixed(1);
+
+  const grade = overallAccuracy >= 90 ? '🟢 מעולה' : overallAccuracy >= 75 ? '🟡 טוב' : '🔴 צריך עוד יידות';
+
+  document.getElementById('accuracyResults').innerHTML = `
+    <div style="font-size:13px; line-height:1.9;">
+      <div style="margin-bottom:12px; color:var(--muted);">הסטטיסטיקה הצפויה של באקרה:</div>
+      <div style="background:var(--bg-darker); border-radius:8px; padding:12px; margin-bottom:12px;">
+        <div>פלייר: 50.68% | בנקר: 49.32% | תיקו: 5.06%</div>
+      </div>
+
+      <div style="margin-bottom:8px; color:var(--gold); font-weight:700;">המשחק שלך (${stats.total} יידות):</div>
+      <div style="background:var(--bg-darker); border-radius:8px; padding:12px; margin-bottom:12px;">
+        <div>פלייר: ${actualPlayerPct.toFixed(1)}% <span style="color:var(--muted); font-size:11px;">(סטייה ${playerDiff}%)</span></div>
+        <div>בנקר: ${actualBankerPct.toFixed(1)}% <span style="color:var(--muted); font-size:11px;">(סטייה ${bankerDiff}%)</span></div>
+        <div>תיקו: ${actualTiePct.toFixed(1)}%</div>
+      </div>
+
+      <div style="background:rgba(52,211,153,0.1); border:1px solid var(--success); border-radius:8px; padding:14px; text-align:center;">
+        <div style="font-size:20px; font-weight:900; color:var(--success);">${overallAccuracy}%</div>
+        <div style="font-size:13px; margin-top:4px;">${grade}</div>
+      </div>
+    </div>
+  `;
+
+  document.getElementById('accuracyModal').classList.add('show');
+}
+
+// Initialize on load
+window.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
