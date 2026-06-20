@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>הכרת תודה — המרכז שלי</title>
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@700;900&family=Heebo:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0b0d14;color:#f4f6fb;font-family:'Heebo',sans-serif;min-height:100vh;padding:20px}
+.back{display:inline-flex;align-items:center;gap:8px;margin-bottom:20px;
+  background:#141826;border:1px solid rgba(255,255,255,.1);color:#f4f6fb;
+  border-radius:14px;padding:10px 18px;font:700 14px 'Heebo';text-decoration:none}
+.back:hover{background:#1c2233}
+h1{font-family:'Rubik';font-size:28px;font-weight:900;margin-bottom:4px}
+.sub{color:#9aa3b5;font-size:13px;margin-bottom:24px}
+.wrap{max-width:600px;margin:0 auto}
+.hero{background:linear-gradient(135deg,#7c2d8a,#be185d,#9a3412);border-radius:22px;
+  padding:26px 22px;text-align:center;margin-bottom:18px;position:relative;overflow:hidden}
+.hero::before{content:'🌸';font-size:100px;position:absolute;left:-15px;top:-15px;opacity:.2;transform:rotate(-20deg)}
+.hero-streak{font-family:'Rubik';font-size:44px;font-weight:900}
+.hero-label{font-size:13px;opacity:.8;margin-top:4px}
+.hero-quote{font-size:13px;opacity:.7;margin-top:10px;font-style:italic;max-width:320px;margin-left:auto;margin-right:auto}
+.card{background:#141826;border:1px solid rgba(255,255,255,.1);border-radius:18px;padding:18px;margin-bottom:14px}
+.card h3{font-family:'Rubik';font-size:14px;color:#9aa3b5;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.today-label{font-family:'Rubik';font-size:15px;font-weight:700;margin-bottom:14px;
+  color:#e879f9;text-align:center}
+.input-row{display:flex;gap:8px;margin-bottom:8px;align-items:center}
+.num{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#a21caf,#be185d);
+  display:flex;align-items:center;justify-content:center;font:700 14px 'Rubik';flex:none}
+.grat-input{flex:1;background:#0d1117;border:1px solid rgba(255,255,255,.12);
+  color:#f4f6fb;font:500 14px 'Heebo';border-radius:11px;padding:10px 13px}
+.grat-input:focus{outline:none;border-color:rgba(168,85,247,.5)}
+.btn{width:100%;padding:13px;border-radius:13px;border:none;font:700 15px 'Heebo';cursor:pointer;
+  background:linear-gradient(135deg,#a21caf,#be185d);color:#fff;transition:opacity .15s;margin-top:4px}
+.btn:hover{opacity:.85}
+.entry-item{background:#0d1117;border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:14px;margin-bottom:8px}
+.entry-date{font-size:11px;color:#9aa3b5;margin-bottom:8px}
+.grat-list{list-style:none;display:flex;flex-direction:column;gap:5px}
+.grat-list li{font-size:14px;display:flex;gap:8px;align-items:flex-start;line-height:1.5}
+.grat-list li::before{content:'🌸';font-size:12px;flex:none;margin-top:1px}
+.entry-del{float:left;background:none;border:none;color:#6b7280;cursor:pointer;font-size:15px}
+.mood-row{display:flex;gap:8px;justify-content:center;margin-bottom:8px;flex-wrap:wrap}
+.mood-btn{font-size:24px;border:2px solid rgba(255,255,255,.1);background:none;border-radius:12px;
+  padding:8px 12px;cursor:pointer;transition:all .2s}
+.mood-btn:hover,.mood-btn.active{border-color:rgba(232,121,249,.6);background:rgba(168,85,247,.2);transform:scale(1.1)}
+</style>
+</head>
+<body>
+<a href="../districts/misc/" class="back">→ שונות</a>
+<div class="wrap">
+<h1>🌸 הכרת תודה יומית</h1>
+<div class="sub">שלושה דברים טובים ביום — כל יום</div>
+
+<div class="hero">
+  <div class="hero-streak" id="streakDisp">0 🌸</div>
+  <div class="hero-label">ימים רצופים</div>
+  <div class="hero-quote" id="quoteDisp">"הכרת תודה היא לא רק על מה שיש לנו, אלא על מה שאנחנו."</div>
+</div>
+
+<div class="card">
+  <h3>✨ הכרת תודה להיום</h3>
+  <div class="today-label" id="todayLabel">אני אסיר/ת תודה על...</div>
+  <div class="mood-row">
+    <button class="mood-btn" data-mood="😊" onclick="setMood('😊',this)">😊</button>
+    <button class="mood-btn" data-mood="🌟" onclick="setMood('🌟',this)">🌟</button>
+    <button class="mood-btn" data-mood="🙏" onclick="setMood('🙏',this)">🙏</button>
+    <button class="mood-btn" data-mood="💪" onclick="setMood('💪',this)">💪</button>
+    <button class="mood-btn" data-mood="🌈" onclick="setMood('🌈',this)">🌈</button>
+  </div>
+  <div class="input-row"><div class="num">1</div><input class="grat-input" id="g1" placeholder="הדבר הראשון..."></div>
+  <div class="input-row"><div class="num">2</div><input class="grat-input" id="g2" placeholder="הדבר השני..."></div>
+  <div class="input-row"><div class="num">3</div><input class="grat-input" id="g3" placeholder="הדבר השלישי..."></div>
+  <button class="btn" onclick="saveToday()">שמור את היום 🌸</button>
+</div>
+
+<div class="card">
+  <h3>📖 יומן הכרת תודה</h3>
+  <div id="entryList"><div style="color:#9aa3b5;font-size:13px;text-align:center;padding:8px">אין רשומות עדיין</div></div>
+</div>
+</div>
+
+<script>
+const QUOTES=[
+  '"הכרת תודה היא שפת הלב."','"כל יום הוא מתנה."','"מי שאסיר תודה — עשיר."',
+  '"תודה פותחת את לב החיים."','"מה שיש לנו מספיק."','"כל בוקר הוא הזדמנות חדשה."'];
+let data=JSON.parse(localStorage.getItem('gratitude_v2')||'{"entries":[]}');
+let mood='😊';
+const today=new Date().toISOString().slice(0,10);
+
+function setMood(m,el){mood=m;document.querySelectorAll('.mood-btn').forEach(b=>b.classList.toggle('active',b.dataset.mood===m));}
+
+function calcStreak(){
+  let s=0,d=new Date();
+  while(true){
+    const k=d.toISOString().slice(0,10);
+    if(data.entries.find(e=>e.date===k)){s++;}else break;
+    d.setDate(d.getDate()-1);if(s>365)break;
+  }
+  return s;
+}
+
+function saveToday(){
+  const g=[document.getElementById('g1').value.trim(),document.getElementById('g2').value.trim(),document.getElementById('g3').value.trim()].filter(Boolean);
+  if(!g.length){alert('כתבו לפחות דבר אחד');return;}
+  data.entries=data.entries.filter(e=>e.date!==today);
+  data.entries.unshift({id:Date.now(),date:today,gratitudes:g,mood});
+  ['g1','g2','g3'].forEach(id=>document.getElementById(id).value='');
+  save();render();
+}
+
+function delEntry(id){data.entries=data.entries.filter(e=>e.id!==id);save();render();}
+
+function render(){
+  const streak=calcStreak();
+  document.getElementById('streakDisp').textContent=streak+' 🌸';
+  document.getElementById('quoteDisp').textContent=QUOTES[streak%QUOTES.length];
+  const todayEntry=data.entries.find(e=>e.date===today);
+  document.getElementById('todayLabel').textContent=todayEntry?'✅ כבר שמרת להיום':'אני אסיר/ת תודה על...';
+  if(todayEntry){['g1','g2','g3'].forEach((id,i)=>{const el=document.getElementById(id);if(todayEntry.gratitudes[i])el.value=todayEntry.gratitudes[i];});}
+
+  const el=document.getElementById('entryList');
+  if(!data.entries.length){el.innerHTML='<div style="color:#9aa3b5;font-size:13px;text-align:center;padding:8px">אין רשומות עדיין</div>';return;}
+  el.innerHTML=data.entries.map(e=>`
+    <div class="entry-item">
+      <div class="entry-date">
+        <button class="entry-del" onclick="delEntry(${e.id})">🗑</button>
+        ${e.mood||'🌸'} ${e.date}
+      </div>
+      <ul class="grat-list">${e.gratitudes.map(g=>`<li>${g}</li>`).join('')}</ul>
+    </div>`).join('');
+}
+
+function save(){localStorage.setItem('gratitude_v2',JSON.stringify(data));}
+render();
+</script>
+</body>
+</html>

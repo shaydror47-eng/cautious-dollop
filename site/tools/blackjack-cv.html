@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>בלאק ג'ק CV — המרכז שלי</title>
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@700;900&family=Heebo:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#060810;color:#f4f6fb;font-family:'Heebo',sans-serif;min-height:100vh;padding:20px}
+.back{display:inline-flex;align-items:center;gap:8px;margin-bottom:20px;
+  background:#141826;border:1px solid rgba(255,255,255,.1);color:#f4f6fb;
+  border-radius:14px;padding:10px 18px;font:700 14px 'Heebo';text-decoration:none}
+.back:hover{background:#1c2233}
+h1{font-family:'Rubik';font-size:28px;font-weight:900;text-align:center;margin-bottom:4px;
+  background:linear-gradient(90deg,#ef4444,#f97316);-webkit-background-clip:text;background-clip:text;color:transparent}
+.sub{text-align:center;color:#9aa3b5;font-size:13px;margin-bottom:28px}
+.wrap{max-width:700px;margin:0 auto}
+.video-box{position:relative;border-radius:20px;overflow:hidden;background:#0d1117;
+  border:2px solid rgba(255,255,255,.1);margin-bottom:18px;aspect-ratio:4/3}
+#video{width:100%;height:100%;object-fit:cover;display:block}
+.overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  background:rgba(0,0,0,.6)}
+.overlay.hidden{display:none}
+.overlay h2{font-family:'Rubik';font-size:20px;font-weight:900;margin-bottom:12px}
+.overlay p{font-size:13px;color:#9aa3b5;text-align:center;max-width:280px;margin-bottom:18px}
+.btn{padding:12px 24px;border-radius:13px;border:none;font:700 14px 'Heebo';cursor:pointer;
+  background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff;transition:opacity .15s}
+.btn:hover{opacity:.85}
+.btn.sec{background:linear-gradient(135deg,#374151,#4b5563)}
+.btn.blue{background:linear-gradient(135deg,#3b82f6,#1d4ed8)}
+.analysis{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
+.card{background:#141826;border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:16px;text-align:center}
+.card h3{font-size:12px;color:#9aa3b5;margin-bottom:8px;letter-spacing:.05em}
+.card .val{font-family:'Rubik';font-size:28px;font-weight:900}
+.recommendation{background:#141826;border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:18px;
+  text-align:center;margin-bottom:14px}
+.rec-title{font-size:12px;color:#9aa3b5;margin-bottom:8px}
+.rec-action{font-family:'Rubik';font-size:26px;font-weight:900;color:#fbbf24}
+.controls{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:14px}
+.manual-input{background:#141826;border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:16px}
+.manual-input h3{font-family:'Rubik';font-size:14px;color:#9aa3b5;margin-bottom:12px}
+.card-btns{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;justify-content:center}
+.cb{padding:8px 12px;border-radius:8px;border:1px solid rgba(255,255,255,.15);
+  background:#0d1117;color:#f4f6fb;font:700 14px 'Heebo';cursor:pointer;min-width:44px;text-align:center}
+.cb:hover{background:#1c2233;border-color:rgba(255,255,255,.3)}
+.hand-disp{display:flex;gap:6px;justify-content:center;min-height:40px;align-items:center;
+  background:#0d1117;border-radius:10px;padding:8px;margin-bottom:8px;flex-wrap:wrap}
+.hc{background:white;color:#111;border-radius:6px;width:36px;height:50px;
+  display:flex;align-items:center;justify-content:center;font:700 14px 'Heebo'}
+.hc.red{color:#dc2626}
+</style>
+</head>
+<body>
+<a href="../districts/misc/" class="back">→ שונות</a>
+<div class="wrap">
+<h1>📷 בלאק ג'ק CV</h1>
+<div class="sub">ניתוח יד בלאק ג'ק עם מצלמה</div>
+
+<div class="video-box">
+  <video id="video" autoplay muted playsinline></video>
+  <div class="overlay" id="overlay">
+    <h2>📷 BJ Vision</h2>
+    <p>פתחו מצלמה לניתוח אוטומטי של הקלפים, או השתמשו בקלט ידני למטה</p>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center">
+      <button class="btn blue" onclick="startCamera()">פתח מצלמה</button>
+      <button class="btn sec" onclick="document.getElementById('overlay').classList.add('hidden')">קלט ידני</button>
+    </div>
+  </div>
+</div>
+
+<div class="analysis">
+  <div class="card"><h3>יד שלך</h3><div class="val" id="playerVal" style="color:#60a5fa">0</div></div>
+  <div class="card"><h3>קלף דילר</h3><div class="val" id="dealerVal" style="color:#f97316">?</div></div>
+</div>
+
+<div class="recommendation">
+  <div class="rec-title">ההמלצה</div>
+  <div class="rec-action" id="recAction">בחרו קלפים</div>
+</div>
+
+<div class="manual-input">
+  <h3>✋ קלט ידני</h3>
+  <div style="margin-bottom:12px">
+    <div style="font-size:12px;color:#9aa3b5;margin-bottom:6px">היד שלך:</div>
+    <div class="hand-disp" id="playerHand"></div>
+    <div class="card-btns" id="playerBtns"></div>
+  </div>
+  <div style="margin-bottom:12px">
+    <div style="font-size:12px;color:#9aa3b5;margin-bottom:6px">קלף הדילר:</div>
+    <div class="hand-disp" id="dealerHand"></div>
+    <div class="card-btns" id="dealerBtns"></div>
+  </div>
+  <div style="display:flex;gap:8px">
+    <button class="btn sec" onclick="clearHands()" style="flex:1">נקה</button>
+    <button class="btn" onclick="analyze()" style="flex:1;background:linear-gradient(135deg,#16a34a,#15803d)">נתח</button>
+  </div>
+</div>
+
+<script>
+const CARDS=['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
+const RED=['♥','♦'];
+let playerCards=[],dealerCard=null;
+
+function cardVal(c){if(c==='A')return 11;if(['J','Q','K','10'].includes(c))return 10;return parseInt(c);}
+function handVal(cards){
+  let t=cards.reduce((s,c)=>s+cardVal(c),0),aces=cards.filter(c=>c==='A').length;
+  while(t>21&&aces-->0)t-=10;return t;
+}
+
+function buildBtns(){
+  const pc=document.getElementById('playerBtns'),dc=document.getElementById('dealerBtns');
+  const mk=(c,target)=>{
+    const b=document.createElement('button');b.className='cb';b.textContent=c;
+    b.onclick=()=>{if(target==='player')playerCards.push(c);else dealerCard=c;render();};
+    return b;
+  };
+  CARDS.forEach(c=>{pc.appendChild(mk(c,'player'));dc.appendChild(mk(c,'dealer'));});
+}
+
+function render(){
+  const pv=handVal(playerCards);
+  document.getElementById('playerVal').textContent=playerCards.length?pv:'0';
+  document.getElementById('dealerVal').textContent=dealerCard||'?';
+  document.getElementById('playerHand').innerHTML=playerCards.map(c=>`<div class="hc">${c}</div>`).join('')||'<span style="color:#9aa3b5;font-size:12px">לחצו על קלף</span>';
+  document.getElementById('dealerHand').innerHTML=dealerCard?`<div class="hc">${dealerCard}</div>`:'<span style="color:#9aa3b5;font-size:12px">לחצו על קלף</span>';
+}
+
+function analyze(){
+  if(!playerCards.length){document.getElementById('recAction').textContent='הוסיפו קלפים';return;}
+  const pv=handVal(playerCards);const dv=dealerCard?cardVal(dealerCard):0;
+  let rec='';
+  if(pv>=17)rec='עמוד 🛑';
+  else if(pv<=11)rec='משוך 🟢';
+  else if(pv===12&&dv>=4&&dv<=6)rec='עמוד 🛑';
+  else if(pv>=13&&pv<=16&&dv>=2&&dv<=6)rec='עמוד 🛑';
+  else if(pv>=12&&pv<=16)rec='משוך 🟢';
+  else if(pv===11)rec='כפל ✊';
+  else if(pv===10&&dv>=2&&dv<=9)rec='כפל ✊';
+  else if(pv===9&&dv>=3&&dv<=6)rec='כפל ✊';
+  else rec='משוך 🟢';
+  document.getElementById('recAction').textContent=rec;
+}
+
+function clearHands(){playerCards=[];dealerCard=null;render();document.getElementById('recAction').textContent='בחרו קלפים';}
+
+async function startCamera(){
+  try{
+    const stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});
+    document.getElementById('video').srcObject=stream;
+    document.getElementById('overlay').classList.add('hidden');
+  }catch(e){alert('לא ניתן לפתוח מצלמה. השתמשו בקלט ידני.');}
+}
+
+buildBtns();render();
+</script>
+</div>
+</body>
+</html>

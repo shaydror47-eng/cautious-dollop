@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>שעון מעורר — המרכז שלי</title>
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@700;900&family=Heebo:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0b0d14;color:#f4f6fb;font-family:'Heebo',sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:20px}
+.back{align-self:flex-start;display:inline-flex;align-items:center;gap:8px;margin-bottom:20px;
+  background:#141826;border:1px solid rgba(255,255,255,.1);color:#f4f6fb;
+  border-radius:14px;padding:10px 18px;font:700 14px 'Heebo';text-decoration:none}
+.back:hover{background:#1c2233}
+h1{font-family:'Rubik';font-size:28px;font-weight:900;margin-bottom:4px;text-align:center}
+.wrap{width:100%;max-width:440px}
+.clock{font-family:'Rubik';font-size:72px;font-weight:900;text-align:center;
+  background:linear-gradient(135deg,#38bdf8,#818cf8);-webkit-background-clip:text;background-clip:text;color:transparent;
+  letter-spacing:-2px;margin:20px 0 10px;line-height:1}
+.date{text-align:center;color:#9aa3b5;font-size:14px;margin-bottom:28px}
+.card{background:#141826;border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:20px;margin-bottom:14px}
+.card h3{font-family:'Rubik';font-weight:700;font-size:15px;color:#9aa3b5;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.time-inputs{display:flex;gap:12px;align-items:center;justify-content:center;margin-bottom:16px}
+.time-inputs input{width:80px;background:#0d1117;border:1px solid rgba(255,255,255,.15);color:#f4f6fb;
+  font-family:'Rubik';font-size:32px;font-weight:700;text-align:center;border-radius:12px;padding:10px 6px}
+.time-sep{font-family:'Rubik';font-size:32px;font-weight:700;color:#9aa3b5}
+.label{font-size:12px;color:#9aa3b5;text-align:center;margin-bottom:6px}
+.btn{width:100%;padding:14px;border-radius:14px;border:none;font:700 15px 'Heebo';cursor:pointer;
+  background:linear-gradient(135deg,#6366f1,#4f46e5);color:#fff;transition:opacity .15s}
+.btn:hover{opacity:.85}
+.btn.on{background:linear-gradient(135deg,#ef4444,#dc2626)}
+.btn.stop{background:linear-gradient(135deg,#f97316,#ea580c)}
+.alarms{display:flex;flex-direction:column;gap:8px}
+.alarm-item{display:flex;align-items:center;justify-content:space-between;
+  background:#0d1117;border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:12px 14px}
+.alarm-time{font-family:'Rubik';font-weight:700;font-size:18px}
+.alarm-del{background:none;border:none;color:#ef4444;cursor:pointer;font-size:18px;padding:4px}
+.toggle{width:44px;height:24px;background:#374151;border-radius:12px;position:relative;cursor:pointer;border:none;transition:background .2s}
+.toggle.on{background:#4f46e5}
+.toggle::after{content:'';position:absolute;width:18px;height:18px;background:white;border-radius:50%;top:3px;left:3px;transition:transform .2s}
+.toggle.on::after{transform:translateX(20px)}
+.ringing{animation:shake .1s infinite;background:#1e0a0a;border-color:#ef4444}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-3px)}75%{transform:translateX(3px)}}
+</style>
+</head>
+<body>
+<a href="../districts/misc/" class="back">→ שונות</a>
+<div class="wrap">
+  <h1>⏰ שעון מעורר</h1>
+  <div class="clock" id="clock">00:00:00</div>
+  <div class="date" id="date"></div>
+
+  <div class="card">
+    <h3>⏰ שעון מעורר חדש</h3>
+    <div class="label">בחרו שעה</div>
+    <div class="time-inputs">
+      <input type="number" id="alHour" min="0" max="23" value="07" placeholder="07">
+      <span class="time-sep">:</span>
+      <input type="number" id="alMin" min="0" max="59" value="00" placeholder="00">
+    </div>
+    <button class="btn" onclick="addAlarm()">הוסף שעון מעורר</button>
+  </div>
+
+  <div class="card">
+    <h3>🔔 השעונים שלי</h3>
+    <div class="alarms" id="alarmList"><div style="color:#9aa3b5;font-size:13px;text-align:center;padding:10px">אין שעונים מוגדרים</div></div>
+  </div>
+
+  <div class="card" id="ringCard" style="display:none">
+    <h3>🚨 שעון מעורר מצלצל!</h3>
+    <div class="alarm-time" style="font-size:32px;text-align:center;color:#ef4444;margin:10px 0" id="ringTime"></div>
+    <button class="btn stop" onclick="stopAlarm()">כבה</button>
+  </div>
+</div>
+
+<script>
+let alarms=JSON.parse(localStorage.getItem('alarms')||'[]');
+let ringing=null, ringInterval=null, audioCtx=null;
+
+function tick(){
+  const now=new Date();
+  const h=String(now.getHours()).padStart(2,'0');
+  const m=String(now.getMinutes()).padStart(2,'0');
+  const s=String(now.getSeconds()).padStart(2,'0');
+  document.getElementById('clock').textContent=`${h}:${m}:${s}`;
+  const days=['ראשון','שני','שלישי','רביעי','חמישי','שישי','שבת'];
+  const months=['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
+  document.getElementById('date').textContent=`יום ${days[now.getDay()]}, ${now.getDate()} ב${months[now.getMonth()]} ${now.getFullYear()}`;
+
+  if(!ringing){
+    alarms.forEach(a=>{
+      if(a.on&&`${a.h}:${a.m}`===`${h}:${m}`&&s==='00'){
+        triggerAlarm(a);
+      }
+    });
+  }
+}
+
+function triggerAlarm(a){
+  ringing=a;
+  document.getElementById('ringTime').textContent=`${a.h}:${a.m}`;
+  document.getElementById('ringCard').style.display='block';
+  document.getElementById('ringCard').classList.add('ringing');
+  playBeep();
+}
+
+function playBeep(){
+  if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+  function beep(){
+    const o=audioCtx.createOscillator(),g=audioCtx.createGain();
+    o.connect(g);g.connect(audioCtx.destination);
+    o.frequency.value=880;o.type='sine';
+    g.gain.setValueAtTime(.4,audioCtx.currentTime);
+    g.gain.exponentialRampToValueAtTime(.001,audioCtx.currentTime+.4);
+    o.start();o.stop(audioCtx.currentTime+.5);
+  }
+  beep();setTimeout(beep,600);setTimeout(beep,1200);
+  ringInterval=setInterval(()=>{beep();setTimeout(beep,600);setTimeout(beep,1200);},3000);
+}
+
+function stopAlarm(){
+  clearInterval(ringInterval);
+  ringing=null;
+  document.getElementById('ringCard').style.display='none';
+  document.getElementById('ringCard').classList.remove('ringing');
+}
+
+function addAlarm(){
+  const h=String(parseInt(document.getElementById('alHour').value)||7).padStart(2,'0');
+  const m=String(parseInt(document.getElementById('alMin').value)||0).padStart(2,'0');
+  alarms.push({id:Date.now(),h,m,on:true});
+  save();render();
+}
+
+function toggleAlarm(id){
+  alarms=alarms.map(a=>a.id===id?{...a,on:!a.on}:a);
+  save();render();
+}
+
+function delAlarm(id){
+  alarms=alarms.filter(a=>a.id!==id);
+  save();render();
+}
+
+function render(){
+  const el=document.getElementById('alarmList');
+  if(!alarms.length){el.innerHTML='<div style="color:#9aa3b5;font-size:13px;text-align:center;padding:10px">אין שעונים מוגדרים</div>';return;}
+  el.innerHTML=alarms.sort((a,b)=>a.h+a.m>b.h+b.m?1:-1).map(a=>`
+    <div class="alarm-item">
+      <button class="alarm-del" onclick="delAlarm(${a.id})">🗑</button>
+      <div class="alarm-time">${a.h}:${a.m}</div>
+      <button class="toggle ${a.on?'on':''}" onclick="toggleAlarm(${a.id})"></button>
+    </div>`).join('');
+}
+
+function save(){localStorage.setItem('alarms',JSON.stringify(alarms));}
+
+render();
+setInterval(tick,1000);tick();
+</script>
+</body>
+</html>

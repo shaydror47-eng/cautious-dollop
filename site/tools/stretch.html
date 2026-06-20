@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>מתיחות — המרכז שלי</title>
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@700;900&family=Heebo:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0b0d14;color:#f4f6fb;font-family:'Heebo',sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:20px}
+.back{align-self:flex-start;display:inline-flex;align-items:center;gap:8px;margin-bottom:20px;
+  background:#141826;border:1px solid rgba(255,255,255,.1);color:#f4f6fb;
+  border-radius:14px;padding:10px 18px;font:700 14px 'Heebo';text-decoration:none}
+.back:hover{background:#1c2233}
+h1{font-family:'Rubik';font-size:28px;font-weight:900;text-align:center;margin-bottom:4px}
+.sub{color:#9aa3b5;font-size:13px;text-align:center;margin-bottom:24px}
+.wrap{width:100%;max-width:500px}
+.timer-box{background:linear-gradient(135deg,#0d9488,#0f766e);border-radius:24px;padding:32px 20px;text-align:center;margin-bottom:18px;position:relative;overflow:hidden}
+.timer-box::before{content:'🤸';position:absolute;font-size:100px;opacity:.15;top:-10px;left:-10px}
+.stretch-name{font-family:'Rubik';font-size:20px;font-weight:700;margin-bottom:8px;position:relative}
+.stretch-desc{font-size:13px;opacity:.85;margin-bottom:16px;position:relative}
+.timer-ring{position:relative;display:inline-block;margin-bottom:16px}
+.timer-ring svg{transform:rotate(-90deg)}
+.timer-ring .bg{stroke:#0d3d38;stroke-width:6;fill:none}
+.timer-ring .prog{stroke:#5eead4;stroke-width:6;fill:none;stroke-linecap:round;transition:stroke-dashoffset .9s linear}
+.timer-num{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-family:'Rubik';font-size:42px;font-weight:900}
+.progress-info{font-size:13px;opacity:.8;position:relative}
+.controls{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.btn{padding:13px 24px;border-radius:14px;border:none;font:700 15px 'Heebo';cursor:pointer;
+  background:linear-gradient(135deg,#0d9488,#0f766e);color:#fff;transition:opacity .15s}
+.btn:hover{opacity:.85}
+.btn.sec{background:linear-gradient(135deg,#374151,#4b5563)}
+.btn.skip{background:linear-gradient(135deg,#6366f1,#4f46e5)}
+.sequence{background:#141826;border:1px solid rgba(255,255,255,.1);border-radius:18px;padding:16px;margin-top:14px}
+.seq-title{font-family:'Rubik';font-size:14px;color:#9aa3b5;margin-bottom:12px}
+.seq-item{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:12px;
+  margin-bottom:6px;font-size:14px;background:#0d1117;transition:background .2s}
+.seq-item.current{background:#0f4039;border:1px solid #0d9488}
+.seq-item.done{opacity:.5}
+.seq-icon{font-size:20px;flex:none}
+.seq-info{flex:1}
+.seq-dur{font-family:'Rubik';font-size:13px;font-weight:700;color:#2dd4bf}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+.timer-box.active{animation:pulse 2s ease-in-out infinite}
+</style>
+</head>
+<body>
+<a href="../districts/growth/" class="back">→ שיפור עצמי</a>
+<div class="wrap">
+<h1>🤸 מתיחות</h1>
+<div class="sub">7 מתיחות · 30 שניות כל אחת · 3.5 דקות סה"כ</div>
+
+<div class="timer-box" id="timerBox">
+  <div class="stretch-name" id="stretchName">לחצו "התחל" להתחיל</div>
+  <div class="stretch-desc" id="stretchDesc">שגרת מתיחות מלאה לגוף</div>
+  <div class="timer-ring">
+    <svg width="140" height="140" viewBox="0 0 140 140">
+      <circle class="bg" cx="70" cy="70" r="56"/>
+      <circle class="prog" id="ring" cx="70" cy="70" r="56" stroke-dasharray="352" stroke-dashoffset="0"/>
+    </svg>
+    <div class="timer-num" id="timerNum">30</div>
+  </div>
+  <div class="progress-info" id="progressInfo">מוכנים?</div>
+</div>
+
+<div class="controls">
+  <button class="btn" id="mainBtn" onclick="startOrPause()">▶ התחל</button>
+  <button class="btn skip" onclick="skipStretch()" style="display:none" id="skipBtn">דלג ›</button>
+  <button class="btn sec" onclick="resetAll()">↺ אפס</button>
+</div>
+
+<div class="sequence">
+  <div class="seq-title">📋 סדר מתיחות</div>
+  <div id="seqList"></div>
+</div>
+</div>
+
+<script>
+const STRETCHES=[
+  {name:'צוואר וכתפיים',desc:'הטיית ראש לכל צד — 15 שניות כל צד',icon:'🧘',dur:30},
+  {name:'חזה ושכמות',desc:'ידיים מאחור, פתיחת חזה',icon:'💪',dur:30},
+  {name:'גב עליון',desc:'חיבוק עצמי + עיגולי כתפיים',icon:'🔄',dur:30},
+  {name:'גב תחתון',desc:'כיפוף קדימה, ידיים לרצפה',icon:'🙇',dur:30},
+  {name:'ירכיים קדמיות',desc:'קידה — ברך אחת לפנים',icon:'🦵',dur:30},
+  {name:'שרירי ירך',desc:'עמידה, מתיחת ירך אחורה',icon:'🏃',dur:30},
+  {name:'קרסוליים ורגליים',desc:'עיגולי קרסוליים, מתיחת אצבעות',icon:'🦶',dur:30},
+];
+
+let idx=0,timeLeft=30,running=false,timer=null,paused=false;
+const CIRC=352;
+
+function renderSeq(){
+  document.getElementById('seqList').innerHTML=STRETCHES.map((s,i)=>`
+    <div class="seq-item ${i===idx?'current':i<idx?'done':''}" id="si${i}">
+      <div class="seq-icon">${s.icon}</div>
+      <div class="seq-info">${s.name}<br><span style="font-size:12px;color:#9aa3b5">${s.desc}</span></div>
+      <div class="seq-dur">${s.dur}s</div>
+    </div>`).join('');
+}
+
+function updateTimer(){
+  const s=STRETCHES[idx];
+  document.getElementById('stretchName').textContent=s.name;
+  document.getElementById('stretchDesc').textContent=s.desc;
+  document.getElementById('timerNum').textContent=timeLeft;
+  document.getElementById('progressInfo').textContent=`${idx+1}/${STRETCHES.length} — ${s.icon}`;
+  const pct=timeLeft/s.dur;
+  document.getElementById('ring').style.strokeDashoffset=CIRC*(1-pct);
+}
+
+function startOrPause(){
+  if(!running){
+    running=true;paused=false;
+    document.getElementById('mainBtn').textContent='⏸ השהה';
+    document.getElementById('skipBtn').style.display='';
+    document.getElementById('timerBox').classList.add('active');
+    tick();
+  } else {
+    paused=!paused;
+    document.getElementById('mainBtn').textContent=paused?'▶ המשך':'⏸ השהה';
+    document.getElementById('timerBox').classList.toggle('active',!paused);
+  }
+}
+
+function tick(){
+  timer=setInterval(()=>{
+    if(paused)return;
+    timeLeft--;updateTimer();renderSeq();
+    if(timeLeft<=0){
+      beep();
+      idx++;
+      if(idx>=STRETCHES.length){done();return;}
+      timeLeft=STRETCHES[idx].dur;
+      updateTimer();renderSeq();
+    }
+  },1000);
+}
+
+function done(){
+  clearInterval(timer);running=false;
+  document.getElementById('stretchName').textContent='✅ סיימת!';
+  document.getElementById('stretchDesc').textContent='כל המתיחות הושלמו. כל הכבוד!';
+  document.getElementById('timerNum').textContent='✓';
+  document.getElementById('mainBtn').textContent='✓ סיים';
+  document.getElementById('timerBox').classList.remove('active');
+  document.getElementById('ring').style.strokeDashoffset=0;
+}
+
+function skipStretch(){
+  idx++;if(idx>=STRETCHES.length){done();return;}
+  timeLeft=STRETCHES[idx].dur;updateTimer();renderSeq();
+}
+
+function resetAll(){
+  clearInterval(timer);idx=0;timeLeft=STRETCHES[0].dur;running=false;paused=false;
+  document.getElementById('mainBtn').textContent='▶ התחל';
+  document.getElementById('skipBtn').style.display='none';
+  document.getElementById('timerBox').classList.remove('active');
+  document.getElementById('stretchName').textContent='לחצו "התחל" להתחיל';
+  document.getElementById('stretchDesc').textContent='שגרת מתיחות מלאה לגוף';
+  document.getElementById('timerNum').textContent='30';
+  document.getElementById('ring').style.strokeDashoffset=0;
+  document.getElementById('progressInfo').textContent='מוכנים?';
+  renderSeq();
+}
+
+function beep(){
+  try{const a=new AudioContext(),o=a.createOscillator(),g=a.createGain();
+    o.connect(g);g.connect(a.destination);o.frequency.value=660;
+    g.gain.setValueAtTime(.3,a.currentTime);g.gain.exponentialRampToValueAtTime(.001,a.currentTime+.4);
+    o.start();o.stop(a.currentTime+.5);}catch(e){}
+}
+
+renderSeq();updateTimer();
+</script>
+</body>
+</html>

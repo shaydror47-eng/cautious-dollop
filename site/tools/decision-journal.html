@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>יומן החלטות — המרכז שלי</title>
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@700;900&family=Heebo:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0b0d14;color:#f4f6fb;font-family:'Heebo',sans-serif;min-height:100vh;padding:20px}
+.back{display:inline-flex;align-items:center;gap:8px;margin-bottom:20px;
+  background:#141826;border:1px solid rgba(255,255,255,.1);color:#f4f6fb;
+  border-radius:14px;padding:10px 18px;font:700 14px 'Heebo';text-decoration:none}
+.back:hover{background:#1c2233}
+h1{font-family:'Rubik';font-size:28px;font-weight:900;margin-bottom:4px}
+.sub{color:#9aa3b5;font-size:13px;margin-bottom:24px}
+.wrap{max-width:700px;margin:0 auto}
+.card{background:#141826;border:1px solid rgba(255,255,255,.1);border-radius:18px;padding:18px;margin-bottom:14px}
+.card h3{font-family:'Rubik';font-size:14px;color:#9aa3b5;margin-bottom:14px}
+.form{display:flex;flex-direction:column;gap:10px}
+.form input,.form select,.form textarea{background:#0d1117;border:1px solid rgba(255,255,255,.15);
+  color:#f4f6fb;font:500 14px 'Heebo';border-radius:12px;padding:11px 14px;width:100%}
+.form textarea{resize:vertical;min-height:70px}
+.form-row{display:flex;gap:10px;flex-wrap:wrap}
+.form-row > *{flex:1;min-width:110px}
+.btn{padding:12px;border-radius:12px;border:none;font:700 14px 'Heebo';cursor:pointer;
+  background:linear-gradient(135deg,#0f766e,#0d9488);color:#fff;transition:opacity .15s;width:100%}
+.btn:hover{opacity:.85}
+.dec-item{background:#0d1117;border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:16px;margin-bottom:10px}
+.dec-item:hover{border-color:rgba(45,212,191,.2)}
+.dec-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
+.dec-title{font-family:'Rubik';font-size:16px;font-weight:700}
+.dec-del{background:none;border:none;color:#6b7280;cursor:pointer;font-size:15px}
+.dec-meta{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+.badge{padding:3px 8px;border-radius:6px;font:600 11px 'Heebo'}
+.dec-text{font-size:13px;color:#d1d5db;line-height:1.6;margin-bottom:6px}
+.dec-date{font-size:11px;color:#6b7280}
+.outcome-btn{padding:6px 12px;border-radius:8px;border:1px solid rgba(255,255,255,.15);
+  background:transparent;color:#9aa3b5;font:600 12px 'Heebo';cursor:pointer;margin-top:8px;margin-left:6px}
+.outcome-btn.good{border-color:#22c55e;color:#4ade80;background:rgba(22,163,74,.1)}
+.outcome-btn.bad{border-color:#ef4444;color:#f87171;background:rgba(220,38,38,.1)}
+.outcome-btn.neutral{border-color:#fbbf24;color:#fde68a;background:rgba(234,179,8,.1)}
+</style>
+</head>
+<body>
+<a href="../districts/misc/" class="back">→ שונות</a>
+<div class="wrap">
+<h1>🧭 יומן החלטות</h1>
+<div class="sub">תעד כל החלטה גדולה — ולמד מהתוצאות</div>
+
+<div class="card">
+  <h3>➕ הוסף החלטה</h3>
+  <div class="form">
+    <input type="text" id="dTitle" placeholder="מה ההחלטה? *">
+    <div class="form-row">
+      <select id="dCategory">
+        <option value="💼 עסקי">💼 עסקי</option>
+        <option value="💰 כספי">💰 כספי</option>
+        <option value="🤝 אישי">🤝 אישי</option>
+        <option value="📚 למידה">📚 למידה</option>
+        <option value="🏠 ביתי">🏠 ביתי</option>
+        <option value="⭐ אחר">⭐ אחר</option>
+      </select>
+      <select id="dConfidence">
+        <option value="נמוכה">ביטחון נמוך 😰</option>
+        <option value="בינונית" selected>ביטחון בינוני 🤔</option>
+        <option value="גבוהה">ביטחון גבוה 💪</option>
+      </select>
+    </div>
+    <textarea id="dReason" placeholder="למה קיבלת את ההחלטה הזו?"></textarea>
+    <textarea id="dExpected" placeholder="מה אתה מצפה שיקרה?"></textarea>
+    <button class="btn" onclick="addDecision()">שמור החלטה</button>
+  </div>
+</div>
+
+<div class="card">
+  <h3>📋 יומן ההחלטות</h3>
+  <div id="decList"><div style="color:#9aa3b5;font-size:13px;text-align:center;padding:12px">אין החלטות עדיין</div></div>
+</div>
+</div>
+
+<script>
+let decisions=JSON.parse(localStorage.getItem('decision_journal')||'[]');
+
+function addDecision(){
+  const title=document.getElementById('dTitle').value.trim();
+  if(!title){alert('כתבו את ההחלטה');return;}
+  decisions.unshift({id:Date.now(),title,
+    category:document.getElementById('dCategory').value,
+    confidence:document.getElementById('dConfidence').value,
+    reason:document.getElementById('dReason').value.trim(),
+    expected:document.getElementById('dExpected').value.trim(),
+    outcome:null,date:new Date().toLocaleDateString('he-IL')});
+  ['dTitle','dReason','dExpected'].forEach(id=>document.getElementById(id).value='');
+  save();render();
+}
+
+function setOutcome(id,outcome){
+  decisions=decisions.map(d=>d.id===id?{...d,outcome}:d);save();render();
+}
+
+function delDecision(id){decisions=decisions.filter(d=>d.id!==id);save();render();}
+
+function render(){
+  const el=document.getElementById('decList');
+  if(!decisions.length){el.innerHTML='<div style="color:#9aa3b5;font-size:13px;text-align:center;padding:12px">אין החלטות עדיין</div>';return;}
+  el.innerHTML=decisions.map(d=>{
+    const confColor={נמוכה:'#f87171',בינונית:'#fde68a',גבוהה:'#4ade80'}[d.confidence]||'#9aa3b5';
+    const outColor={good:'#4ade80',bad:'#f87171',neutral:'#fde68a'}[d.outcome]||'#9aa3b5';
+    const outText={good:'הלך טוב ✅',bad:'לא הלך טוב ❌',neutral:'ניטרלי 🤷'}[d.outcome]||'ממתין לתוצאה...';
+    return `<div class="dec-item">
+      <div class="dec-header">
+        <div class="dec-title">${d.title}</div>
+        <button class="dec-del" onclick="delDecision(${d.id})">🗑</button>
+      </div>
+      <div class="dec-meta">
+        <span class="badge" style="background:rgba(13,148,136,.2);color:#2dd4bf">${d.category}</span>
+        <span class="badge" style="background:rgba(0,0,0,.3);color:${confColor}">ביטחון ${d.confidence}</span>
+        ${d.outcome?`<span class="badge" style="background:rgba(0,0,0,.3);color:${outColor}">${outText}</span>`:''}
+      </div>
+      ${d.reason?`<div class="dec-text"><strong style="color:#9aa3b5;font-size:11px">למה: </strong>${d.reason}</div>`:''}
+      ${d.expected?`<div class="dec-text"><strong style="color:#9aa3b5;font-size:11px">ציפייה: </strong>${d.expected}</div>`:''}
+      <div class="dec-date">${d.date}</div>
+      ${!d.outcome?`<div>
+        <button class="outcome-btn good" onclick="setOutcome(${d.id},'good')">✅ הלך טוב</button>
+        <button class="outcome-btn neutral" onclick="setOutcome(${d.id},'neutral')">🤷 ניטרלי</button>
+        <button class="outcome-btn bad" onclick="setOutcome(${d.id},'bad')">❌ לא הלך</button>
+      </div>`:''}
+    </div>`;
+  }).join('');
+}
+
+function save(){localStorage.setItem('decision_journal',JSON.stringify(decisions));}
+render();
+</script>
+</body>
+</html>

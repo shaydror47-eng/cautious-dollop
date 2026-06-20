@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>נוכחות — המרכז שלי</title>
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@700;900&family=Heebo:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0b0d14;color:#f4f6fb;font-family:'Heebo',sans-serif;min-height:100vh;padding:20px}
+.back{display:inline-flex;align-items:center;gap:8px;margin-bottom:20px;
+  background:#141826;border:1px solid rgba(255,255,255,.1);color:#f4f6fb;
+  border-radius:14px;padding:10px 18px;font:700 14px 'Heebo';text-decoration:none}
+.back:hover{background:#1c2233}
+h1{font-family:'Rubik';font-size:28px;font-weight:900;margin-bottom:4px}
+.sub{color:#9aa3b5;font-size:13px;margin-bottom:24px}
+.wrap{max-width:700px;margin:0 auto}
+.card{background:#141826;border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:20px;margin-bottom:16px}
+.card h3{font-family:'Rubik';font-weight:700;font-size:15px;color:#9aa3b5;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.add-row{display:flex;gap:10px;flex-wrap:wrap}
+.add-row input{flex:1;min-width:140px;background:#0d1117;border:1px solid rgba(255,255,255,.15);color:#f4f6fb;
+  font:500 14px 'Heebo';border-radius:12px;padding:11px 14px}
+.btn{padding:11px 18px;border-radius:12px;border:none;font:700 14px 'Heebo';cursor:pointer;
+  background:linear-gradient(135deg,#2dd4bf,#0d9488);color:#fff;white-space:nowrap;transition:opacity .15s}
+.btn:hover{opacity:.85}
+.btn.del{background:linear-gradient(135deg,#ef4444,#dc2626);padding:8px 12px;font-size:13px}
+.date-nav{display:flex;align-items:center;gap:10px;justify-content:center;margin-bottom:16px}
+.nav-btn{background:#141826;border:1px solid rgba(255,255,255,.1);color:#f4f6fb;
+  border-radius:10px;padding:8px 14px;font:700 16px 'Heebo';cursor:pointer}
+.date-label{font-family:'Rubik';font-weight:700;font-size:16px;min-width:180px;text-align:center}
+.list{display:flex;flex-direction:column;gap:8px}
+.person-row{display:flex;align-items:center;justify-content:space-between;
+  background:#0d1117;border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:13px 16px;
+  transition:border-color .15s}
+.person-row:hover{border-color:rgba(255,255,255,.18)}
+.person-name{font-family:'Rubik';font-weight:700;font-size:16px}
+.status-btns{display:flex;gap:6px}
+.st-btn{padding:8px 14px;border-radius:10px;border:2px solid;font:700 13px 'Heebo';cursor:pointer;
+  background:transparent;transition:all .15s}
+.st-btn.present{border-color:#22c55e;color:#22c55e}
+.st-btn.present.active{background:#16a34a;color:white;border-color:#16a34a}
+.st-btn.absent{border-color:#ef4444;color:#ef4444}
+.st-btn.absent.active{background:#dc2626;color:white;border-color:#dc2626}
+.st-btn.late{border-color:#f59e0b;color:#f59e0b}
+.st-btn.late.active{background:#d97706;color:white;border-color:#d97706}
+.summary{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:4px}
+.sum-box{background:#0d1117;border-radius:12px;padding:12px;text-align:center}
+.sum-box .num{font-family:'Rubik';font-size:28px;font-weight:900}
+.sum-box .lbl{font-size:11px;color:#9aa3b5;margin-top:2px}
+.sum-present .num{color:#22c55e}
+.sum-absent .num{color:#ef4444}
+.sum-late .num{color:#f59e0b}
+.export-btn{background:#141826;border:1px solid rgba(255,255,255,.1);color:#9aa3b5;
+  border-radius:12px;padding:10px 16px;font:500 13px 'Heebo';cursor:pointer;width:100%;margin-top:8px}
+.export-btn:hover{border-color:rgba(255,255,255,.25);color:#f4f6fb}
+</style>
+</head>
+<body>
+<a href="../districts/growth/" class="back">→ שיפור עצמי</a>
+<div class="wrap">
+  <h1>📅 נוכחות</h1>
+  <div class="sub">מי הגיע, מי לא — יומן נוכחות יומי</div>
+
+  <div class="card">
+    <h3>👤 הוסף אדם</h3>
+    <div class="add-row">
+      <input type="text" id="nameInput" placeholder="שם האדם" onkeydown="if(event.key==='Enter')addPerson()">
+      <button class="btn" onclick="addPerson()">הוסף</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>📆 תאריך</h3>
+    <div class="date-nav">
+      <button class="nav-btn" onclick="changeDay(-1)">‹</button>
+      <div class="date-label" id="dateLabel"></div>
+      <button class="nav-btn" onclick="changeDay(1)">›</button>
+    </div>
+    <div class="summary">
+      <div class="sum-box sum-present"><div class="num" id="cntPresent">0</div><div class="lbl">נוכח</div></div>
+      <div class="sum-box sum-late"><div class="num" id="cntLate">0</div><div class="lbl">איחור</div></div>
+      <div class="sum-box sum-absent"><div class="num" id="cntAbsent">0</div><div class="lbl">נעדר</div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>✅ סימון נוכחות</h3>
+    <div class="list" id="personList"><div style="color:#9aa3b5;font-size:13px;text-align:center;padding:10px">אין אנשים — הוסיפו מעל</div></div>
+    <button class="export-btn" onclick="exportCSV()">📥 ייצוא CSV</button>
+  </div>
+</div>
+
+<script>
+let data=JSON.parse(localStorage.getItem('attendance_v2')||'{"people":[],"records":{}}');
+let currentDate=new Date();
+
+function dateKey(d){return d.toISOString().slice(0,10)}
+function dateLabel(d){
+  const days=['ראשון','שני','שלישי','רביעי','חמישי','שישי','שבת'];
+  return `יום ${days[d.getDay()]}, ${d.toLocaleDateString('he-IL')}`;
+}
+
+function addPerson(){
+  const n=document.getElementById('nameInput').value.trim();
+  if(!n)return;
+  data.people.push({id:Date.now(),name:n});
+  document.getElementById('nameInput').value='';
+  save();render();
+}
+
+function setStatus(personId,date,status){
+  if(!data.records[date])data.records[date]={};
+  if(data.records[date][personId]===status)delete data.records[date][personId];
+  else data.records[date][personId]=status;
+  save();render();
+}
+
+function changeDay(d){
+  currentDate=new Date(currentDate);currentDate.setDate(currentDate.getDate()+d);render();
+}
+
+function deletePerson(id){
+  if(!confirm('למחוק?'))return;
+  data.people=data.people.filter(p=>p.id!==id);
+  Object.keys(data.records).forEach(d=>{delete data.records[d][id];});
+  save();render();
+}
+
+function render(){
+  const dk=dateKey(currentDate);
+  const rec=data.records[dk]||{};
+  document.getElementById('dateLabel').textContent=dateLabel(currentDate);
+  const el=document.getElementById('personList');
+  if(!data.people.length){el.innerHTML='<div style="color:#9aa3b5;font-size:13px;text-align:center;padding:10px">אין אנשים — הוסיפו מעל</div>';
+    document.getElementById('cntPresent').textContent=0;
+    document.getElementById('cntLate').textContent=0;
+    document.getElementById('cntAbsent').textContent=0;
+    return;}
+  el.innerHTML=data.people.map(p=>`
+    <div class="person-row">
+      <button class="btn del" onclick="deletePerson(${p.id})">🗑</button>
+      <span class="person-name">${p.name}</span>
+      <div class="status-btns">
+        <button class="st-btn present ${rec[p.id]==='present'?'active':''}" onclick="setStatus(${p.id},'${dk}','present')">✓ נוכח</button>
+        <button class="st-btn late ${rec[p.id]==='late'?'active':''}" onclick="setStatus(${p.id},'${dk}','late')">⏱ איחר</button>
+        <button class="st-btn absent ${rec[p.id]==='absent'?'active':''}" onclick="setStatus(${p.id},'${dk}','absent')">✗ נעדר</button>
+      </div>
+    </div>`).join('');
+  const vals=Object.values(rec);
+  document.getElementById('cntPresent').textContent=vals.filter(v=>v==='present').length;
+  document.getElementById('cntLate').textContent=vals.filter(v=>v==='late').length;
+  document.getElementById('cntAbsent').textContent=vals.filter(v=>v==='absent').length;
+}
+
+function exportCSV(){
+  const dates=[...new Set(Object.keys(data.records))].sort();
+  const header=['שם',...dates].join(',');
+  const rows=data.people.map(p=>[p.name,...dates.map(d=>(data.records[d]||{})[p.id]||'')].join(','));
+  const csv=[header,...rows].join('\n');
+  const a=document.createElement('a');
+  a.href='data:text/csv;charset=utf-8,﻿'+encodeURIComponent(csv);
+  a.download='attendance.csv';a.click();
+}
+
+function save(){localStorage.setItem('attendance_v2',JSON.stringify(data));}
+render();
+</script>
+</body>
+</html>
