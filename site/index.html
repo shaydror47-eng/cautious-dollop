@@ -8,197 +8,747 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@500;700;900&family=Heebo:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#0b0d14;--text:#f4f6fb;--muted:#9aa3b5;--card:#141826;--line:rgba(255,255,255,.08)}
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:var(--bg);color:var(--text);font-family:'Heebo',system-ui,sans-serif;min-height:100vh;overflow-x:hidden}
-body::before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.5;
- background-image:
-  radial-gradient(1.5px 1.5px at 20% 30%, #fff8, transparent),
-  radial-gradient(1px 1px at 70% 15%, #fff6, transparent),
-  radial-gradient(1.5px 1.5px at 85% 60%, #fff7, transparent),
-  radial-gradient(1px 1px at 40% 80%, #fff5, transparent),
-  radial-gradient(1.5px 1.5px at 10% 65%, #fff6, transparent),
-  radial-gradient(1px 1px at 55% 45%, #fff4, transparent)}
-.wrap{max-width:920px;margin:0 auto;padding:26px 18px 70px;position:relative}
-header{text-align:center;padding:30px 0 10px}
-.logo{font-family:'Rubik';font-weight:900;font-size:42px;letter-spacing:-1px;
- background:linear-gradient(92deg,#ffd166,#ff7e5f 35%,#c084fc 70%,#38bdf8);
- -webkit-background-clip:text;background-clip:text;color:transparent;
- animation:shine 6s linear infinite;background-size:200% 100%}
+body{background:#0d1117;color:#f4f6fb;font-family:'Heebo',system-ui,sans-serif;min-height:100vh;overflow-x:hidden}
+
+.page-wrap{max-width:1280px;margin:0 auto;padding:0 16px 60px}
+
+header{text-align:center;padding:28px 0 18px;position:relative}
+.logo{font-family:'Rubik';font-weight:900;font-size:44px;letter-spacing:-1px;
+  background:linear-gradient(92deg,#ffd166,#ff7e5f 35%,#c084fc 70%,#38bdf8);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  animation:shine 6s linear infinite;background-size:200% 100%}
 @keyframes shine{to{background-position:200% 0}}
-.tag{color:var(--muted);font-size:15px;margin-top:6px}
-.tag b{color:var(--text)}
-.grid{display:grid;grid-template-columns:1fr;gap:18px;margin-top:30px}
-@media(min-width:640px){.grid{grid-template-columns:1fr 1fr}}
-.world{position:relative;border:none;cursor:pointer;text-align:right;color:#fff;font:inherit;
- border-radius:24px;min-height:175px;padding:22px 22px 20px;overflow:hidden;
- display:flex;flex-direction:column;justify-content:flex-end;
- transition:transform .25s cubic-bezier(.34,1.56,.64,1), box-shadow .25s;
- box-shadow:0 10px 30px -12px rgba(0,0,0,.6);isolation:isolate}
-.world:hover{transform:translateY(-6px) scale(1.015)}
-.world:active{transform:scale(.985)}
-.world:focus-visible{outline:3px solid #fff;outline-offset:3px}
-.world .big{position:absolute;left:-12px;top:-22px;font-size:130px;opacity:.9;z-index:0;
- filter:drop-shadow(0 12px 24px rgba(0,0,0,.35));transition:transform .35s ease}
-.world:hover .big{transform:rotate(-8deg) scale(1.1)}
-.world::after{content:"";position:absolute;inset:0;z-index:1;
- background:linear-gradient(to top, rgba(0,0,0,.45), transparent 65%)}
-.world > *{position:relative;z-index:2}
-.world .wt{font-family:'Rubik';font-weight:900;font-size:26px;text-shadow:0 2px 10px rgba(0,0,0,.4)}
-.world .ws{font-size:13.5px;opacity:.92;margin-top:3px;font-weight:500}
-.world .chip{position:absolute;top:16px;right:18px;z-index:2;
- background:rgba(0,0,0,.35);backdrop-filter:blur(4px);
- border:1px solid rgba(255,255,255,.25);border-radius:30px;padding:5px 13px;font-size:13px;font-weight:700}
-.w-delivery{background:radial-gradient(circle at 80% 20%, #ffe29f55, transparent 50%),linear-gradient(135deg,#f9763b,#e8453c 55%,#b91c4b)}
-.w-money{background:radial-gradient(circle at 85% 15%, #d9f99d55, transparent 50%),linear-gradient(135deg,#13b380,#0e8f6f 55%,#065f55)}
-.w-biz{background:radial-gradient(circle at 80% 20%, #f0abfc44, transparent 50%),linear-gradient(135deg,#8b5cf6,#6d28d9 55%,#4c1d95)}
-.w-misc{background:radial-gradient(circle at 80% 20%, #fda4af44, transparent 50%),linear-gradient(135deg,#fb7185,#e11d48 55%,#9f1239)}
-.w-grow{background:radial-gradient(circle at 80% 20%, #99f6e444, transparent 50%),linear-gradient(135deg,#2dd4bf,#0d9488 55%,#115e59)}
-@media(min-width:640px){.w-delivery{grid-column:1 / -1;min-height:200px}.w-delivery .big{font-size:170px}}
-.view{display:none}
-.view.active{display:block;animation:in .3s ease}
-@keyframes in{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
-.home.hidden{display:none}
-.vhead{border-radius:24px;padding:26px 22px;position:relative;overflow:hidden;margin-top:14px;
- box-shadow:0 10px 30px -12px rgba(0,0,0,.6)}
-.vhead .big{position:absolute;left:-8px;top:-25px;font-size:120px;opacity:.85;
- filter:drop-shadow(0 12px 24px rgba(0,0,0,.35))}
-.vhead h2{font-family:'Rubik';font-weight:900;font-size:30px;position:relative;text-shadow:0 2px 10px rgba(0,0,0,.4)}
-.vhead p{position:relative;font-size:14px;opacity:.92;margin-top:4px;font-weight:500}
-.back{display:inline-flex;align-items:center;gap:8px;margin-top:6px;
- background:var(--card);border:1px solid var(--line);color:var(--text);
- border-radius:14px;padding:11px 18px;font:700 14.5px 'Heebo';cursor:pointer;transition:background .15s}
-.back:hover{background:#1c2233}
-.tools{display:grid;grid-template-columns:1fr;gap:12px;margin-top:18px}
-@media(min-width:560px){.tools{grid-template-columns:1fr 1fr}}
-.tool{display:flex;align-items:center;gap:14px;text-align:right;cursor:pointer;color:inherit;font:inherit;text-decoration:none;
- background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;
- transition:transform .18s, border-color .18s, background .18s}
-.tool:hover{transform:translateY(-3px);background:#1a2030;border-color:rgba(255,255,255,.18)}
-.tool:focus-visible{outline:2px solid #fff;outline-offset:3px}
-.tool .tk{width:48px;height:48px;border-radius:14px;display:grid;place-items:center;font-size:24px;flex:none;
- background:linear-gradient(135deg,rgba(255,255,255,.10),rgba(255,255,255,.03));border:1px solid var(--line)}
-.tool .tt{font-family:'Rubik';font-weight:700;font-size:16px}
-.tool .st{font-size:12.5px;margin-top:3px;font-weight:500;color:#34d399}
-.tool .arr{margin-right:auto;color:var(--muted);font-size:22px;transform:scaleX(-1)}
-footer{margin-top:46px;text-align:center;color:var(--muted);font-size:12.5px}
-@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+.sub{color:#9aa3b5;font-size:15px;margin-top:6px}
+.sub b{color:#f4f6fb}
+
+/* ===== DESKTOP SVG TOWN ===== */
+.town-wrap{position:relative;border-radius:24px;overflow:hidden;
+  box-shadow:0 30px 80px -20px rgba(0,0,0,.8);border:1px solid rgba(255,255,255,.07)}
+.town-svg{width:100%;height:auto;display:block}
+
+/* District clickable groups */
+.d-link{cursor:pointer;text-decoration:none}
+.d-link .bld{transition:filter .25s ease, transform .25s ease;transform-origin:center bottom;transform-box:fill-box}
+.d-link:hover .bld{filter:brightness(1.25) drop-shadow(0 0 18px rgba(255,255,255,.25));transform:scale(1.03)}
+.d-link:focus-visible{outline:3px solid #fff;outline-offset:2px}
+
+/* Lamp glow animation */
+@keyframes glow{0%,100%{opacity:.7}50%{opacity:1}}
+.lamp-glow{animation:glow 3s ease-in-out infinite}
+.lamp-glow2{animation:glow 3s ease-in-out infinite;animation-delay:-1.5s}
+.lamp-glow3{animation:glow 3s ease-in-out infinite;animation-delay:-0.8s}
+
+/* Cloud float */
+@keyframes cloudL{0%,100%{transform:translateX(0)}50%{transform:translateX(18px)}}
+@keyframes cloudR{0%,100%{transform:translateX(0)}50%{transform:translateX(-14px)}}
+.cloud1{animation:cloudL 12s ease-in-out infinite}
+.cloud2{animation:cloudR 9s ease-in-out infinite;animation-delay:-4s}
+.cloud3{animation:cloudL 15s ease-in-out infinite;animation-delay:-7s}
+
+/* Fountain animation */
+@keyframes fountain{0%,100%{opacity:.7;transform:scaleY(1)}50%{opacity:1;transform:scaleY(1.08)}}
+.fount{animation:fountain 2s ease-in-out infinite;transform-origin:center bottom;transform-box:fill-box}
+
+/* Tooltip */
+.tip{position:fixed;pointer-events:none;z-index:999;background:rgba(10,12,20,.92);
+  border:1px solid rgba(255,255,255,.15);border-radius:14px;padding:10px 15px;
+  min-width:160px;max-width:230px;display:none;backdrop-filter:blur(8px);
+  box-shadow:0 8px 32px rgba(0,0,0,.6)}
+.tip-name{font-family:'Rubik';font-weight:900;font-size:16px;color:#fff}
+.tip-desc{font-size:12.5px;color:#9aa3b5;margin-top:3px}
+.tip-count{font-size:12px;font-weight:700;margin-top:6px;padding:4px 10px;border-radius:20px;display:inline-block}
+
+/* ===== MOBILE CARDS ===== */
+.mobile-town{display:none}
+@media(max-width:720px){
+  .town-wrap{display:none}
+  .mobile-town{display:block;padding-top:8px}
+}
+
+.mb-scene{position:relative;margin-bottom:32px}
+.mb-path{width:4px;background:linear-gradient(to bottom,transparent,#d6d3d1 10%,#d6d3d1 90%,transparent);
+  position:absolute;left:50%;transform:translateX(-50%);top:0;bottom:0;z-index:0}
+.mb-card{position:relative;z-index:1;border-radius:22px;overflow:hidden;
+  min-height:160px;display:flex;flex-direction:column;justify-content:flex-end;
+  padding:20px 20px 18px;margin:0 0 14px;text-decoration:none;color:#fff;
+  box-shadow:0 12px 36px -10px rgba(0,0,0,.6);
+  transition:transform .2s cubic-bezier(.34,1.56,.64,1)}
+.mb-card:active{transform:scale(.97)}
+.mb-card .mb-icon{font-size:80px;position:absolute;top:-10px;left:-8px;opacity:.85;
+  filter:drop-shadow(0 8px 16px rgba(0,0,0,.3));transition:transform .3s ease}
+.mb-card:active .mb-icon{transform:rotate(-6deg) scale(1.08)}
+.mb-chip{position:absolute;top:14px;right:16px;background:rgba(0,0,0,.3);
+  backdrop-filter:blur(4px);border:1px solid rgba(255,255,255,.2);
+  border-radius:30px;padding:4px 12px;font-size:12.5px;font-weight:700}
+.mb-title{font-family:'Rubik';font-weight:900;font-size:24px;text-shadow:0 2px 8px rgba(0,0,0,.4)}
+.mb-sub{font-size:13px;opacity:.9;margin-top:2px;font-weight:500}
+
+.bg-del{background:radial-gradient(circle at 80% 20%,#ffe29f44,transparent 50%),linear-gradient(135deg,#f97316,#e8453c 55%,#b91c4b)}
+.bg-mon{background:radial-gradient(circle at 85% 15%,#d9f99d44,transparent 50%),linear-gradient(135deg,#22c55e,#15803d 55%,#14532d)}
+.bg-biz{background:radial-gradient(circle at 80% 20%,#f0abfc44,transparent 50%),linear-gradient(135deg,#a855f7,#7c3aed 55%,#4c1d95)}
+.bg-grw{background:radial-gradient(circle at 80% 20%,#99f6e444,transparent 50%),linear-gradient(135deg,#2dd4bf,#0d9488 55%,#115e59)}
+.bg-msc{background:radial-gradient(circle at 80% 20%,#fda4af44,transparent 50%),linear-gradient(135deg,#f43f5e,#e11d48 55%,#9f1239)}
+
+footer{text-align:center;color:#9aa3b5;font-size:12.5px;margin-top:40px}
 </style>
 </head>
 <body>
-<div class="wrap">
+<div class="page-wrap">
 
-  <div class="home" id="home">
-    <header>
-      <div class="logo">המרכז שלי</div>
-      <div class="tag">כל הכלים שלך · <b>במקום אחד</b></div>
-    </header>
-    <div class="grid" id="cats"></div>
-    <footer>לוחצים על עולם → בוחרים כלי → עובדים 🚀</footer>
-  </div>
+<header>
+  <div class="logo">המרכז שלי</div>
+  <div class="sub">כל הכלים שלך · <b>במקום אחד</b></div>
+</header>
 
-  <div class="view" id="view">
-    <button class="back" onclick="goHome()">→ חזרה לעולמות</button>
-    <div class="vhead" id="vHead">
-      <div class="big" id="vBig"></div>
-      <h2 id="vTitle"></h2>
-      <p id="vSub"></p>
-    </div>
-    <div class="tools" id="tools"></div>
+<!-- ===== DESKTOP: ILLUSTRATED SVG TOWN ===== -->
+<div class="town-wrap">
+<svg class="town-svg" viewBox="0 0 1200 680" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="מפת העיר - לחצו על כל שכונה">
+<defs>
+  <linearGradient id="gSky" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%" stop-color="#0f172a"/>
+    <stop offset="45%" stop-color="#1e3a6e"/>
+    <stop offset="75%" stop-color="#7c3619"/>
+    <stop offset="100%" stop-color="#c2510a"/>
+  </linearGradient>
+  <linearGradient id="gGround" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%" stop-color="#2d5a1b"/>
+    <stop offset="100%" stop-color="#1a380e"/>
+  </linearGradient>
+  <linearGradient id="gDel" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%" stop-color="#fb923c"/>
+    <stop offset="100%" stop-color="#b91c1c"/>
+  </linearGradient>
+  <linearGradient id="gMon" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%" stop-color="#4ade80"/>
+    <stop offset="100%" stop-color="#14532d"/>
+  </linearGradient>
+  <linearGradient id="gBiz" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%" stop-color="#c084fc"/>
+    <stop offset="100%" stop-color="#4c1d95"/>
+  </linearGradient>
+  <linearGradient id="gGrw" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%" stop-color="#5eead4"/>
+    <stop offset="100%" stop-color="#0d4444"/>
+  </linearGradient>
+  <linearGradient id="gMsc" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%" stop-color="#fb7185"/>
+    <stop offset="100%" stop-color="#881337"/>
+  </linearGradient>
+  <radialGradient id="gSun" cx="50%" cy="50%" r="50%">
+    <stop offset="0%" stop-color="#fef3c7"/>
+    <stop offset="40%" stop-color="#fbbf24" stop-opacity=".9"/>
+    <stop offset="70%" stop-color="#f97316" stop-opacity=".4"/>
+    <stop offset="100%" stop-color="#f97316" stop-opacity="0"/>
+  </radialGradient>
+  <radialGradient id="gLamp" cx="50%" cy="50%" r="50%">
+    <stop offset="0%" stop-color="#fef08a" stop-opacity=".95"/>
+    <stop offset="100%" stop-color="#fef08a" stop-opacity="0"/>
+  </radialGradient>
+  <radialGradient id="gPlaza" cx="50%" cy="50%" r="50%">
+    <stop offset="0%" stop-color="#e7e5e4"/>
+    <stop offset="100%" stop-color="#a8a29e"/>
+  </radialGradient>
+  <filter id="fGlow"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+</defs>
+
+<!-- SKY -->
+<rect width="1200" height="680" fill="url(#gSky)"/>
+
+<!-- STARS -->
+<circle cx="80" cy="40" r="1.5" fill="white" opacity=".9"/>
+<circle cx="200" cy="22" r="1" fill="white" opacity=".7"/>
+<circle cx="340" cy="55" r="1.5" fill="white" opacity=".8"/>
+<circle cx="480" cy="18" r="1" fill="white" opacity=".6"/>
+<circle cx="620" cy="38" r="1.5" fill="white" opacity=".9"/>
+<circle cx="760" cy="12" r="1" fill="white" opacity=".7"/>
+<circle cx="900" cy="42" r="1.5" fill="white" opacity=".8"/>
+<circle cx="1040" cy="25" r="1" fill="white" opacity=".6"/>
+<circle cx="150" cy="80" r="1" fill="white" opacity=".5"/>
+<circle cx="450" cy="90" r="1.5" fill="white" opacity=".7"/>
+<circle cx="750" cy="72" r="1" fill="white" opacity=".6"/>
+<circle cx="1050" cy="68" r="1.5" fill="white" opacity=".8"/>
+
+<!-- SUN/MOON rising on horizon -->
+<circle cx="1115" cy="95" r="75" fill="url(#gSun)"/>
+<circle cx="1115" cy="95" r="40" fill="#fef9c3" opacity=".95"/>
+<circle cx="1115" cy="95" r="30" fill="#fde68a"/>
+
+<!-- CLOUDS -->
+<g class="cloud1">
+  <ellipse cx="200" cy="115" rx="85" ry="32" fill="white" opacity=".8"/>
+  <ellipse cx="160" cy="124" rx="55" ry="25" fill="white" opacity=".8"/>
+  <ellipse cx="245" cy="120" rx="62" ry="28" fill="white" opacity=".8"/>
+</g>
+<g class="cloud2">
+  <ellipse cx="560" cy="75" rx="72" ry="26" fill="white" opacity=".65"/>
+  <ellipse cx="526" cy="83" rx="46" ry="20" fill="white" opacity=".65"/>
+  <ellipse cx="598" cy="80" rx="54" ry="23" fill="white" opacity=".65"/>
+</g>
+<g class="cloud3">
+  <ellipse cx="880" cy="105" rx="78" ry="28" fill="white" opacity=".55"/>
+  <ellipse cx="845" cy="113" rx="50" ry="22" fill="white" opacity=".55"/>
+  <ellipse cx="918" cy="110" rx="58" ry="25" fill="white" opacity=".55"/>
+</g>
+
+<!-- GROUND (rolling hills) -->
+<path d="M0 490 Q120 465 300 478 Q500 494 600 472 Q720 450 900 468 Q1070 486 1200 460 L1200 680 L0 680Z" fill="url(#gGround)"/>
+<path d="M0 530 Q200 510 450 525 Q700 542 950 520 Q1100 508 1200 522 L1200 680 L0 680Z" fill="#1e3d0f" opacity=".6"/>
+
+<!-- ===== ROADS ===== -->
+<!-- Road: plaza to delivery (top) -->
+<path d="M590 295 Q588 225 590 170" stroke="#6b7280" stroke-width="28" fill="none" stroke-linecap="round" opacity=".7"/>
+<path d="M590 295 Q588 225 590 170" stroke="#9ca3af" stroke-width="18" fill="none" stroke-linecap="round" opacity=".5"/>
+<path d="M610 295 Q612 225 610 170" stroke="#6b7280" stroke-width="28" fill="none" stroke-linecap="round" opacity=".7"/>
+<path d="M610 295 Q612 225 610 170" stroke="#9ca3af" stroke-width="18" fill="none" stroke-linecap="round" opacity=".5"/>
+<!-- dashes on road -->
+<line x1="600" y1="250" x2="600" y2="235" stroke="#fef08a" stroke-width="2" stroke-dasharray="6,8" opacity=".6"/>
+
+<!-- Road: plaza to money (left) -->
+<path d="M512 340 Q380 320 295 305" stroke="#6b7280" stroke-width="26" fill="none" stroke-linecap="round" opacity=".7"/>
+<path d="M512 340 Q380 320 295 305" stroke="#9ca3af" stroke-width="16" fill="none" stroke-linecap="round" opacity=".5"/>
+
+<!-- Road: plaza to biz (right) -->
+<path d="M688 340 Q820 320 905 305" stroke="#6b7280" stroke-width="26" fill="none" stroke-linecap="round" opacity=".7"/>
+<path d="M688 340 Q820 320 905 305" stroke="#9ca3af" stroke-width="16" fill="none" stroke-linecap="round" opacity=".5"/>
+
+<!-- Road: plaza to growth (bottom-left) -->
+<path d="M535 418 Q410 448 320 468" stroke="#6b7280" stroke-width="26" fill="none" stroke-linecap="round" opacity=".7"/>
+<path d="M535 418 Q410 448 320 468" stroke="#9ca3af" stroke-width="16" fill="none" stroke-linecap="round" opacity=".5"/>
+
+<!-- Road: plaza to misc (bottom-right) -->
+<path d="M665 418 Q790 448 880 468" stroke="#6b7280" stroke-width="26" fill="none" stroke-linecap="round" opacity=".7"/>
+<path d="M665 418 Q790 448 880 468" stroke="#9ca3af" stroke-width="16" fill="none" stroke-linecap="round" opacity=".5"/>
+
+<!-- ===== CENTRAL PLAZA ===== -->
+<ellipse cx="600" cy="365" rx="108" ry="82" fill="#a8a29e"/>
+<ellipse cx="600" cy="365" rx="94" ry="70" fill="#d6d3d1"/>
+<ellipse cx="600" cy="365" rx="80" ry="58" fill="#e7e5e4" opacity=".6"/>
+<!-- Cobblestone pattern lines -->
+<ellipse cx="600" cy="365" rx="60" ry="42" fill="none" stroke="#c8c4c0" stroke-width="1.5"/>
+<ellipse cx="600" cy="365" rx="40" ry="28" fill="none" stroke="#c8c4c0" stroke-width="1.5"/>
+<line x1="600" y1="295" x2="600" y2="435" stroke="#c8c4c0" stroke-width="1.5" opacity=".5"/>
+<line x1="528" y1="325" x2="672" y2="405" stroke="#c8c4c0" stroke-width="1.5" opacity=".4"/>
+<line x1="528" y1="405" x2="672" y2="325" stroke="#c8c4c0" stroke-width="1.5" opacity=".4"/>
+
+<!-- FOUNTAIN -->
+<ellipse cx="600" cy="368" rx="42" ry="28" fill="#60a5fa" opacity=".8"/>
+<ellipse cx="600" cy="363" rx="28" ry="18" fill="#93c5fd" opacity=".9"/>
+<!-- Fountain basin rim -->
+<ellipse cx="600" cy="368" rx="42" ry="28" fill="none" stroke="#94a3b8" stroke-width="3"/>
+<!-- Center column -->
+<rect x="594" y="340" width="12" height="35" rx="5" fill="#cbd5e1"/>
+<ellipse cx="600" cy="340" rx="16" ry="7" fill="#e2e8f0"/>
+<!-- Water spray -->
+<g class="fount">
+  <line x1="600" y1="336" x2="594" y2="322" stroke="#93c5fd" stroke-width="2.5" opacity=".9"/>
+  <line x1="600" y1="336" x2="600" y2="316" stroke="#bfdbfe" stroke-width="3" opacity=".95"/>
+  <line x1="600" y1="336" x2="606" y2="322" stroke="#93c5fd" stroke-width="2.5" opacity=".9"/>
+  <line x1="600" y1="336" x2="590" y2="325" stroke="#93c5fd" stroke-width="2" opacity=".7"/>
+  <line x1="600" y1="336" x2="610" y2="325" stroke="#93c5fd" stroke-width="2" opacity=".7"/>
+  <ellipse cx="600" cy="316" rx="10" ry="4" fill="#bfdbfe" opacity=".6"/>
+</g>
+
+<!-- ===== LAMP POSTS ===== -->
+<!-- Left of center path -->
+<g>
+  <rect x="564" y="235" width="5" height="55" rx="2" fill="#6b7280"/>
+  <rect x="559" y="232" width="15" height="5" rx="2" fill="#9ca3af"/>
+  <circle cx="567" cy="232" r="20" fill="url(#gLamp)" class="lamp-glow" opacity=".8"/>
+  <circle cx="567" cy="232" r="7" fill="#fef08a"/>
+</g>
+<!-- Right of center path -->
+<g>
+  <rect x="631" y="235" width="5" height="55" rx="2" fill="#6b7280"/>
+  <rect x="631" y="232" width="15" height="5" rx="2" fill="#9ca3af"/>
+  <circle cx="634" cy="232" r="20" fill="url(#gLamp)" class="lamp-glow2" opacity=".8"/>
+  <circle cx="634" cy="232" r="7" fill="#fef08a"/>
+</g>
+<!-- Left road lamp -->
+<g>
+  <rect x="416" y="323" width="5" height="45" rx="2" fill="#6b7280"/>
+  <rect x="411" y="320" width="14" height="5" rx="2" fill="#9ca3af"/>
+  <circle cx="418" cy="320" r="18" fill="url(#gLamp)" class="lamp-glow3" opacity=".8"/>
+  <circle cx="418" cy="320" r="6" fill="#fef08a"/>
+</g>
+<!-- Right road lamp -->
+<g>
+  <rect x="779" y="323" width="5" height="45" rx="2" fill="#6b7280"/>
+  <rect x="779" y="320" width="14" height="5" rx="2" fill="#9ca3af"/>
+  <circle cx="782" cy="320" r="18" fill="url(#gLamp)" class="lamp-glow" opacity=".8"/>
+  <circle cx="782" cy="320" r="6" fill="#fef08a"/>
+</g>
+<!-- Bottom-left road lamp -->
+<g>
+  <rect x="403" y="452" width="5" height="40" rx="2" fill="#6b7280"/>
+  <rect x="398" y="449" width="14" height="5" rx="2" fill="#9ca3af"/>
+  <circle cx="405" cy="449" r="18" fill="url(#gLamp)" class="lamp-glow2" opacity=".8"/>
+  <circle cx="405" cy="449" r="6" fill="#fef08a"/>
+</g>
+<!-- Bottom-right road lamp -->
+<g>
+  <rect x="793" y="452" width="5" height="40" rx="2" fill="#6b7280"/>
+  <rect x="793" y="449" width="14" height="5" rx="2" fill="#9ca3af"/>
+  <circle cx="796" cy="449" r="18" fill="url(#gLamp)" class="lamp-glow3" opacity=".8"/>
+  <circle cx="796" cy="449" r="6" fill="#fef08a"/>
+</g>
+
+<!-- ===== TREES ===== -->
+<!-- Left side -->
+<g><rect x="24" y="410" width="9" height="42" rx="3" fill="#713f12"/>
+  <circle cx="29" cy="396" r="28" fill="#16a34a"/>
+  <circle cx="14" cy="406" r="18" fill="#15803d"/>
+  <circle cx="44" cy="408" r="20" fill="#166534"/></g>
+<g><rect x="16" y="470" width="7" height="34" rx="2" fill="#713f12"/>
+  <circle cx="20" cy="458" r="20" fill="#22c55e"/>
+  <circle cx="8" cy="465" r="13" fill="#15803d"/></g>
+
+<!-- Right side -->
+<g><rect x="1163" y="415" width="9" height="42" rx="3" fill="#713f12"/>
+  <circle cx="1168" cy="401" r="28" fill="#16a34a"/>
+  <circle cx="1152" cy="411" r="18" fill="#15803d"/>
+  <circle cx="1183" cy="413" r="20" fill="#166534"/></g>
+<g><rect x="1170" y="470" width="7" height="34" rx="2" fill="#713f12"/>
+  <circle cx="1174" cy="458" r="20" fill="#22c55e"/>
+  <circle cx="1185" cy="464" r="13" fill="#15803d"/></g>
+
+<!-- Trees around plaza -->
+<g><rect x="463" y="425" width="7" height="28" rx="2" fill="#713f12"/>
+  <circle cx="467" cy="413" r="17" fill="#22c55e"/>
+  <circle cx="456" cy="420" r="11" fill="#15803d"/></g>
+<g><rect x="726" y="425" width="7" height="28" rx="2" fill="#713f12"/>
+  <circle cx="730" cy="413" r="17" fill="#22c55e"/>
+  <circle cx="740" cy="420" r="11" fill="#15803d"/></g>
+<g><rect x="543" y="450" width="6" height="24" rx="2" fill="#713f12"/>
+  <circle cx="546" cy="439" r="14" fill="#16a34a"/></g>
+<g><rect x="648" y="450" width="6" height="24" rx="2" fill="#713f12"/>
+  <circle cx="651" cy="439" r="14" fill="#16a34a"/></g>
+
+<!-- Mid road trees -->
+<g><rect x="354" y="440" width="6" height="25" rx="2" fill="#713f12"/>
+  <circle cx="357" cy="429" r="15" fill="#22c55e"/>
+  <circle cx="347" cy="435" r="10" fill="#15803d"/></g>
+<g><rect x="840" y="440" width="6" height="25" rx="2" fill="#713f12"/>
+  <circle cx="843" cy="429" r="15" fill="#22c55e"/>
+  <circle cx="852" cy="435" r="10" fill="#15803d"/></g>
+
+<!-- ===== PLAZA FENCE ===== -->
+<line x1="467" y1="383" x2="467" y2="413" stroke="#a8a29e" stroke-width="2.5"/>
+<line x1="477" y1="381" x2="477" y2="413" stroke="#a8a29e" stroke-width="2.5"/>
+<line x1="487" y1="383" x2="487" y2="413" stroke="#a8a29e" stroke-width="2.5"/>
+<line x1="497" y1="383" x2="497" y2="413" stroke="#a8a29e" stroke-width="2.5"/>
+<rect x="463" y="380" width="38" height="5" rx="2" fill="#d6d3d1"/>
+<rect x="463" y="398" width="38" height="4" rx="2" fill="#d6d3d1"/>
+
+<line x1="703" y1="383" x2="703" y2="413" stroke="#a8a29e" stroke-width="2.5"/>
+<line x1="713" y1="381" x2="713" y2="413" stroke="#a8a29e" stroke-width="2.5"/>
+<line x1="723" y1="383" x2="723" y2="413" stroke="#a8a29e" stroke-width="2.5"/>
+<line x1="733" y1="383" x2="733" y2="413" stroke="#a8a29e" stroke-width="2.5"/>
+<rect x="699" y="380" width="38" height="5" rx="2" fill="#d6d3d1"/>
+<rect x="699" y="398" width="38" height="4" rx="2" fill="#d6d3d1"/>
+
+<!-- ========================================== -->
+<!-- DISTRICT 1: עולם משלוחים — DELIVERY HUB  -->
+<!-- ========================================== -->
+<a href="districts/delivery/" class="d-link" aria-label="עולם משלוחים - 6 כלים">
+<g class="bld">
+  <!-- Chimney smokes -->
+  <ellipse cx="478" cy="90" rx="13" ry="7" fill="#94a3b8" opacity=".5"/>
+  <ellipse cx="475" cy="78" rx="9" ry="5" fill="#94a3b8" opacity=".35"/>
+  <ellipse cx="698" cy="95" rx="11" ry="6" fill="#94a3b8" opacity=".45"/>
+  <ellipse cx="696" cy="84" rx="8" ry="4" fill="#94a3b8" opacity=".3"/>
+  <!-- Chimneys -->
+  <rect x="465" y="98" width="22" height="38" rx="3" fill="#52525b"/>
+  <rect x="460" y="93" width="32" height="9" rx="2" fill="#71717a"/>
+  <rect x="685" y="105" width="20" height="34" rx="3" fill="#52525b"/>
+  <rect x="680" y="100" width="30" height="8" rx="2" fill="#71717a"/>
+  <!-- Roof (sloped) -->
+  <path d="M395 168 L408 118 L792 118 L805 168 Z" fill="#c2410c"/>
+  <path d="M395 168 L408 118 L792 118 L805 168 Z" fill="#ea580c" opacity=".5"/>
+  <!-- Ridge line -->
+  <line x1="408" y1="118" x2="792" y2="118" stroke="#9a3412" stroke-width="4"/>
+  <!-- Roofline gutter -->
+  <rect x="390" y="165" width="420" height="10" rx="3" fill="#7c2d12"/>
+  <!-- Main body -->
+  <rect x="390" y="172" width="420" height="168" fill="url(#gDel)" rx="3"/>
+  <!-- Brick texture hint -->
+  <rect x="390" y="172" width="420" height="168" fill="url(#gDel)" opacity=".2" rx="3"/>
+  <!-- Windows row top -->
+  <rect x="418" y="188" width="52" height="38" rx="5" fill="#fef3c7" opacity=".9"/>
+  <line x1="444" y1="188" x2="444" y2="226" stroke="#f59e0b" stroke-width="1.5" opacity=".6"/>
+  <rect x="490" y="188" width="52" height="38" rx="5" fill="#fef3c7" opacity=".9"/>
+  <line x1="516" y1="188" x2="516" y2="226" stroke="#f59e0b" stroke-width="1.5" opacity=".6"/>
+  <rect x="628" y="188" width="52" height="38" rx="5" fill="#fef3c7" opacity=".9"/>
+  <line x1="654" y1="188" x2="654" y2="226" stroke="#f59e0b" stroke-width="1.5" opacity=".6"/>
+  <rect x="700" y="188" width="52" height="38" rx="5" fill="#fef3c7" opacity=".9"/>
+  <line x1="726" y1="188" x2="726" y2="226" stroke="#f59e0b" stroke-width="1.5" opacity=".6"/>
+  <!-- Garage door 1 -->
+  <rect x="412" y="244" width="110" height="96" rx="4" fill="#7c2d12" stroke="#9a3412" stroke-width="2"/>
+  <line x1="412" y1="264" x2="522" y2="264" stroke="#6b2119" stroke-width="2"/>
+  <line x1="412" y1="284" x2="522" y2="284" stroke="#6b2119" stroke-width="2"/>
+  <line x1="412" y1="304" x2="522" y2="304" stroke="#6b2119" stroke-width="2"/>
+  <line x1="412" y1="324" x2="522" y2="324" stroke="#6b2119" stroke-width="2"/>
+  <!-- Garage door 2 -->
+  <rect x="540" y="244" width="110" height="96" rx="4" fill="#7c2d12" stroke="#9a3412" stroke-width="2"/>
+  <line x1="540" y1="264" x2="650" y2="264" stroke="#6b2119" stroke-width="2"/>
+  <line x1="540" y1="284" x2="650" y2="284" stroke="#6b2119" stroke-width="2"/>
+  <line x1="540" y1="304" x2="650" y2="304" stroke="#6b2119" stroke-width="2"/>
+  <line x1="540" y1="324" x2="650" y2="324" stroke="#6b2119" stroke-width="2"/>
+  <!-- Sign board -->
+  <rect x="666" y="240" width="126" height="68" rx="8" fill="#1c1917" stroke="#f97316" stroke-width="2"/>
+  <text x="729" y="268" font-size="30" text-anchor="middle">🛵</text>
+  <text x="729" y="296" font-size="11" text-anchor="middle" fill="#fb923c" font-family="Heebo,sans-serif" font-weight="700">DELIVERY HUB</text>
+  <!-- Walk-in door -->
+  <rect x="690" y="308" width="50" height="32" rx="3" fill="#431407"/>
+  <circle cx="735" cy="325" r="3.5" fill="#fbbf24"/>
+</g>
+<!-- Label -->
+<rect x="425" y="350" width="350" height="36" rx="14" fill="rgba(0,0,0,.72)" stroke="rgba(251,146,60,.4)" stroke-width="1.5"/>
+<text x="600" y="374" font-size="18" font-weight="700" text-anchor="middle" fill="#fb923c" font-family="Rubik,sans-serif">עולם משלוחים</text>
+<rect x="735" y="353" width="64" height="22" rx="11" fill="rgba(234,88,12,.85)"/>
+<text x="767" y="368" font-size="11" text-anchor="middle" fill="white" font-family="Heebo,sans-serif" font-weight="700">6 כלים</text>
+</a>
+
+<!-- ================================================ -->
+<!-- DISTRICT 2: כסף וחישובים — COUNTING HOUSE/BANK  -->
+<!-- ================================================ -->
+<a href="districts/money/" class="d-link" aria-label="כסף וחישובים - 6 כלים">
+<g class="bld">
+  <!-- Stairs/foundation -->
+  <rect x="22" y="316" width="272" height="14" rx="3" fill="#d1d5db"/>
+  <rect x="32" y="306" width="252" height="13" rx="3" fill="#e5e7eb"/>
+  <rect x="42" y="297" width="232" height="13" rx="3" fill="#f3f4f6"/>
+  <!-- Pediment -->
+  <polygon points="48,220 158,148 268,220" fill="#16a34a"/>
+  <polygon points="68,220 158,168 248,220" fill="#15803d" opacity=".6"/>
+  <!-- Pediment decoration - coin -->
+  <circle cx="158" cy="165" r="18" fill="#fbbf24"/>
+  <text x="158" y="172" font-size="18" text-anchor="middle" fill="#78350f" font-family="sans-serif" font-weight="bold">₪</text>
+  <!-- Entablature -->
+  <rect x="42" y="216" width="232" height="22" rx="2" fill="#bbf7d0" stroke="#15803d" stroke-width="1.5"/>
+  <!-- Acroteria -->
+  <circle cx="48" cy="218" r="8" fill="#22c55e"/>
+  <circle cx="268" cy="218" r="8" fill="#22c55e"/>
+  <!-- Columns -->
+  <rect x="52" y="216" width="20" height="92" rx="4" fill="#f0fdf4" stroke="#dcfce7" stroke-width="1"/>
+  <ellipse cx="62" cy="216" rx="13" ry="5" fill="#dcfce7"/>
+  <rect x="88" y="216" width="20" height="92" rx="4" fill="#f0fdf4" stroke="#dcfce7" stroke-width="1"/>
+  <ellipse cx="98" cy="216" rx="13" ry="5" fill="#dcfce7"/>
+  <rect x="130" y="216" width="20" height="92" rx="4" fill="#f0fdf4" stroke="#dcfce7" stroke-width="1"/>
+  <ellipse cx="140" cy="216" rx="13" ry="5" fill="#dcfce7"/>
+  <rect x="168" y="216" width="20" height="92" rx="4" fill="#f0fdf4" stroke="#dcfce7" stroke-width="1"/>
+  <ellipse cx="178" cy="216" rx="13" ry="5" fill="#dcfce7"/>
+  <rect x="210" y="216" width="20" height="92" rx="4" fill="#f0fdf4" stroke="#dcfce7" stroke-width="1"/>
+  <ellipse cx="220" cy="216" rx="13" ry="5" fill="#dcfce7"/>
+  <rect x="248" y="216" width="20" height="92" rx="4" fill="#f0fdf4" stroke="#dcfce7" stroke-width="1"/>
+  <ellipse cx="258" cy="216" rx="13" ry="5" fill="#dcfce7"/>
+  <!-- Building body -->
+  <rect x="42" y="214" width="232" height="98" fill="url(#gMon)" rx="2"/>
+  <!-- Windows -->
+  <rect x="57" y="232" width="36" height="44" rx="4" fill="#bbf7d0" opacity=".85"/>
+  <rect x="104" y="232" width="36" height="44" rx="4" fill="#bbf7d0" opacity=".85"/>
+  <rect x="170" y="232" width="36" height="44" rx="4" fill="#bbf7d0" opacity=".85"/>
+  <rect x="217" y="232" width="36" height="44" rx="4" fill="#bbf7d0" opacity=".85"/>
+  <!-- Arched door -->
+  <rect x="128" y="268" width="60" height="44" rx="2" fill="#14532d"/>
+  <ellipse cx="158" cy="268" rx="30" ry="16" fill="#14532d"/>
+  <ellipse cx="158" cy="268" rx="22" ry="11" fill="#166534" opacity=".7"/>
+  <circle cx="183" cy="288" r="3.5" fill="#fbbf24"/>
+  <!-- Hanging lanterns -->
+  <line x1="88" y1="216" x2="88" y2="228" stroke="#9ca3af" stroke-width="1.5"/>
+  <ellipse cx="88" cy="231" rx="5" ry="7" fill="#fef08a" opacity=".9"/>
+  <line x1="228" y1="216" x2="228" y2="228" stroke="#9ca3af" stroke-width="1.5"/>
+  <ellipse cx="228" cy="231" rx="5" ry="7" fill="#fef08a" opacity=".9"/>
+</g>
+<rect x="22" y="333" width="272" height="34" rx="14" fill="rgba(0,0,0,.72)" stroke="rgba(74,222,128,.4)" stroke-width="1.5"/>
+<text x="158" y="356" font-size="17" font-weight="700" text-anchor="middle" fill="#4ade80" font-family="Rubik,sans-serif">כסף וחישובים</text>
+<rect x="239" y="337" width="55" height="20" rx="10" fill="rgba(21,128,61,.85)"/>
+<text x="266" y="351" font-size="10.5" text-anchor="middle" fill="white" font-family="Heebo,sans-serif" font-weight="700">6 כלים</text>
+</a>
+
+<!-- ======================================== -->
+<!-- DISTRICT 3: עסקים — BUSINESS TOWER      -->
+<!-- ======================================== -->
+<a href="districts/biz/" class="d-link" aria-label="עסקים - 3 כלים">
+<g class="bld">
+  <!-- Foundation -->
+  <rect x="902" y="318" width="272" height="14" rx="3" fill="#d1d5db"/>
+  <rect x="912" y="308" width="252" height="13" rx="3" fill="#e5e7eb"/>
+  <!-- Tower spire -->
+  <rect x="1028" y="100" width="8" height="22" rx="3" fill="#6b7280"/>
+  <polygon points="1028,102 1032,88 1036,102" fill="#a855f7"/>
+  <circle cx="1032" cy="86" r="5" fill="#ef4444" opacity=".9"/>
+  <!-- Tower tiers -->
+  <rect x="985" y="116" width="86" height="18" rx="3" fill="#4c1d95"/>
+  <rect x="972" y="130" width="112" height="18" rx="3" fill="#5b21b6"/>
+  <rect x="958" y="144" width="140" height="18" rx="3" fill="#6d28d9"/>
+  <rect x="942" y="158" width="172" height="18" rx="3" fill="#7c3aed"/>
+  <!-- Main building body -->
+  <rect x="928" y="172" width="220" height="150" fill="url(#gBiz)" rx="4"/>
+  <!-- Glass curtain wall - window grid -->
+  <!-- Row 1 -->
+  <rect x="938" y="182" width="26" height="18" rx="2" fill="#e9d5ff" opacity=".8"/>
+  <rect x="970" y="182" width="26" height="18" rx="2" fill="#fef3c7" opacity=".8"/>
+  <rect x="1002" y="182" width="26" height="18" rx="2" fill="#e9d5ff" opacity=".8"/>
+  <rect x="1034" y="182" width="26" height="18" rx="2" fill="#fef3c7" opacity=".8"/>
+  <rect x="1066" y="182" width="26" height="18" rx="2" fill="#e9d5ff" opacity=".8"/>
+  <rect x="1098" y="182" width="26" height="18" rx="2" fill="#e9d5ff" opacity=".8"/>
+  <!-- Row 2 -->
+  <rect x="938" y="206" width="26" height="18" rx="2" fill="#fef3c7" opacity=".8"/>
+  <rect x="970" y="206" width="26" height="18" rx="2" fill="#e9d5ff" opacity=".8"/>
+  <rect x="1002" y="206" width="26" height="18" rx="2" fill="#fef3c7" opacity=".8"/>
+  <rect x="1034" y="206" width="26" height="18" rx="2" fill="#e9d5ff" opacity=".8"/>
+  <rect x="1066" y="206" width="26" height="18" rx="2" fill="#fef3c7" opacity=".8"/>
+  <rect x="1098" y="206" width="26" height="18" rx="2" fill="#e9d5ff" opacity=".8"/>
+  <!-- Row 3 -->
+  <rect x="938" y="230" width="26" height="18" rx="2" fill="#e9d5ff" opacity=".8"/>
+  <rect x="970" y="230" width="26" height="18" rx="2" fill="#e9d5ff" opacity=".8"/>
+  <rect x="1002" y="230" width="26" height="18" rx="2" fill="#fef3c7" opacity=".8"/>
+  <rect x="1034" y="230" width="26" height="18" rx="2" fill="#e9d5ff" opacity=".8"/>
+  <rect x="1066" y="230" width="26" height="18" rx="2" fill="#e9d5ff" opacity=".8"/>
+  <rect x="1098" y="230" width="26" height="18" rx="2" fill="#fef3c7" opacity=".8"/>
+  <!-- Row 4 -->
+  <rect x="938" y="254" width="26" height="18" rx="2" fill="#fef3c7" opacity=".8"/>
+  <rect x="970" y="254" width="26" height="18" rx="2" fill="#e9d5ff" opacity=".8"/>
+  <rect x="1002" y="254" width="26" height="18" rx="2" fill="#e9d5ff" opacity=".8"/>
+  <rect x="1034" y="254" width="26" height="18" rx="2" fill="#fef3c7" opacity=".8"/>
+  <rect x="1066" y="254" width="26" height="18" rx="2" fill="#e9d5ff" opacity=".8"/>
+  <rect x="1098" y="254" width="26" height="18" rx="2" fill="#e9d5ff" opacity=".8"/>
+  <!-- Row 5 -->
+  <rect x="938" y="278" width="26" height="18" rx="2" fill="#e9d5ff" opacity=".8"/>
+  <rect x="970" y="278" width="26" height="18" rx="2" fill="#fef3c7" opacity=".8"/>
+  <rect x="1002" y="278" width="26" height="18" rx="2" fill="#e9d5ff" opacity=".8"/>
+  <rect x="1034" y="278" width="26" height="18" rx="2" fill="#e9d5ff" opacity=".8"/>
+  <rect x="1066" y="278" width="26" height="18" rx="2" fill="#fef3c7" opacity=".8"/>
+  <rect x="1098" y="278" width="26" height="18" rx="2" fill="#e9d5ff" opacity=".8"/>
+  <!-- Main entrance canopy -->
+  <path d="M988 322 Q1038 306 1088 322" fill="#7c3aed" stroke="#6d28d9" stroke-width="2"/>
+  <!-- Entrance doors -->
+  <rect x="998" y="298" width="40" height="26" rx="2" fill="#3b0764"/>
+  <rect x="1042" y="298" width="40" height="26" rx="2" fill="#3b0764"/>
+  <line x1="1038" y1="298" x2="1038" y2="324" stroke="#6d28d9" stroke-width="1"/>
+  <!-- Logo sign -->
+  <rect x="940" y="173" width="50" height="24" rx="5" fill="rgba(0,0,0,.5)"/>
+  <text x="965" y="190" font-size="14" text-anchor="middle">💼</text>
+</g>
+<rect x="902" y="336" width="272" height="34" rx="14" fill="rgba(0,0,0,.72)" stroke="rgba(192,132,252,.4)" stroke-width="1.5"/>
+<text x="1038" y="358" font-size="22" font-weight="700" text-anchor="middle" fill="#c084fc" font-family="Rubik,sans-serif">עסקים</text>
+<rect x="1124" y="339" width="55" height="20" rx="10" fill="rgba(109,40,217,.85)"/>
+<text x="1151" y="353" font-size="10.5" text-anchor="middle" fill="white" font-family="Heebo,sans-serif" font-weight="700">3 כלים</text>
+</a>
+
+<!-- ========================================= -->
+<!-- DISTRICT 4: שיפור עצמי — WELLNESS CENTER -->
+<!-- ========================================= -->
+<a href="districts/growth/" class="d-link" aria-label="שיפור עצמי - 11 כלים">
+<g class="bld">
+  <!-- Garden fence -->
+  <line x1="42" y1="526" x2="42" y2="562" stroke="#854d0e" stroke-width="3"/>
+  <line x1="58" y1="522" x2="58" y2="562" stroke="#854d0e" stroke-width="3"/>
+  <line x1="74" y1="526" x2="74" y2="562" stroke="#854d0e" stroke-width="3"/>
+  <rect x="37" y="519" width="42" height="6" rx="2" fill="#a16207"/>
+  <rect x="37" y="543" width="42" height="5" rx="2" fill="#a16207"/>
+  <!-- Leafy roof arch -->
+  <path d="M88 456 Q225 428 360 456" fill="#14b8a6" opacity=".6"/>
+  <!-- Building overhang -->
+  <rect x="84" y="451" width="276" height="16" rx="4" fill="#0d9488"/>
+  <!-- Main building body -->
+  <rect x="90" y="464" width="264" height="110" fill="url(#gGrw)" rx="6"/>
+  <!-- Arched main entrance -->
+  <rect x="175" y="510" width="94" height="64" rx="2" fill="#0f766e"/>
+  <ellipse cx="222" cy="510" rx="47" ry="26" fill="#0f766e"/>
+  <ellipse cx="222" cy="510" rx="35" ry="18" fill="#134e4a" opacity=".8"/>
+  <circle cx="213" cy="534" r="4" fill="#fbbf24"/>
+  <!-- Side windows -->
+  <rect x="104" y="478" width="52" height="40" rx="5" fill="#99f6e4" opacity=".8"/>
+  <line x1="130" y1="478" x2="130" y2="518" stroke="#5eead4" stroke-width="1.5" opacity=".5"/>
+  <rect x="288" y="478" width="52" height="40" rx="5" fill="#99f6e4" opacity=".8"/>
+  <line x1="314" y1="478" x2="314" y2="518" stroke="#5eead4" stroke-width="1.5" opacity=".5"/>
+  <!-- Leaf decorations on facade -->
+  <text x="108" y="462" font-size="18">🌿</text>
+  <text x="316" y="462" font-size="18">🌿</text>
+  <text x="194" y="462" font-size="16">🌱</text>
+  <text x="240" y="462" font-size="16">🌱</text>
+  <!-- Garden bushes -->
+  <circle cx="126" cy="562" r="24" fill="#16a34a"/>
+  <circle cx="112" cy="570" r="15" fill="#15803d"/>
+  <circle cx="146" cy="568" r="17" fill="#166534"/>
+  <circle cx="318" cy="562" r="24" fill="#16a34a"/>
+  <circle cx="304" cy="570" r="15" fill="#15803d"/>
+  <circle cx="338" cy="568" r="17" fill="#166534"/>
+  <!-- Small flowers -->
+  <circle cx="175" cy="566" r="5" fill="#fde68a"/>
+  <circle cx="190" cy="570" r="4" fill="#fda4af"/>
+  <circle cx="255" cy="566" r="5" fill="#fde68a"/>
+  <circle cx="270" cy="570" r="4" fill="#fda4af"/>
+</g>
+<rect x="78" y="582" width="290" height="34" rx="14" fill="rgba(0,0,0,.72)" stroke="rgba(45,212,191,.4)" stroke-width="1.5"/>
+<text x="223" y="604" font-size="17" font-weight="700" text-anchor="middle" fill="#2dd4bf" font-family="Rubik,sans-serif">שיפור עצמי</text>
+<rect x="335" y="586" width="55" height="20" rx="10" fill="rgba(13,148,136,.85)"/>
+<text x="362" y="600" font-size="10.5" text-anchor="middle" fill="white" font-family="Heebo,sans-serif" font-weight="700">11 כלים</text>
+</a>
+
+<!-- =========================================== -->
+<!-- DISTRICT 5: שונות — FUN ZONE / ENTERTAINMENT -->
+<!-- =========================================== -->
+<a href="districts/misc/" class="d-link" aria-label="שונות - 16 כלים">
+<g class="bld">
+  <!-- Fun zone main building -->
+  <rect x="836" y="474" width="198" height="116" fill="url(#gMsc)" rx="6"/>
+  <!-- Colorful awning 1 -->
+  <path d="M836 474 Q886 456 936 474" fill="#fbbf24"/>
+  <!-- Colorful awning 2 -->
+  <path d="M936 474 Q986 456 1034 474" fill="#34d399"/>
+  <!-- Lights string -->
+  <circle cx="856" cy="480" r="5.5" fill="#fef08a" opacity=".95"/>
+  <circle cx="876" cy="480" r="5.5" fill="#fb923c" opacity=".95"/>
+  <circle cx="896" cy="480" r="5.5" fill="#f0abfc" opacity=".95"/>
+  <circle cx="916" cy="480" r="5.5" fill="#fef08a" opacity=".95"/>
+  <circle cx="936" cy="480" r="5.5" fill="#86efac" opacity=".95"/>
+  <circle cx="956" cy="480" r="5.5" fill="#67e8f9" opacity=".95"/>
+  <circle cx="976" cy="480" r="5.5" fill="#fbbf24" opacity=".95"/>
+  <circle cx="996" cy="480" r="5.5" fill="#fb923c" opacity=".95"/>
+  <circle cx="1016" cy="480" r="5.5" fill="#f0abfc" opacity=".95"/>
+  <!-- Doors/booths -->
+  <rect x="846" y="500" width="52" height="90" rx="4" fill="#881337" stroke="#e11d48" stroke-width="1.5"/>
+  <text x="872" y="552" font-size="24" text-anchor="middle">🎮</text>
+  <rect x="910" y="500" width="52" height="90" rx="4" fill="#881337" stroke="#e11d48" stroke-width="1.5"/>
+  <text x="936" y="552" font-size="24" text-anchor="middle">🃏</text>
+  <rect x="974" y="500" width="52" height="90" rx="4" fill="#881337" stroke="#e11d48" stroke-width="1.5"/>
+  <text x="1000" y="552" font-size="24" text-anchor="middle">🎯</text>
+
+  <!-- FERRIS WHEEL (right of building) -->
+  <!-- Support structure -->
+  <line x1="1068" y1="548" x2="1044" y2="590" stroke="#881337" stroke-width="6"/>
+  <line x1="1068" y1="548" x2="1092" y2="590" stroke="#881337" stroke-width="6"/>
+  <line x1="1050" y1="574" x2="1086" y2="574" stroke="#881337" stroke-width="4"/>
+  <!-- Outer ring -->
+  <circle cx="1068" cy="490" r="60" fill="none" stroke="#be123c" stroke-width="5"/>
+  <circle cx="1068" cy="490" r="55" fill="none" stroke="#f43f5e" stroke-width="2" opacity=".4"/>
+  <!-- Spokes -->
+  <line x1="1068" y1="430" x2="1068" y2="550" stroke="#9f1239" stroke-width="3.5"/>
+  <line x1="1008" y1="490" x2="1128" y2="490" stroke="#9f1239" stroke-width="3.5"/>
+  <line x1="1025" y1="447" x2="1111" y2="533" stroke="#9f1239" stroke-width="2.5"/>
+  <line x1="1025" y1="533" x2="1111" y2="447" stroke="#9f1239" stroke-width="2.5"/>
+  <!-- Hub -->
+  <circle cx="1068" cy="490" r="16" fill="#9f1239"/>
+  <circle cx="1068" cy="490" r="9" fill="#fbbf24"/>
+  <!-- Gondolas -->
+  <rect x="1057" y="422" width="20" height="13" rx="3" fill="#fbbf24" stroke="#f59e0b" stroke-width="1"/>
+  <rect x="1057" y="548" width="20" height="13" rx="3" fill="#34d399" stroke="#059669" stroke-width="1"/>
+  <rect x="998" y="483" width="20" height="13" rx="3" fill="#60a5fa" stroke="#2563eb" stroke-width="1"/>
+  <rect x="1118" y="483" width="20" height="13" rx="3" fill="#f472b6" stroke="#db2777" stroke-width="1"/>
+  <rect x="1018" y="440" width="16" height="11" rx="2" fill="#a78bfa" stroke="#7c3aed" stroke-width="1"/>
+  <rect x="1018" y="530" width="16" height="11" rx="2" fill="#fb923c" stroke="#ea580c" stroke-width="1"/>
+  <rect x="1108" y="440" width="16" height="11" rx="2" fill="#4ade80" stroke="#16a34a" stroke-width="1"/>
+  <rect x="1108" y="530" width="16" height="11" rx="2" fill="#f87171" stroke="#dc2626" stroke-width="1"/>
+</g>
+<rect x="818" y="597" width="296" height="34" rx="14" fill="rgba(0,0,0,.72)" stroke="rgba(244,63,94,.4)" stroke-width="1.5"/>
+<text x="966" y="619" font-size="22" font-weight="700" text-anchor="middle" fill="#fb7185" font-family="Rubik,sans-serif">שונות</text>
+<rect x="1078" y="601" width="55" height="20" rx="10" fill="rgba(159,18,57,.85)"/>
+<text x="1105" y="615" font-size="10.5" text-anchor="middle" fill="white" font-family="Heebo,sans-serif" font-weight="700">16 כלים</text>
+</a>
+
+<!-- Footer hint -->
+<text x="600" y="660" font-size="12" text-anchor="middle" fill="#6b7280" font-family="Heebo,sans-serif">לחצו על כל שכונה להיכנס לכלים שלה</text>
+
+</svg>
+</div>
+
+<!-- TOOLTIP -->
+<div class="tip" id="tip">
+  <div class="tip-name" id="tipName"></div>
+  <div class="tip-desc" id="tipDesc"></div>
+  <div class="tip-count" id="tipCount"></div>
+</div>
+
+<!-- ===== MOBILE: ILLUSTRATED CARDS ===== -->
+<div class="mobile-town">
+  <a href="districts/delivery/" class="mb-card bg-del">
+    <div class="mb-icon">🛵</div>
+    <span class="mb-chip">6 כלים</span>
+    <div class="mb-title">עולם משלוחים</div>
+    <div class="mb-sub">הרחוב שלך. הכסף שלך. כל כלי שעוזר לך לעשות יום מושלם.</div>
+  </a>
+  <div class="mb-scene">
+    <div class="mb-path"></div>
+    <a href="districts/money/" class="mb-card bg-mon">
+      <div class="mb-icon">🧮</div>
+      <span class="mb-chip">6 כלים</span>
+      <div class="mb-title">כסף וחישובים</div>
+      <div class="mb-sub">מחשבונים נקיים. מתחיל מאפס, בלי נתונים ישנים.</div>
+    </a>
+    <a href="districts/biz/" class="mb-card bg-biz">
+      <div class="mb-icon">💼</div>
+      <span class="mb-chip">3 כלים</span>
+      <div class="mb-title">עסקים</div>
+      <div class="mb-sub">מכירות, פייסבוק, קידום — כל מה שמזיז את העסק.</div>
+    </a>
+    <a href="districts/growth/" class="mb-card bg-grw">
+      <div class="mb-icon">🌱</div>
+      <span class="mb-chip">11 כלים</span>
+      <div class="mb-title">שיפור עצמי</div>
+      <div class="mb-sub">כל יום קצת יותר חזק. גוף, ראש, שינה — הכל נרשם.</div>
+    </a>
+    <a href="districts/misc/" class="mb-card bg-msc">
+      <div class="mb-icon">🎡</div>
+      <span class="mb-chip">16 כלים</span>
+      <div class="mb-title">שונות</div>
+      <div class="mb-sub">הגלגל, המשחקים, הרגלים וכל הכלים הכיפיים.</div>
+    </a>
   </div>
+</div>
+
+<footer>לוחצים על שכונה → בוחרים כלי → עובדים 🚀</footer>
 
 </div>
 
 <script>
-const DATA = [
-  { id:"delivery", title:"עולם משלוחים", icon:"🛵", cls:"w-delivery",
-    sub:"הרחוב שלך. הכסף שלך. כל כלי שעוזר לך לעשות יום מושלם.",
-    tools:[
-      {name:"כפתור משמרת", desc:"התחלתי / סיימתי — והרווח נרשם", icon:"🟢", url:"tools/shift.html"},
-      {name:"בדיקה לפני משמרת", desc:"טלפונים, וולט, GPS — וי ויוצאים", icon:"✅", url:"tools/checklist.html"},
-      {name:"לוח שליטה וולט", desc:"רווחים, מחזורים, אזורים", icon:"📊", url:"tools/wolt-dashboard.html"},
-      {name:"אפליקציית הוולט (חי באוויר)", desc:"מחשבון כדאיות + טיימר משמרת", icon:"📱", url:"https://guileless-macaron-451cd2.netlify.app", ext:true},
-    ]},
-  { id:"money", title:"כסף וחישובים", icon:"🧮", cls:"w-money",
-    sub:"מחשבונים נקיים. מתחיל מאפס, בלי נתונים ישנים.",
-    tools:[
-      {name:"הוצאות מהירות", desc:"סכום → קטגוריה → נשמר", icon:"💸", url:"tools/expenses.html"},
-      {name:"מחלקים את החשבון", desc:"חלוקה הוגנת בשנייה", icon:"➗", url:"tools/bill-splitter.html"},
-    ]},
-  { id:"biz", title:"עסקים", icon:"💼", cls:"w-biz",
-    sub:"מכירות, פייסבוק, קידום — כל מה שמזיז את העסק.",
-    tools:[
-      {name:"שעות עם אורי", desc:"חי באוויר — לחיצה ופותחים", icon:"⏰", url:"https://calm-biscochitos-855f2a.netlify.app", ext:true},
-      {name:"בונה הפוסטים", desc:"פוסט מכירה מוכן לקבוצות", icon:"📝", url:"tools/post-builder.html"},
-    ]},
-  { id:"grow", title:"שיפור עצמי", icon:"🌱", cls:"w-grow",
-    sub:"כל יום קצת יותר חזק. גוף, ראש, שינה — הכל נרשם.",
-    tools:[
-      {name:"המשימה של היום", desc:"דבר אחד חשוב — ובוצע", icon:"🎯", url:"tools/goal.html"},
-      {name:"אימון", desc:"טיימר דקה + יומן עשיתי/לא עשיתי", icon:"💪", url:"tools/timer.html"},
-      {name:"מים", desc:"8 כוסות ביום, לחיצה לכוס", icon:"💧", url:"tools/water.html"},
-      {name:"שינה", desc:"כמה ישנת — וכמה כדאי", icon:"😴", url:"tools/sleep.html"},
-      {name:"איך היה היום?", desc:"פרצוף + משפט, 10 שניות", icon:"📓", url:"tools/mood.html"},
-      {name:"דקה של שקט", desc:"נשימות עם העיגול", icon:"🧘", url:"tools/breathe.html"},
-    ]},
-  { id:"misc", title:"שונות", icon:"🎡", cls:"w-misc",
-    sub:"הגלגל, הרגלים, וכל הכלים הכיפיים.",
-    tools:[
-      {name:"גלגל ההחלטות", desc:"מסובבים ומחליטים", icon:"🎡", url:"tools/wheel.html"},
-      {name:"בלאק ג'ק", desc:"שולחן עם 5 ידיים מול הדילר", icon:"🃏", url:"tools/blackjack.html"},
-      {name:"החלפת הרגלים", desc:"תחביב במקום הרגל", icon:"🔄", url:"tools/habits.html"},
-      {name:"גיבוי וייצוא", desc:"כל הנתונים שלך בקובץ אחד", icon:"💾", url:"tools/backup.html"},
-    ]},
-];
+const tip = document.getElementById('tip');
+const tipName = document.getElementById('tipName');
+const tipDesc = document.getElementById('tipDesc');
+const tipCount = document.getElementById('tipCount');
 
-const cats=document.getElementById('cats');
-DATA.forEach(c=>{
-  const b=document.createElement('button');
-  b.className='world '+c.cls;
-  b.onclick=()=>openCat(c.id);
-  b.innerHTML=`
-    <div class="big">${c.icon}</div>
-    <span class="chip">${c.tools.length} כלים</span>
-    <div class="wt">${c.title}</div>
-    <div class="ws">${c.sub}</div>`;
-  cats.appendChild(b);
-});
+const distColors = {
+  delivery: {c:'#fb923c', bg:'rgba(234,88,12,.2)'},
+  money: {c:'#4ade80', bg:'rgba(22,163,74,.2)'},
+  biz: {c:'#c084fc', bg:'rgba(124,58,237,.2)'},
+  growth: {c:'#2dd4bf', bg:'rgba(13,148,136,.2)'},
+  misc: {c:'#fb7185', bg:'rgba(190,18,60,.2)'}
+};
 
-const home=document.getElementById('home');
-const view=document.getElementById('view');
-const toolsBox=document.getElementById('tools');
-const vHead=document.getElementById('vHead');
+const distInfo = {
+  delivery: {name:'עולם משלוחים', desc:'הרחוב שלך. הכסף שלך.', count:'6 כלים', key:'delivery'},
+  money: {name:'כסף וחישובים', desc:'מחשבונים נקיים', count:'6 כלים', key:'money'},
+  biz: {name:'עסקים', desc:'מכירות, פייסבוק, קידום', count:'3 כלים', key:'biz'},
+  growth: {name:'שיפור עצמי', desc:'גוף, ראש, שינה', count:'11 כלים', key:'growth'},
+  misc: {name:'שונות', desc:'גלגל, משחקים, כלים כיפיים', count:'16 כלים', key:'misc'}
+};
 
-function openCat(id){
-  const c=DATA.find(x=>x.id===id);
-  vHead.className='vhead '+c.cls;
-  document.getElementById('vBig').textContent=c.icon;
-  document.getElementById('vTitle').textContent=c.title;
-  document.getElementById('vSub').textContent=c.sub;
-  toolsBox.innerHTML='';
-  c.tools.forEach(t=>{
-    const el=document.createElement('a');
-    el.className='tool';
-    el.href=t.url;
-    if(t.ext){el.target='_blank';el.rel='noopener';}
-    el.innerHTML=`
-      <div class="tk">${t.icon}</div>
-      <div>
-        <div class="tt">${t.name}</div>
-        <div class="st">● ${t.desc}</div>
-      </div>
-      <div class="arr">›</div>`;
-    toolsBox.appendChild(el);
+document.querySelectorAll('.d-link').forEach(link => {
+  const href = link.getAttribute('href');
+  let key = href.replace('districts/','').replace('/','');
+  const info = distInfo[key];
+  if(!info) return;
+  const clr = distColors[info.key];
+
+  link.addEventListener('mouseenter', e => {
+    tipName.textContent = info.name;
+    tipDesc.textContent = info.desc;
+    tipCount.textContent = info.count;
+    tipCount.style.background = clr.bg;
+    tipCount.style.color = clr.c;
+    tipCount.style.border = '1px solid ' + clr.c;
+    tip.style.display = 'block';
   });
-  home.classList.add('hidden');
-  view.classList.add('active');
-  window.scrollTo(0,0);
-}
-function goHome(){
-  view.classList.remove('active');
-  home.classList.remove('hidden');
-  window.scrollTo(0,0);
-}
+  link.addEventListener('mousemove', e => {
+    tip.style.left = (e.clientX + 16) + 'px';
+    tip.style.top = (e.clientY - 56) + 'px';
+  });
+  link.addEventListener('mouseleave', () => {
+    tip.style.display = 'none';
+  });
+});
 </script>
 </body>
 </html>

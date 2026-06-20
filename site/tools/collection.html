@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>האוסף שלי — המרכז שלי</title>
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@700;900&family=Heebo:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0b0d14;color:#f4f6fb;font-family:'Heebo',sans-serif;min-height:100vh;padding:20px}
+.back{display:inline-flex;align-items:center;gap:8px;margin-bottom:20px;
+  background:#141826;border:1px solid rgba(255,255,255,.1);color:#f4f6fb;
+  border-radius:14px;padding:10px 18px;font:700 14px 'Heebo';text-decoration:none}
+.back:hover{background:#1c2233}
+h1{font-family:'Rubik';font-size:28px;font-weight:900;margin-bottom:4px}
+.sub{color:#9aa3b5;font-size:13px;margin-bottom:24px}
+.wrap{max-width:700px;margin:0 auto}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px}
+.stat{background:#141826;border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:14px;text-align:center}
+.stat .num{font-family:'Rubik';font-size:24px;font-weight:900;color:#a78bfa}
+.stat .lbl{font-size:11px;color:#9aa3b5;margin-top:2px}
+.card{background:#141826;border:1px solid rgba(255,255,255,.1);border-radius:18px;padding:18px;margin-bottom:14px}
+.card h3{font-family:'Rubik';font-size:14px;color:#9aa3b5;margin-bottom:14px}
+.form{display:flex;flex-direction:column;gap:10px}
+.form input,.form select,.form textarea{background:#0d1117;border:1px solid rgba(255,255,255,.15);
+  color:#f4f6fb;font:500 14px 'Heebo';border-radius:12px;padding:11px 14px;width:100%}
+.form-row{display:flex;gap:10px;flex-wrap:wrap}
+.form-row > *{flex:1;min-width:110px}
+.btn{padding:12px;border-radius:12px;border:none;font:700 14px 'Heebo';cursor:pointer;
+  background:linear-gradient(135deg,#7c3aed,#6d28d9);color:#fff;transition:opacity .15s;width:100%}
+.btn:hover{opacity:.85}
+.search{background:#0d1117;border:1px solid rgba(255,255,255,.12);border-radius:12px;
+  padding:10px 14px;display:flex;gap:8px;align-items:center;margin-bottom:12px}
+.search input{flex:1;background:none;border:none;color:#f4f6fb;font:500 14px 'Heebo'}
+.search input:focus{outline:none}
+.item-grid{display:grid;grid-template-columns:1fr;gap:8px}
+@media(min-width:520px){.item-grid{grid-template-columns:1fr 1fr}}
+.col-item{background:#0d1117;border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:14px}
+.col-item:hover{border-color:rgba(167,139,250,.3)}
+.ci-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px}
+.ci-name{font-family:'Rubik';font-size:15px;font-weight:700}
+.ci-del{background:none;border:none;color:#6b7280;cursor:pointer;font-size:15px}
+.ci-del:hover{color:#ef4444}
+.ci-meta{display:flex;gap:6px;flex-wrap:wrap}
+.badge{padding:3px 8px;border-radius:6px;font:600 11px 'Heebo'}
+.badge.cat{background:rgba(124,58,237,.2);color:#c4b5fd}
+.badge.cond{background:rgba(22,163,74,.15);color:#86efac}
+.badge.val{background:rgba(234,179,8,.15);color:#fef08a}
+.ci-note{font-size:12.5px;color:#9aa3b5;margin-top:6px;line-height:1.5}
+</style>
+</head>
+<body>
+<a href="../districts/misc/" class="back">→ שונות</a>
+<div class="wrap">
+<h1>🗂️ האוסף שלי</h1>
+<div class="sub">פריטים, פופים, קלפים, פוקימונים — הכל מאורגן</div>
+
+<div class="stats">
+  <div class="stat"><div class="num" id="sTotal">0</div><div class="lbl">פריטים</div></div>
+  <div class="stat"><div class="num" id="sValue">₪0</div><div class="lbl">שווי</div></div>
+  <div class="stat"><div class="num" id="sCats">0</div><div class="lbl">קטגוריות</div></div>
+</div>
+
+<div class="card">
+  <h3>➕ הוסף פריט</h3>
+  <div class="form">
+    <input type="text" id="iName" placeholder="שם הפריט *">
+    <div class="form-row">
+      <input type="text" id="iCat" placeholder="קטגוריה (פופ, קלף...)">
+      <input type="number" id="iValue" placeholder="שווי ₪">
+    </div>
+    <div class="form-row">
+      <select id="iCond">
+        <option value="חדש">חדש</option>
+        <option value="מצוין">מצוין</option>
+        <option value="טוב">טוב</option>
+        <option value="בינוני">בינוני</option>
+      </select>
+      <select id="iStatus">
+        <option value="יש לי">יש לי ✅</option>
+        <option value="רוצה">רוצה 📌</option>
+        <option value="למכירה">למכירה 💰</option>
+      </select>
+    </div>
+    <input type="text" id="iNote" placeholder="הערה (סדרה, מספר, מהדורה...)">
+    <button class="btn" onclick="addItem()">הוסף לאוסף</button>
+  </div>
+</div>
+
+<div class="card">
+  <div class="search"><span style="color:#9aa3b5">🔍</span><input type="text" id="searchQ" placeholder="חיפוש..." oninput="render()"></div>
+  <div class="item-grid" id="itemGrid"></div>
+</div>
+</div>
+
+<script>
+let items=JSON.parse(localStorage.getItem('collection_v2')||'[]');
+
+function addItem(){
+  const name=document.getElementById('iName').value.trim();
+  if(!name){alert('הזינו שם פריט');return;}
+  items.unshift({id:Date.now(),name,cat:document.getElementById('iCat').value.trim(),
+    value:parseFloat(document.getElementById('iValue').value)||0,
+    cond:document.getElementById('iCond').value,status:document.getElementById('iStatus').value,
+    note:document.getElementById('iNote').value.trim(),date:new Date().toLocaleDateString('he-IL')});
+  ['iName','iCat','iValue','iNote'].forEach(id=>document.getElementById(id).value='');
+  save();render();
+}
+
+function delItem(id){items=items.filter(i=>i.id!==id);save();render();}
+
+function render(){
+  const q=document.getElementById('searchQ').value.toLowerCase();
+  const shown=q?items.filter(i=>i.name.toLowerCase().includes(q)||(i.cat||'').toLowerCase().includes(q)):items;
+  document.getElementById('sTotal').textContent=items.length;
+  const totalVal=items.reduce((s,i)=>s+i.value,0);
+  document.getElementById('sValue').textContent='₪'+Math.round(totalVal).toLocaleString();
+  const cats=new Set(items.map(i=>i.cat).filter(Boolean));
+  document.getElementById('sCats').textContent=cats.size;
+  const el=document.getElementById('itemGrid');
+  if(!shown.length){el.innerHTML='<div style="color:#9aa3b5;font-size:13px;text-align:center;padding:12px;grid-column:1/-1">אין פריטים</div>';return;}
+  el.innerHTML=shown.map(i=>`
+    <div class="col-item">
+      <div class="ci-header">
+        <div class="ci-name">${i.name}</div>
+        <button class="ci-del" onclick="delItem(${i.id})">✕</button>
+      </div>
+      <div class="ci-meta">
+        ${i.cat?`<span class="badge cat">${i.cat}</span>`:''}
+        <span class="badge cond">${i.cond}</span>
+        ${i.value?`<span class="badge val">₪${i.value.toLocaleString()}</span>`:''}
+        <span class="badge" style="background:rgba(255,255,255,.1);color:#d1d5db">${i.status}</span>
+      </div>
+      ${i.note?`<div class="ci-note">${i.note}</div>`:''}
+    </div>`).join('');
+}
+
+function save(){localStorage.setItem('collection_v2',JSON.stringify(items));}
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>טטריס — המרכז שלי</title>
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@700;900&family=Heebo:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0b0d14;color:#f4f6fb;font-family:'Heebo',sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:20px}
+.back{align-self:flex-start;display:inline-flex;align-items:center;gap:8px;margin-bottom:18px;
+  background:#141826;border:1px solid rgba(255,255,255,.1);color:#f4f6fb;
+  border-radius:14px;padding:10px 18px;font:700 14px 'Heebo';text-decoration:none;transition:background .15s}
+.back:hover{background:#1c2233}
+h1{font-family:'Rubik';font-size:28px;font-weight:900;margin-bottom:4px;
+  background:linear-gradient(90deg,#60a5fa,#c084fc);-webkit-background-clip:text;background-clip:text;color:transparent}
+.info{color:#9aa3b5;font-size:13px;margin-bottom:14px;text-align:center}
+.game-area{display:flex;gap:20px;align-items:flex-start}
+#canvas{border:2px solid rgba(255,255,255,.15);border-radius:8px;display:block;background:#090c15}
+.side{width:140px}
+.side-box{background:#141826;border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:14px;margin-bottom:12px;text-align:center}
+.side-box h3{font-family:'Rubik';font-size:12px;color:#9aa3b5;margin-bottom:8px;letter-spacing:.05em}
+.side-box p{font-family:'Rubik';font-size:24px;font-weight:900;color:#f4f6fb}
+#next{border:1px solid rgba(255,255,255,.08);border-radius:8px;background:#090c15;display:block;margin:0 auto}
+.btn{width:100%;padding:11px;border-radius:12px;border:none;font:700 14px 'Heebo';cursor:pointer;
+  background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;margin-top:4px;transition:opacity .15s}
+.btn:hover{opacity:.85}
+.controls{margin-top:14px;background:#141826;border:1px solid rgba(255,255,255,.1);
+  border-radius:12px;padding:12px;text-align:center;font-size:12px;color:#9aa3b5;line-height:1.8}
+.controls kbd{background:#1e2235;border:1px solid rgba(255,255,255,.15);border-radius:4px;padding:1px 5px;font-size:11px;color:#f4f6fb}
+@media(max-width:500px){.game-area{flex-direction:column;align-items:center}.side{width:240px;display:flex;flex-wrap:wrap;gap:10px}.side>*{flex:1;min-width:110px}}
+</style>
+</head>
+<body>
+<a href="../districts/misc/" class="back">→ שונות</a>
+<h1>🟦 טטריס</h1>
+<div class="info">הקלאסיקה. תמיד עובד.</div>
+<div class="game-area">
+  <canvas id="canvas" width="240" height="480"></canvas>
+  <div class="side">
+    <div class="side-box">
+      <h3>ניקוד</h3>
+      <p id="score">0</p>
+    </div>
+    <div class="side-box">
+      <h3>שלב</h3>
+      <p id="level">1</p>
+    </div>
+    <div class="side-box">
+      <h3>הבא</h3>
+      <canvas id="next" width="80" height="80"></canvas>
+    </div>
+    <button class="btn" id="startBtn" onclick="startGame()">התחל משחק</button>
+    <button class="btn" id="pauseBtn" onclick="togglePause()" style="background:linear-gradient(135deg,#374151,#4b5563);display:none">השהה</button>
+  </div>
+</div>
+<div class="controls">
+  <kbd>←</kbd><kbd>→</kbd> הזזה &nbsp; <kbd>↑</kbd> סיבוב<br>
+  <kbd>↓</kbd> מהירות &nbsp; <kbd>Space</kbd> נפילה מיידית<br>
+  <kbd>P</kbd> השהייה
+</div>
+
+<script>
+const cv = document.getElementById('canvas');
+const ctx = cv.getContext('2d');
+const ncv = document.getElementById('next');
+const nctx = ncv.getContext('2d');
+const COLS = 12, ROWS = 24, SZ = 20;
+const COLORS = ['','#60a5fa','#f97316','#fbbf24','#a78bfa','#34d399','#f472b6','#e11d48'];
+const SHAPES = [
+  null,
+  [[1,1,1,1]],
+  [[2,0],[2,0],[2,2]],
+  [[0,3],[0,3],[3,3]],
+  [[4,4],[4,4]],
+  [[0,5,5],[5,5,0]],
+  [[6,0],[6,6],[0,6]],
+  [[0,7,0],[7,7,7]]
+];
+
+let board, piece, next, score, level, lines, gameLoop, paused=false, running=false;
+
+function newBoard(){return Array.from({length:ROWS},()=>Array(COLS).fill(0))}
+
+function newPiece(type){
+  const shape=SHAPES[type];
+  return {type,shape,x:Math.floor((COLS-shape[0].length)/2),y:0};
+}
+
+function randType(){return Math.floor(Math.random()*7)+1}
+
+function draw(){
+  ctx.fillStyle='#090c15';ctx.fillRect(0,0,cv.width,cv.height);
+  board.forEach((row,r)=>row.forEach((v,c)=>{if(v){drawBlock(ctx,c,r,v)}}));
+  if(piece){piece.shape.forEach((row,r)=>row.forEach((v,c)=>{if(v)drawBlock(ctx,piece.x+c,piece.y+r,v)}))}
+  drawGhost();
+}
+
+function drawBlock(c,x,y,v,sz=SZ){
+  c.fillStyle=COLORS[v];c.fillRect(x*sz+1,y*sz+1,sz-2,sz-2);
+  c.fillStyle='rgba(255,255,255,.2)';c.fillRect(x*sz+2,y*sz+2,sz-4,4);
+}
+
+function drawGhost(){
+  if(!piece)return;
+  let gy=piece.y;
+  while(!collide(piece.shape,piece.x,gy+1))gy++;
+  piece.shape.forEach((row,r)=>row.forEach((v,c)=>{
+    if(v){ctx.fillStyle='rgba(255,255,255,.08)';ctx.fillRect((piece.x+c)*SZ+1,(gy+r)*SZ+1,SZ-2,SZ-2);}
+  }));
+}
+
+function drawNext(){
+  nctx.fillStyle='#090c15';nctx.fillRect(0,0,80,80);
+  const s=next.shape,sz=16,ox=Math.floor((4-s[0].length)/2),oy=Math.floor((4-s.length)/2);
+  s.forEach((row,r)=>row.forEach((v,c)=>{if(v)drawBlock(nctx,ox+c,oy+r,v,sz)}));
+}
+
+function collide(shape,x,y){
+  return shape.some((row,r)=>row.some((v,c)=>{
+    if(!v)return false;
+    const nx=x+c,ny=y+r;
+    return nx<0||nx>=COLS||ny>=ROWS||(ny>=0&&board[ny][nx]);
+  }));
+}
+
+function rotate(shape){return shape[0].map((_,i)=>shape.map(r=>r[i]).reverse())}
+
+function lock(){
+  piece.shape.forEach((row,r)=>row.forEach((v,c)=>{
+    if(v&&piece.y+r>=0)board[piece.y+r][piece.x+c]=v;
+  }));
+  let cleared=0;
+  for(let r=ROWS-1;r>=0;r--){
+    if(board[r].every(v=>v)){board.splice(r,1);board.unshift(Array(COLS).fill(0));cleared++;r++;}
+  }
+  if(cleared){
+    const pts=[0,100,300,500,800];
+    score+=pts[cleared]*level;
+    lines+=cleared;
+    level=Math.floor(lines/10)+1;
+    document.getElementById('score').textContent=score;
+    document.getElementById('level').textContent=level;
+  }
+  piece=next;next=newPiece(randType());drawNext();
+  if(collide(piece.shape,piece.x,piece.y)){endGame();}
+}
+
+function drop(){
+  if(!running||paused)return;
+  if(!collide(piece.shape,piece.x,piece.y+1)){piece.y++;}else{lock();}
+  draw();
+}
+
+function startGame(){
+  board=newBoard();score=0;level=1;lines=0;paused=false;running=true;
+  document.getElementById('score').textContent=0;
+  document.getElementById('level').textContent=1;
+  piece=newPiece(randType());next=newPiece(randType());
+  drawNext();
+  clearInterval(gameLoop);
+  gameLoop=setInterval(()=>{if(!paused)drop();},Math.max(100,600-level*50));
+  document.getElementById('startBtn').textContent='מחדש';
+  document.getElementById('pauseBtn').style.display='block';
+  draw();
+}
+
+function endGame(){
+  clearInterval(gameLoop);running=false;
+  ctx.fillStyle='rgba(0,0,0,.7)';ctx.fillRect(0,0,cv.width,cv.height);
+  ctx.fillStyle='#fff';ctx.font='bold 20px Rubik';ctx.textAlign='center';
+  ctx.fillText('GAME OVER',cv.width/2,cv.height/2-10);
+  ctx.font='14px Heebo';ctx.fillText('ניקוד: '+score,cv.width/2,cv.height/2+20);
+  document.getElementById('pauseBtn').style.display='none';
+}
+
+function togglePause(){
+  if(!running)return;
+  paused=!paused;
+  document.getElementById('pauseBtn').textContent=paused?'המשך':'השהה';
+}
+
+document.addEventListener('keydown',e=>{
+  if(!running||paused)return;
+  if(e.key==='ArrowLeft'){if(!collide(piece.shape,piece.x-1,piece.y))piece.x--;draw();}
+  else if(e.key==='ArrowRight'){if(!collide(piece.shape,piece.x+1,piece.y))piece.x++;draw();}
+  else if(e.key==='ArrowDown'){drop();}
+  else if(e.key==='ArrowUp'){const r=rotate(piece.shape);if(!collide(r,piece.x,piece.y)){piece.shape=r;}draw();}
+  else if(e.key===' '){e.preventDefault();while(!collide(piece.shape,piece.x,piece.y+1))piece.y++;lock();draw();}
+  else if(e.key==='p'||e.key==='P'){togglePause();}
+});
+
+// Touch support
+let tx=0;
+cv.addEventListener('touchstart',e=>{tx=e.touches[0].clientX;},{passive:true});
+cv.addEventListener('touchend',e=>{
+  if(!running||paused)return;
+  const dx=e.changedTouches[0].clientX-tx;
+  const dy=e.changedTouches[0].clientY-e.changedTouches[0].clientY;
+  if(Math.abs(dx)>30){if(dx<0){if(!collide(piece.shape,piece.x-1,piece.y))piece.x++;}else{if(!collide(piece.shape,piece.x+1,piece.y))piece.x--;}draw();}
+  else{const r=rotate(piece.shape);if(!collide(r,piece.x,piece.y))piece.shape=r;draw();}
+},{passive:true});
+</script>
+</body>
+</html>

@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>בלאטרו — המרכז שלי</title>
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@700;900&family=Heebo:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0a0814;color:#f4f6fb;font-family:'Heebo',sans-serif;min-height:100vh;padding:20px}
+.back{display:inline-flex;align-items:center;gap:8px;margin-bottom:20px;
+  background:#141826;border:1px solid rgba(255,255,255,.1);color:#f4f6fb;
+  border-radius:14px;padding:10px 18px;font:700 14px 'Heebo';text-decoration:none}
+.back:hover{background:#1c2233}
+h1{font-family:'Rubik';font-size:30px;font-weight:900;text-align:center;margin-bottom:4px;
+  background:linear-gradient(90deg,#a78bfa,#e879f9,#a78bfa);-webkit-background-clip:text;background-clip:text;color:transparent}
+.sub{text-align:center;color:#9aa3b5;font-size:13px;margin-bottom:24px}
+.wrap{max-width:700px;margin:0 auto}
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px}
+.stat{background:#141826;border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:14px;text-align:center}
+.stat .num{font-family:'Rubik';font-size:22px;font-weight:900;color:#c084fc}
+.stat .lbl{font-size:11px;color:#9aa3b5;margin-top:2px}
+.card{background:#141826;border:1px solid rgba(255,255,255,.1);border-radius:18px;padding:18px;margin-bottom:14px}
+.card h3{font-family:'Rubik';font-size:14px;color:#9aa3b5;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.jokers{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px}
+.joker-card{background:#1e1030;border:2px solid #7c3aed;border-radius:12px;padding:12px;text-align:center;position:relative;cursor:pointer}
+.joker-card:hover{border-color:#c084fc}
+.joker-card .j-icon{font-size:28px;margin-bottom:5px}
+.joker-card .j-name{font-family:'Rubik';font-size:13px;font-weight:700;color:#e9d5ff}
+.joker-card .j-mult{font-size:11px;color:#a78bfa;margin-top:2px}
+.joker-del{position:absolute;top:5px;left:5px;background:none;border:none;color:#ef4444;cursor:pointer;font-size:14px}
+.add-joker{border:2px dashed rgba(124,58,237,.4);border-radius:12px;padding:12px;text-align:center;cursor:pointer;
+  color:#7c3aed;font-size:12px;font-family:'Rubik';font-weight:700;transition:border-color .15s}
+.add-joker:hover{border-color:#7c3aed;background:rgba(124,58,237,.1)}
+.form-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.form-row input, .form-row select{flex:1;min-width:120px;background:#0d1117;border:1px solid rgba(255,255,255,.15);
+  color:#f4f6fb;font:500 13px 'Heebo';border-radius:10px;padding:9px 12px}
+.btn{padding:10px 18px;border-radius:11px;border:none;font:700 14px 'Heebo';cursor:pointer;
+  background:linear-gradient(135deg,#7c3aed,#6d28d9);color:#fff;transition:opacity .15s;white-space:nowrap}
+.btn:hover{opacity:.85}
+.run-list{display:flex;flex-direction:column;gap:8px}
+.run-row{display:flex;justify-content:space-between;align-items:center;
+  background:#0d1117;border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:12px 14px}
+.run-info{font-size:13px;color:#9aa3b5}
+.run-score{font-family:'Rubik';font-weight:700;font-size:16px;color:#c084fc}
+.run-del{background:none;border:none;color:#ef4444;cursor:pointer;font-size:16px}
+.hand-types{display:flex;flex-wrap:wrap;gap:6px}
+.ht{padding:5px 10px;border-radius:8px;font:600 11px 'Heebo';cursor:pointer;
+  background:#1e1030;border:1px solid rgba(124,58,237,.3);color:#c084fc;transition:all .15s}
+.ht:hover,.ht.lvl2{border-color:#7c3aed;background:rgba(124,58,237,.2)}
+.ht.lvl3{border-color:#a855f7;background:rgba(168,85,247,.25);color:#e9d5ff}
+</style>
+</head>
+<body>
+<a href="../districts/misc/" class="back">→ שונות</a>
+<div class="wrap">
+<h1>🃏 בלאטרו</h1>
+<div class="sub">מעקב ריצה — ג'וקרים, ידיים, ניקוד</div>
+
+<div class="stats-row">
+  <div class="stat"><div class="num" id="sRuns">0</div><div class="lbl">ריצות</div></div>
+  <div class="stat"><div class="num" id="sWins">0</div><div class="lbl">ניצחונות</div></div>
+  <div class="stat"><div class="num" id="sBest">0</div><div class="lbl">שיא</div></div>
+  <div class="stat"><div class="num" id="sJokers">0</div><div class="lbl">ג'וקרים</div></div>
+</div>
+
+<div class="card">
+  <h3>🃏 ג'וקרים פעילים</h3>
+  <div class="jokers" id="jokerGrid">
+    <div class="add-joker" onclick="showJokerForm()">+ הוסף ג'וקר</div>
+  </div>
+  <div id="jokerForm" style="display:none;margin-top:14px">
+    <div class="form-row">
+      <input type="text" id="jIcon" placeholder="אמוג'י (אופציונלי)" style="max-width:90px">
+      <input type="text" id="jName" placeholder="שם הג'וקר">
+      <input type="text" id="jMult" placeholder="x מכפיל / תיאור">
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn" onclick="addJoker()">הוסף</button>
+      <button class="btn" style="background:#374151" onclick="document.getElementById('jokerForm').style.display='none'">ביטול</button>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <h3>🎯 רמות ידיים</h3>
+  <div class="hand-types" id="handTypes"></div>
+</div>
+
+<div class="card">
+  <h3>📊 הוסף ריצה</h3>
+  <div class="form-row">
+    <input type="number" id="runAntes" placeholder="אנטה (1-8)" min="1" max="8" value="1">
+    <input type="number" id="runScore" placeholder="ניקוד סופי">
+    <select id="runResult">
+      <option value="win">ניצחון 🏆</option>
+      <option value="loss">הפסד 💀</option>
+    </select>
+  </div>
+  <button class="btn" onclick="addRun()">שמור ריצה</button>
+</div>
+
+<div class="card">
+  <h3>🏃 היסטוריית ריצות</h3>
+  <div class="run-list" id="runList"><div style="color:#9aa3b5;font-size:13px;text-align:center;padding:8px">אין ריצות עדיין</div></div>
+</div>
+</div>
+
+<script>
+const HANDS=['Royal Flush','Straight Flush','Five of a Kind','Flush House','Flush Five','Full House','Four of a Kind','Straight','Flush','Three of a Kind','Two Pair','Pair','High Card'];
+let data=JSON.parse(localStorage.getItem('balatro')||'{"jokers":[],"runs":[],"handLevels":{}}');
+
+function save(){localStorage.setItem('balatro',JSON.stringify(data));}
+
+function showJokerForm(){document.getElementById('jokerForm').style.display='block';document.getElementById('jName').focus();}
+
+function addJoker(){
+  const icon=document.getElementById('jIcon').value.trim()||'🃏';
+  const name=document.getElementById('jName').value.trim();
+  const mult=document.getElementById('jMult').value.trim();
+  if(!name)return;
+  data.jokers.push({id:Date.now(),icon,name,mult});
+  document.getElementById('jIcon').value='';document.getElementById('jName').value='';document.getElementById('jMult').value='';
+  document.getElementById('jokerForm').style.display='none';
+  save();render();
+}
+
+function delJoker(id){data.jokers=data.jokers.filter(j=>j.id!==id);save();render();}
+
+function cycleHand(hand){
+  const lvl=(data.handLevels[hand]||1)%3+1;
+  data.handLevels[hand]=lvl;save();render();
+}
+
+function addRun(){
+  const antes=parseInt(document.getElementById('runAntes').value)||1;
+  const score=parseInt(document.getElementById('runScore').value)||0;
+  const result=document.getElementById('runResult').value;
+  data.runs.unshift({id:Date.now(),antes,score,result,date:new Date().toLocaleDateString('he-IL'),jokers:[...data.jokers.map(j=>j.name)]});
+  save();render();
+}
+
+function delRun(id){data.runs=data.runs.filter(r=>r.id!==id);save();render();}
+
+function render(){
+  const wins=data.runs.filter(r=>r.result==='win').length;
+  const best=data.runs.length?Math.max(...data.runs.map(r=>r.score)):0;
+  document.getElementById('sRuns').textContent=data.runs.length;
+  document.getElementById('sWins').textContent=wins;
+  document.getElementById('sBest').textContent=best.toLocaleString();
+  document.getElementById('sJokers').textContent=data.jokers.length;
+
+  // jokers
+  const jg=document.getElementById('jokerGrid');
+  jg.innerHTML=data.jokers.map(j=>`
+    <div class="joker-card">
+      <button class="joker-del" onclick="delJoker(${j.id})">✕</button>
+      <div class="j-icon">${j.icon}</div>
+      <div class="j-name">${j.name}</div>
+      ${j.mult?`<div class="j-mult">${j.mult}</div>`:''}
+    </div>`).join('')+'<div class="add-joker" onclick="showJokerForm()">+ הוסף ג\'וקר</div>';
+
+  // hands
+  document.getElementById('handTypes').innerHTML=HANDS.map(h=>{
+    const lvl=data.handLevels[h]||1;
+    return `<span class="ht ${lvl>=2?'lvl'+lvl:''}" onclick="cycleHand('${h}')">
+      ${h} ${lvl>1?'⭐'.repeat(lvl-1):''}
+    </span>`;
+  }).join('');
+
+  // runs
+  const rl=document.getElementById('runList');
+  if(!data.runs.length){rl.innerHTML='<div style="color:#9aa3b5;font-size:13px;text-align:center;padding:8px">אין ריצות עדיין</div>';return;}
+  rl.innerHTML=data.runs.slice(0,20).map(r=>`
+    <div class="run-row">
+      <button class="run-del" onclick="delRun(${r.id})">🗑</button>
+      <div class="run-info">${r.date} · אנטה ${r.antes}</div>
+      <div class="run-score">${r.score.toLocaleString()} ${r.result==='win'?'🏆':'💀'}</div>
+    </div>`).join('');
+}
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>קזינו — המרכז שלי</title>
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@700;900&family=Heebo:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0b0d14;color:#f4f6fb;font-family:'Heebo',sans-serif;min-height:100vh;padding:20px}
+.back{display:inline-flex;align-items:center;gap:8px;margin-bottom:20px;
+  background:#141826;border:1px solid rgba(255,255,255,.1);color:#f4f6fb;
+  border-radius:14px;padding:10px 18px;font:700 14px 'Heebo';text-decoration:none}
+.back:hover{background:#1c2233}
+.hero{text-align:center;padding:30px 20px 26px;background:radial-gradient(circle at 50% 0%,#7c3aed33,transparent 70%)}
+h1{font-family:'Rubik';font-size:38px;font-weight:900;
+  background:linear-gradient(90deg,#fbbf24,#f59e0b,#fbbf24);-webkit-background-clip:text;background-clip:text;color:transparent}
+.sub{color:#9aa3b5;font-size:14px;margin-top:6px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;margin-top:28px;max-width:700px;margin-left:auto;margin-right:auto}
+.game-card{display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-decoration:none;color:#f4f6fb;border-radius:20px;padding:28px 20px;
+  border:1px solid rgba(255,255,255,.1);transition:transform .2s,border-color .2s;
+  text-align:center;gap:10px;min-height:150px}
+.game-card:hover{transform:translateY(-4px);border-color:rgba(255,255,255,.3)}
+.game-card .icon{font-size:44px}
+.game-card h3{font-family:'Rubik';font-size:18px;font-weight:900}
+.game-card p{font-size:12.5px;color:#9aa3b5}
+.bg-bj{background:radial-gradient(circle at 80% 20%,#1d4ed833,transparent 60%),#0f1629}
+.bg-bac{background:radial-gradient(circle at 80% 20%,#92400e33,transparent 60%),#170d05}
+.bg-bl{background:radial-gradient(circle at 80% 20%,#7c3aed33,transparent 60%),#110d1f}
+.bg-tt{background:radial-gradient(circle at 80% 20%,#0d948833,transparent 60%),#060f0e}
+.bg-cv{background:radial-gradient(circle at 80% 20%,#dc262633,transparent 60%),#160606}
+.bank{background:#141826;border:1px solid rgba(255,255,255,.1);border-radius:20px;
+  max-width:700px;margin:20px auto 0;padding:20px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.bank label{color:#9aa3b5;font-size:13px}
+.bank-val{font-family:'Rubik';font-size:28px;font-weight:900;color:#fbbf24}
+.bank-btns{display:flex;gap:8px;flex-wrap:wrap}
+.bb{padding:8px 14px;border-radius:10px;border:1px solid rgba(255,255,255,.15);
+  background:transparent;color:#f4f6fb;font:700 13px 'Heebo';cursor:pointer}
+.bb:hover{background:#1c2233}
+</style>
+</head>
+<body>
+<a href="../districts/misc/" class="back">→ שונות</a>
+<div class="hero">
+  <h1>🎰 קזינו</h1>
+  <div class="sub">בחרו את המשחק שלכם</div>
+</div>
+
+<div class="bank">
+  <div>
+    <label>יתרה כוללת</label>
+    <div class="bank-val" id="bankVal">1,000 ₪</div>
+  </div>
+  <div class="bank-btns">
+    <button class="bb" onclick="addFunds(500)">+500 ₪</button>
+    <button class="bb" onclick="addFunds(1000)">+1,000 ₪</button>
+    <button class="bb" onclick="resetFunds()">אפס</button>
+  </div>
+</div>
+
+<div class="grid">
+  <a class="game-card bg-bj" href="blackjack.html">
+    <div class="icon">🃏</div>
+    <h3>בלאק ג'ק</h3>
+    <p>5 ידיים מול הדילר</p>
+  </a>
+  <a class="game-card bg-bac" href="baccarat.html">
+    <div class="icon">🎴</div>
+    <h3>בקארה</h3>
+    <p>שחקן מול בנקאי</p>
+  </a>
+  <a class="game-card bg-bl" href="balatro.html">
+    <div class="icon">🃏</div>
+    <h3>בלאטרו</h3>
+    <p>ג'וקרים ומכפילים</p>
+  </a>
+  <a class="game-card bg-tt" href="tetris.html">
+    <div class="icon">🟦</div>
+    <h3>טטריס</h3>
+    <p>קלאסיקה — תמיד עובד</p>
+  </a>
+  <a class="game-card bg-cv" href="blackjack-cv.html">
+    <div class="icon">📷</div>
+    <h3>BJ Vision</h3>
+    <p>ניתוח יד עם מצלמה</p>
+  </a>
+</div>
+
+<script>
+let funds=parseInt(localStorage.getItem('casino_bank')||'1000');
+function render(){document.getElementById('bankVal').textContent=funds.toLocaleString()+' ₪';localStorage.setItem('casino_bank',funds);}
+function addFunds(n){funds+=n;render();}
+function resetFunds(){if(confirm('לאפס יתרה ל-1000?')){funds=1000;render();}}
+render();
+</script>
+</body>
+</html>

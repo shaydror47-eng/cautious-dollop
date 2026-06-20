@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>חיסכון — המרכז שלי</title>
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@700;900&family=Heebo:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0b0d14;color:#f4f6fb;font-family:'Heebo',sans-serif;min-height:100vh;padding:20px}
+.back{display:inline-flex;align-items:center;gap:8px;margin-bottom:20px;
+  background:#141826;border:1px solid rgba(255,255,255,.1);color:#f4f6fb;
+  border-radius:14px;padding:10px 18px;font:700 14px 'Heebo';text-decoration:none}
+.back:hover{background:#1c2233}
+h1{font-family:'Rubik';font-size:28px;font-weight:900;margin-bottom:4px}
+.sub{color:#9aa3b5;font-size:13px;margin-bottom:24px}
+.wrap{max-width:600px;margin:0 auto}
+.big-balance{background:linear-gradient(135deg,#16a34a,#15803d,#14532d);border-radius:22px;
+  padding:28px 24px;text-align:center;margin-bottom:18px;position:relative;overflow:hidden}
+.big-balance::before{content:'🐷';font-size:90px;position:absolute;right:-10px;top:-10px;opacity:.2}
+.balance-label{font-size:13px;opacity:.8;margin-bottom:6px}
+.balance-num{font-family:'Rubik';font-size:52px;font-weight:900;line-height:1}
+.balance-sub{font-size:12px;opacity:.7;margin-top:6px}
+.progress{height:8px;background:rgba(0,0,0,.3);border-radius:4px;margin:14px 0 4px;overflow:hidden}
+.progress-bar{height:100%;border-radius:4px;background:linear-gradient(90deg,#4ade80,#22c55e);transition:width .5s}
+.goal-pct{font-size:12px;opacity:.8}
+.card{background:#141826;border:1px solid rgba(255,255,255,.1);border-radius:18px;padding:18px;margin-bottom:14px}
+.card h3{font-family:'Rubik';font-size:14px;color:#9aa3b5;margin-bottom:14px}
+.form-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.form-row input,.form-row select{flex:1;min-width:120px;background:#0d1117;border:1px solid rgba(255,255,255,.15);
+  color:#f4f6fb;font:500 14px 'Heebo';border-radius:12px;padding:11px 14px}
+.btn-row{display:flex;gap:8px}
+.btn{flex:1;padding:12px;border-radius:12px;border:none;font:700 14px 'Heebo';cursor:pointer;
+  background:linear-gradient(135deg,#16a34a,#15803d);color:#fff;transition:opacity .15s}
+.btn:hover{opacity:.85}
+.btn.out{background:linear-gradient(135deg,#dc2626,#b91c1c)}
+.btn.goal{background:linear-gradient(135deg,#d97706,#b45309)}
+.tx-item{display:flex;justify-content:space-between;align-items:center;
+  background:#0d1117;border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:12px 14px;margin-bottom:7px}
+.tx-left .tx-date{font-size:11px;color:#9aa3b5}
+.tx-left .tx-note{font-size:14px}
+.tx-right{display:flex;align-items:center;gap:8px}
+.tx-amount{font-family:'Rubik';font-size:17px;font-weight:700}
+.tx-amount.in{color:#4ade80}
+.tx-amount.out{color:#f87171}
+.tx-del{background:none;border:none;color:#6b7280;cursor:pointer;font-size:15px}
+</style>
+</head>
+<body>
+<a href="../districts/growth/" class="back">→ שיפור עצמי</a>
+<div class="wrap">
+<h1>🐷 חיסכון</h1>
+<div class="sub">כל שקל שנחסך נרשם</div>
+
+<div class="big-balance">
+  <div class="balance-label">יתרה נוכחית</div>
+  <div class="balance-num" id="balanceNum">₪0</div>
+  <div class="progress"><div class="progress-bar" id="pBar" style="width:0%"></div></div>
+  <div class="goal-pct" id="goalPct">הגדירו יעד למטה</div>
+</div>
+
+<div class="card">
+  <h3>➕ הפקדה / משיכה</h3>
+  <div class="form-row">
+    <input type="number" id="txAmount" placeholder="סכום ₪">
+    <input type="text" id="txNote" placeholder="הערה (אופציונלי)">
+  </div>
+  <div class="btn-row">
+    <button class="btn" onclick="addTx(1)">+ הפקדה</button>
+    <button class="btn out" onclick="addTx(-1)">− משיכה</button>
+  </div>
+</div>
+
+<div class="card">
+  <h3>🎯 יעד חיסכון</h3>
+  <div class="form-row">
+    <input type="number" id="goalInput" placeholder="סכום יעד ₪" value="">
+    <button class="btn goal" onclick="setGoal()">שמור יעד</button>
+  </div>
+</div>
+
+<div class="card">
+  <h3>📋 היסטוריה</h3>
+  <div id="txList"><div style="color:#9aa3b5;font-size:13px;text-align:center;padding:8px">אין עסקאות עדיין</div></div>
+</div>
+</div>
+
+<script>
+let data=JSON.parse(localStorage.getItem('savings_v2')||'{"txs":[],"goal":0}');
+
+function balance(){return data.txs.reduce((s,t)=>s+t.amount,0);}
+
+function addTx(dir){
+  const amount=parseFloat(document.getElementById('txAmount').value);
+  if(!amount||amount<=0){alert('הזינו סכום חוקי');return;}
+  const note=document.getElementById('txNote').value.trim();
+  data.txs.unshift({id:Date.now(),amount:amount*dir,note,date:new Date().toLocaleDateString('he-IL')});
+  document.getElementById('txAmount').value='';document.getElementById('txNote').value='';
+  save();render();
+}
+
+function setGoal(){
+  const g=parseFloat(document.getElementById('goalInput').value);
+  if(g>0){data.goal=g;save();render();}
+}
+
+function delTx(id){data.txs=data.txs.filter(t=>t.id!==id);save();render();}
+
+function render(){
+  const bal=balance();
+  document.getElementById('balanceNum').textContent='₪'+bal.toLocaleString('he-IL',{minimumFractionDigits:0});
+  if(data.goal>0){
+    const pct=Math.min(100,Math.max(0,bal/data.goal*100));
+    document.getElementById('pBar').style.width=pct+'%';
+    document.getElementById('goalPct').textContent=`${pct.toFixed(1)}% מהיעד (₪${data.goal.toLocaleString()})`;
+    document.getElementById('goalInput').value=data.goal;
+  }
+  const el=document.getElementById('txList');
+  if(!data.txs.length){el.innerHTML='<div style="color:#9aa3b5;font-size:13px;text-align:center;padding:8px">אין עסקאות עדיין</div>';return;}
+  el.innerHTML=data.txs.map(t=>`
+    <div class="tx-item">
+      <div class="tx-left">
+        <div class="tx-date">${t.date}</div>
+        <div class="tx-note">${t.note||'—'}</div>
+      </div>
+      <div class="tx-right">
+        <div class="tx-amount ${t.amount>0?'in':'out'}">${t.amount>0?'+':''}₪${Math.abs(t.amount).toLocaleString()}</div>
+        <button class="tx-del" onclick="delTx(${t.id})">✕</button>
+      </div>
+    </div>`).join('');
+}
+
+function save(){localStorage.setItem('savings_v2',JSON.stringify(data));}
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>בדיקת סושיאל — המרכז שלי</title>
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@700;900&family=Heebo:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0b0d14;color:#f4f6fb;font-family:'Heebo',sans-serif;min-height:100vh;padding:20px}
+.back{display:inline-flex;align-items:center;gap:8px;margin-bottom:20px;
+  background:#141826;border:1px solid rgba(255,255,255,.1);color:#f4f6fb;
+  border-radius:14px;padding:10px 18px;font:700 14px 'Heebo';text-decoration:none}
+.back:hover{background:#1c2233}
+h1{font-family:'Rubik';font-size:28px;font-weight:900;margin-bottom:4px}
+.sub{color:#9aa3b5;font-size:13px;margin-bottom:24px}
+.wrap{max-width:700px;margin:0 auto}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:18px}
+.stat{background:#141826;border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:12px;text-align:center}
+.stat .num{font-family:'Rubik';font-size:22px;font-weight:900;color:#f472b6}
+.stat .lbl{font-size:10px;color:#9aa3b5;margin-top:2px}
+.card{background:#141826;border:1px solid rgba(255,255,255,.1);border-radius:18px;padding:18px;margin-bottom:14px}
+.card h3{font-family:'Rubik';font-size:14px;color:#9aa3b5;margin-bottom:14px}
+.form{display:flex;flex-direction:column;gap:10px}
+.form input,.form select{background:#0d1117;border:1px solid rgba(255,255,255,.15);
+  color:#f4f6fb;font:500 14px 'Heebo';border-radius:12px;padding:11px 14px;width:100%}
+.form-row{display:flex;gap:10px;flex-wrap:wrap}
+.form-row > *{flex:1;min-width:110px}
+.btn{padding:12px;border-radius:12px;border:none;font:700 14px 'Heebo';cursor:pointer;
+  background:linear-gradient(135deg,#be185d,#9d174d);color:#fff;transition:opacity .15s;width:100%}
+.btn:hover{opacity:.85}
+.platform-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+@media(min-width:520px){.platform-grid{grid-template-columns:repeat(3,1fr)}}
+.plat-card{background:#0d1117;border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:14px;position:relative}
+.plat-card:hover{border-color:rgba(244,114,182,.2)}
+.plat-header{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.plat-icon{font-size:24px}
+.plat-name{font-family:'Rubik';font-size:14px;font-weight:700}
+.plat-del{position:absolute;top:8px;left:8px;background:none;border:none;color:#6b7280;cursor:pointer;font-size:13px}
+.plat-del:hover{color:#ef4444}
+.metric{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.metric-label{font-size:12px;color:#9aa3b5}
+.metric-val{font-family:'Rubik';font-size:14px;font-weight:700}
+.metric-input{background:#141826;border:1px solid rgba(255,255,255,.1);color:#f4f6fb;
+  font:600 13px 'Heebo';border-radius:8px;padding:4px 8px;width:80px;text-align:center}
+.metric-input:focus{outline:none;border-color:rgba(244,114,182,.4)}
+.trend{font-size:11px;margin-top:4px}
+.trend.up{color:#4ade80}
+.trend.down{color:#f87171}
+.trend.flat{color:#9aa3b5}
+.plat-date{font-size:10px;color:#6b7280;margin-top:8px}
+.history-item{background:#0d1117;border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:12px;margin-bottom:6px}
+.history-meta{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.history-platform{font:700 13px 'Rubik';color:#f472b6}
+.history-date{font-size:11px;color:#6b7280}
+.history-metrics{display:flex;gap:12px;flex-wrap:wrap}
+.history-metric{font-size:12px;color:#d1d5db}
+.history-metric span{font-weight:700;color:#f4f6fb}
+</style>
+</head>
+<body>
+<a href="../districts/misc/" class="back">→ שונות</a>
+<div class="wrap">
+<h1>📊 בדיקת סושיאל</h1>
+<div class="sub">עקוב אחר הצמיחה שלך ברשתות החברתיות</div>
+
+<div class="stats">
+  <div class="stat"><div class="num" id="sPlatforms">0</div><div class="lbl">פלטפורמות</div></div>
+  <div class="stat"><div class="num" id="sFollowers">0</div><div class="lbl">עוקבים סה"כ</div></div>
+  <div class="stat"><div class="num" id="sGrowth">+0</div><div class="lbl">צמיחה</div></div>
+  <div class="stat"><div class="num" id="sChecks">0</div><div class="lbl">בדיקות</div></div>
+</div>
+
+<div class="card">
+  <h3>➕ הוסף פלטפורמה</h3>
+  <div class="form">
+    <div class="form-row">
+      <select id="pPlatform">
+        <option value="📸 אינסטגרם">📸 אינסטגרם</option>
+        <option value="🐦 טוויטר/X">🐦 טוויטר/X</option>
+        <option value="📺 יוטיוב">📺 יוטיוב</option>
+        <option value="💼 לינקדאין">💼 לינקדאין</option>
+        <option value="🎵 טיקטוק">🎵 טיקטוק</option>
+        <option value="💬 פייסבוק">💬 פייסבוק</option>
+        <option value="📱 אחר">📱 אחר</option>
+      </select>
+      <input type="text" id="pHandle" placeholder="שם משתמש / ערוץ">
+    </div>
+    <div class="form-row">
+      <input type="number" id="pFollowers" placeholder="עוקבים נוכחיים">
+      <input type="number" id="pViews" placeholder="צפיות/פוסטים">
+    </div>
+    <button class="btn" onclick="addPlatform()">הוסף פלטפורמה</button>
+  </div>
+</div>
+
+<div class="card">
+  <h3>📱 פלטפורמות שלי</h3>
+  <div class="platform-grid" id="platformGrid">
+    <div style="color:#9aa3b5;font-size:13px;text-align:center;padding:12px;grid-column:1/-1">הוסיפו פלטפורמה ראשונה</div>
+  </div>
+</div>
+
+<div class="card">
+  <h3>📈 היסטוריית בדיקות</h3>
+  <div id="historyList"><div style="color:#9aa3b5;font-size:13px;text-align:center;padding:8px">אין היסטוריה עדיין</div></div>
+</div>
+</div>
+
+<script>
+let data=JSON.parse(localStorage.getItem('social_check')||'{"platforms":[],"history":[]}');
+
+const ICONS={'📸 אינסטגרם':'📸','🐦 טוויטר/X':'🐦','📺 יוטיוב':'📺','💼 לינקדאין':'💼','🎵 טיקטוק':'🎵','💬 פייסבוק':'💬','📱 אחר':'📱'};
+
+function addPlatform(){
+  const platform=document.getElementById('pPlatform').value;
+  const handle=document.getElementById('pHandle').value.trim();
+  const followers=parseInt(document.getElementById('pFollowers').value)||0;
+  const views=parseInt(document.getElementById('pViews').value)||0;
+  data.platforms.push({id:Date.now(),platform,handle,followers,views,
+    prevFollowers:followers,date:new Date().toLocaleDateString('he-IL')});
+  ['pHandle','pFollowers','pViews'].forEach(id=>document.getElementById(id).value='');
+  save();render();
+}
+
+function updateMetric(id,field,val){
+  const p=data.platforms.find(p=>p.id===id);
+  if(!p)return;
+  const num=parseInt(val)||0;
+  if(field==='followers'){
+    p.prevFollowers=p.followers;
+    p.followers=num;
+    data.history.unshift({id:Date.now(),platform:p.platform,handle:p.handle,
+      followers:num,prevFollowers:p.prevFollowers,views:p.views,
+      date:new Date().toLocaleDateString('he-IL')});
+  } else {p.views=num;}
+  p.date=new Date().toLocaleDateString('he-IL');
+  save();render();
+}
+
+function delPlatform(id){data.platforms=data.platforms.filter(p=>p.id!==id);save();render();}
+
+function render(){
+  const el=document.getElementById('platformGrid');
+  document.getElementById('sPlatforms').textContent=data.platforms.length;
+  const totalFollowers=data.platforms.reduce((s,p)=>s+p.followers,0);
+  document.getElementById('sFollowers').textContent=totalFollowers.toLocaleString();
+  const totalGrowth=data.platforms.reduce((s,p)=>s+(p.followers-p.prevFollowers),0);
+  document.getElementById('sGrowth').textContent=(totalGrowth>=0?'+':'')+totalGrowth;
+  document.getElementById('sChecks').textContent=data.history.length;
+
+  if(!data.platforms.length){
+    el.innerHTML='<div style="color:#9aa3b5;font-size:13px;text-align:center;padding:12px;grid-column:1/-1">הוסיפו פלטפורמה ראשונה</div>';
+  } else {
+    el.innerHTML=data.platforms.map(p=>{
+      const diff=p.followers-p.prevFollowers;
+      const trendCls=diff>0?'up':diff<0?'down':'flat';
+      const trendTxt=diff>0?`↑ +${diff} עוקבים`:diff<0?`↓ ${diff} עוקבים`:'ללא שינוי';
+      return `<div class="plat-card">
+        <button class="plat-del" onclick="delPlatform(${p.id})">✕</button>
+        <div class="plat-header">
+          <div class="plat-icon">${ICONS[p.platform]||'📱'}</div>
+          <div>
+            <div class="plat-name">${p.platform.split(' ').slice(1).join(' ')}</div>
+            ${p.handle?`<div style="font-size:11px;color:#9aa3b5">@${p.handle}</div>`:''}
+          </div>
+        </div>
+        <div class="metric">
+          <span class="metric-label">עוקבים</span>
+          <input class="metric-input" type="number" value="${p.followers}"
+            onchange="updateMetric(${p.id},'followers',this.value)">
+        </div>
+        <div class="metric">
+          <span class="metric-label">צפיות/פוסטים</span>
+          <input class="metric-input" type="number" value="${p.views}"
+            onchange="updateMetric(${p.id},'views',this.value)">
+        </div>
+        <div class="trend ${trendCls}">${trendTxt}</div>
+        <div class="plat-date">עדכון: ${p.date}</div>
+      </div>`;
+    }).join('');
+  }
+
+  const hl=document.getElementById('historyList');
+  if(!data.history.length){
+    hl.innerHTML='<div style="color:#9aa3b5;font-size:13px;text-align:center;padding:8px">אין היסטוריה עדיין</div>';
+  } else {
+    hl.innerHTML=data.history.slice(0,20).map(h=>{
+      const diff=h.followers-(h.prevFollowers||h.followers);
+      return `<div class="history-item">
+        <div class="history-meta">
+          <div class="history-platform">${h.platform}${h.handle?' @'+h.handle:''}</div>
+          <div class="history-date">${h.date}</div>
+        </div>
+        <div class="history-metrics">
+          <div class="history-metric">עוקבים: <span>${h.followers.toLocaleString()}</span></div>
+          <div class="history-metric">שינוי: <span style="color:${diff>=0?'#4ade80':'#f87171'}">${diff>=0?'+':''}${diff}</span></div>
+          ${h.views?`<div class="history-metric">צפיות: <span>${h.views.toLocaleString()}</span></div>`:''}
+        </div>
+      </div>`;
+    }).join('');
+  }
+}
+
+function save(){localStorage.setItem('social_check',JSON.stringify(data));}
+render();
+</script>
+</body>
+</html>

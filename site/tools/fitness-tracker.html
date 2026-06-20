@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>מעקב כושר — המרכז שלי</title>
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@700;900&family=Heebo:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0b0d14;color:#f4f6fb;font-family:'Heebo',sans-serif;min-height:100vh;padding:20px}
+.back{display:inline-flex;align-items:center;gap:8px;margin-bottom:20px;
+  background:#141826;border:1px solid rgba(255,255,255,.1);color:#f4f6fb;
+  border-radius:14px;padding:10px 18px;font:700 14px 'Heebo';text-decoration:none}
+.back:hover{background:#1c2233}
+h1{font-family:'Rubik';font-size:28px;font-weight:900;margin-bottom:4px}
+.sub{color:#9aa3b5;font-size:13px;margin-bottom:24px}
+.wrap{max-width:700px;margin:0 auto}
+.streak{background:linear-gradient(135deg,#ea580c,#b91c1c);border-radius:18px;padding:20px;text-align:center;margin-bottom:18px}
+.streak-num{font-family:'Rubik';font-size:52px;font-weight:900}
+.streak-lbl{font-size:13px;opacity:.85;margin-top:4px}
+.card{background:#141826;border:1px solid rgba(255,255,255,.1);border-radius:18px;padding:18px;margin-bottom:14px}
+.card h3{font-family:'Rubik';font-size:14px;color:#9aa3b5;margin-bottom:14px}
+.today-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.did-btn{padding:16px;border-radius:14px;border:2px solid;font:700 16px 'Heebo';cursor:pointer;background:transparent;transition:all .2s}
+.did-btn.yes{border-color:#22c55e;color:#22c55e}
+.did-btn.yes.active{background:#16a34a;color:white}
+.did-btn.no{border-color:#ef4444;color:#ef4444}
+.did-btn.no.active{background:#dc2626;color:white}
+.workout-form{display:flex;flex-direction:column;gap:10px}
+.workout-form input, .workout-form textarea, .workout-form select{
+  background:#0d1117;border:1px solid rgba(255,255,255,.15);color:#f4f6fb;
+  font:500 14px 'Heebo';border-radius:12px;padding:11px 14px;width:100%}
+.workout-form textarea{resize:vertical;min-height:70px}
+.btn{padding:12px 20px;border-radius:12px;border:none;font:700 14px 'Heebo';cursor:pointer;
+  background:linear-gradient(135deg,#ea580c,#c2410c);color:#fff;transition:opacity .15s;width:100%}
+.btn:hover{opacity:.85}
+.log-item{display:flex;justify-content:space-between;align-items:flex-start;
+  background:#0d1117;border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:13px 14px;margin-bottom:8px}
+.log-left .date{font-size:12px;color:#9aa3b5;margin-bottom:3px}
+.log-left .desc{font-size:14px}
+.log-right{text-align:left;display:flex;flex-direction:column;align-items:flex-end;gap:4px}
+.log-type{font-size:11px;font-weight:700;padding:3px 8px;border-radius:6px;background:rgba(234,88,12,.2);color:#fb923c}
+.log-del{background:none;border:none;color:#ef4444;cursor:pointer;font-size:16px}
+.week-grid{display:flex;gap:6px;justify-content:center;flex-wrap:wrap}
+.day-dot{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-family:'Rubik';font-weight:700;border:2px solid rgba(255,255,255,.1);color:#9aa3b5}
+.day-dot.done{background:#16a34a;border-color:#22c55e;color:white}
+.day-dot.missed{background:#7f1d1d;border-color:#ef4444;color:white}
+.day-dot.today{border-color:#ea580c;border-width:3px}
+</style>
+</head>
+<body>
+<a href="../districts/growth/" class="back">→ שיפור עצמי</a>
+<div class="wrap">
+<h1>💪 מעקב כושר</h1>
+<div class="sub">כל אימון נרשם. כל רצף נבנה.</div>
+
+<div class="streak">
+  <div class="streak-num" id="streakNum">0🔥</div>
+  <div class="streak-lbl">ימים רצופים</div>
+</div>
+
+<div class="card">
+  <h3>📅 היום</h3>
+  <div class="today-btns">
+    <button class="did-btn yes" id="btnYes" onclick="setToday(true)">✅ אימנתי היום</button>
+    <button class="did-btn no" id="btnNo" onclick="setToday(false)">😞 לא אימנתי</button>
+  </div>
+</div>
+
+<div class="card">
+  <h3>📝 הוסף אימון</h3>
+  <div class="workout-form">
+    <select id="wType">
+      <option value="כוח">כוח 💪</option>
+      <option value="קרדיו">קרדיו 🏃</option>
+      <option value="גמישות">גמישות 🤸</option>
+      <option value="HIIT">HIIT ⚡</option>
+      <option value="חוץ">ספורט חוץ 🌳</option>
+      <option value="אחר">אחר</option>
+    </select>
+    <input type="number" id="wDur" placeholder="זמן (דקות)">
+    <textarea id="wNotes" placeholder="מה עשיתי? (אופציונלי)"></textarea>
+    <button class="btn" onclick="addWorkout()">שמור אימון</button>
+  </div>
+</div>
+
+<div class="card">
+  <h3>🗓 שבוע זה</h3>
+  <div class="week-grid" id="weekGrid"></div>
+</div>
+
+<div class="card">
+  <h3>📋 יומן אימונים</h3>
+  <div id="logList"><div style="color:#9aa3b5;font-size:13px;text-align:center;padding:8px">אין אימונים עדיין</div></div>
+</div>
+</div>
+
+<script>
+let data=JSON.parse(localStorage.getItem('fitness_v2')||'{"workouts":[],"days":{}}');
+const today=new Date().toISOString().slice(0,10);
+
+function save(){localStorage.setItem('fitness_v2',JSON.stringify(data));}
+
+function setToday(did){
+  data.days[today]=did;save();render();
+}
+
+function addWorkout(){
+  const type=document.getElementById('wType').value;
+  const dur=parseInt(document.getElementById('wDur').value)||0;
+  const notes=document.getElementById('wNotes').value.trim();
+  data.workouts.unshift({id:Date.now(),date:today,type,dur,notes});
+  data.days[today]=true;
+  document.getElementById('wDur').value='';document.getElementById('wNotes').value='';
+  save();render();
+}
+
+function delWorkout(id){data.workouts=data.workouts.filter(w=>w.id!==id);save();render();}
+
+function calcStreak(){
+  let streak=0,d=new Date();
+  while(true){
+    const key=d.toISOString().slice(0,10);
+    if(data.days[key]){streak++;}
+    else if(key!==today)break;
+    d.setDate(d.getDate()-1);
+    if(streak>365)break;
+  }
+  return streak;
+}
+
+function render(){
+  document.getElementById('streakNum').textContent=calcStreak()+'🔥';
+  document.getElementById('btnYes').classList.toggle('active',data.days[today]===true);
+  document.getElementById('btnNo').classList.toggle('active',data.days[today]===false);
+
+  // week grid
+  const days=['א','ב','ג','ד','ה','ו','ש'];
+  const wg=document.getElementById('weekGrid');
+  wg.innerHTML='';
+  for(let i=6;i>=0;i--){
+    const d=new Date();d.setDate(d.getDate()-i);
+    const key=d.toISOString().slice(0,10);
+    const isToday=key===today;
+    const done=data.days[key];
+    const div=document.createElement('div');
+    div.className='day-dot'+(done===true?' done':done===false?' missed':'')+(isToday?' today':'');
+    div.textContent=days[d.getDay()];
+    wg.appendChild(div);
+  }
+
+  // log
+  const ll=document.getElementById('logList');
+  if(!data.workouts.length){ll.innerHTML='<div style="color:#9aa3b5;font-size:13px;text-align:center;padding:8px">אין אימונים עדיין</div>';return;}
+  ll.innerHTML=data.workouts.slice(0,20).map(w=>`
+    <div class="log-item">
+      <div class="log-left">
+        <div class="date">${w.date}</div>
+        <div class="desc">${w.notes||w.type}</div>
+      </div>
+      <div class="log-right">
+        <button class="log-del" onclick="delWorkout(${w.id})">🗑</button>
+        <div class="log-type">${w.type} ${w.dur?w.dur+'d':''}.</div>
+      </div>
+    </div>`).join('');
+}
+render();
+</script>
+</body>
+</html>
