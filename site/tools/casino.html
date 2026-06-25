@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>קזינו — סימולציה וסטטיסטיקות</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@500;700;900&family=Heebo:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#09090f; --text:#f4f6fb; --muted:#8a8fa8; --line:rgba(255,255,255,.09);
+  --gold:#ffce3a; --green:#34d399; --red:#ff5470; --blue:#46d6ff; --purple:#a78bfa;
+  --glass:rgba(255,255,255,.05); --card:rgba(255,255,255,.04);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  background:linear-gradient(160deg,#0d0820,var(--bg));
+  background-attachment:fixed;
+  color:var(--text);font-family:'Heebo',system-ui,sans-serif;min-height:100vh;
+  padding:14px 12px 90px;overflow-x:hidden;
+}
+.wrap{max-width:740px;margin:0 auto}
+header{text-align:center;padding:6px 0 14px}
+h1{font-family:'Rubik';font-weight:900;font-size:28px;
+  background:linear-gradient(90deg,var(--gold),var(--purple),var(--green));
+  -webkit-background-clip:text;background-clip:text;color:transparent}
+.tag{color:var(--muted);font-size:13px;margin-top:4px}
+
+/* nav pills */
+.nav{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:18px}
+.nav a{background:var(--glass);border:1px solid var(--line);border-radius:20px;
+  padding:7px 16px;color:var(--text);text-decoration:none;font:700 13px 'Heebo';transition:.15s}
+.nav a:hover{border-color:var(--gold)}
+
+section{background:var(--card);border:1px solid var(--line);border-radius:20px;
+  padding:18px 16px;margin-bottom:14px}
+section h2{font-family:'Rubik';font-weight:900;font-size:17px;margin-bottom:12px;
+  display:flex;align-items:center;gap:8px}
+section h2 span{font-size:22px}
+
+/* config row */
+.cfg{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+.cfg label{font-size:13px;color:var(--muted);white-space:nowrap}
+.cfg select,.cfg input{background:rgba(255,255,255,.08);border:1px solid var(--line);
+  color:var(--text);border-radius:10px;padding:7px 10px;font:700 14px 'Heebo';flex:1;min-width:90px}
+.cfg input[type=number]{max-width:120px}
+.btn{background:linear-gradient(135deg,var(--gold),#ff9a3c);color:#1a0d00;border:0;
+  border-radius:12px;padding:10px 20px;font:900 14px 'Rubik';cursor:pointer;transition:.15s;flex:none}
+.btn:hover{opacity:.9} .btn:disabled{opacity:.4;cursor:not-allowed}
+.btn.sec{background:var(--glass);color:var(--text);border:1px solid var(--line)}
+
+/* progress */
+.progress-bar{height:6px;background:rgba(255,255,255,.1);border-radius:6px;overflow:hidden;margin:10px 0}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--purple),var(--blue));border-radius:6px;
+  transition:width .1s linear;width:0%}
+
+/* stats grid */
+.stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+@media(min-width:500px){.stats-grid{grid-template-columns:repeat(4,1fr)}}
+.s-card{background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:14px;
+  padding:10px 10px 8px;text-align:center}
+.s-card b{display:block;font:900 20px 'Rubik';margin-bottom:2px}
+.s-card span{font-size:11px;color:var(--muted)}
+.up{color:var(--green)} .dn{color:var(--red)} .nu{color:var(--gold)} .bl{color:var(--blue)}
+
+/* chart */
+canvas{width:100%!important;height:160px;display:block;border-radius:10px;
+  background:rgba(0,0,0,.25);margin-top:10px}
+
+/* breakdown table */
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{color:var(--muted);font-weight:700;padding:6px 4px;text-align:center;font-size:11px}
+td{padding:6px 4px;text-align:center;border-top:1px solid var(--line)}
+td:first-child{text-align:right;font-weight:700}
+
+/* house edge reference */
+.edge-list{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+@media(min-width:520px){.edge-list{grid-template-columns:1fr 1fr 1fr}}
+.edge-item{background:var(--glass);border:1px solid var(--line);border-radius:12px;
+  padding:10px 12px}
+.edge-item .eg{font:900 18px 'Rubik';color:var(--gold);margin-bottom:2px}
+.edge-item .en{font-size:12px;font-weight:700;margin-bottom:2px}
+.edge-item .ed{font-size:11px;color:var(--muted)}
+
+.home{position:fixed;bottom:18px;left:18px;z-index:9999;
+  background:linear-gradient(135deg,#7c3aed,#4c1d95);color:#fff;border:none;
+  border-radius:30px;padding:10px 18px;font-family:Heebo,sans-serif;font-weight:700;font-size:14px;
+  text-decoration:none;box-shadow:0 8px 24px rgba(0,0,0,.5)}
+
+.log{max-height:140px;overflow-y:auto;background:rgba(0,0,0,.3);border-radius:10px;
+  padding:8px 10px;font-size:12px;color:var(--muted);margin-top:10px;font-family:monospace}
+.log div{margin-bottom:2px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>קזינו — סימולציה וסטטיסטיקות</h1>
+    <div class="tag">הרץ מיליוני סבבים וראה את יתרון הבית בעבודה</div>
+  </header>
+
+  <div class="nav">
+    <a href="blackjack.html">🃏 בלאק ג'ק</a>
+    <a href="baccarat.html">🎴 באקרט</a>
+    <a href="../index.html">🏠 הביתה</a>
+  </div>
+
+  <!-- ============ BACCARAT SIM ============ -->
+  <section>
+    <h2><span>🎴</span> סימולציית באקרט</h2>
+    <div class="cfg">
+      <label>מספר סבבים</label>
+      <select id="bRounds">
+        <option value="10000">10,000</option>
+        <option value="50000" selected>50,000</option>
+        <option value="100000">100,000</option>
+        <option value="500000">500,000</option>
+        <option value="1000000">1,000,000</option>
+      </select>
+      <label>הימור על</label>
+      <select id="bBet">
+        <option value="banker" selected>בנקר</option>
+        <option value="player">שחקן</option>
+        <option value="tie">תיקו</option>
+      </select>
+      <button class="btn" id="runBacc" onclick="runBaccarat()">הרץ</button>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="bProg"></div></div>
+    <div class="stats-grid" id="bStats">
+      <div class="s-card"><b class="bl" id="bRoundsN">—</b><span>סבבים</span></div>
+      <div class="s-card"><b class="up" id="bBankerPct">—</b><span>בנקר ניצח %</span></div>
+      <div class="s-card"><b class="dn" id="bPlayerPct">—</b><span>שחקן ניצח %</span></div>
+      <div class="s-card"><b class="nu" id="bTiePct">—</b><span>תיקו %</span></div>
+      <div class="s-card"><b class="dn" id="bEdge">—</b><span>יתרון בית</span></div>
+      <div class="s-card"><b id="bReturn">—</b><span>תשואה ל-1000 ₪</span></div>
+      <div class="s-card"><b class="dn" id="bNet">—</b><span>רווח/הפסד נטו</span></div>
+      <div class="s-card"><b id="bMaxStreak">—</b><span>סדרת הפסדים מקסימלית</span></div>
+    </div>
+    <canvas id="bChart"></canvas>
+  </section>
+
+  <!-- ============ BLACKJACK SIM ============ -->
+  <section>
+    <h2><span>🃏</span> סימולציית בלאק ג'ק</h2>
+    <div class="cfg">
+      <label>מספר ידיים</label>
+      <select id="bjRounds">
+        <option value="10000">10,000</option>
+        <option value="50000" selected>50,000</option>
+        <option value="100000">100,000</option>
+        <option value="500000">500,000</option>
+      </select>
+      <label>אסטרטגיה</label>
+      <select id="bjStrat">
+        <option value="basic">בסיסית</option>
+        <option value="random">רנדומלית</option>
+        <option value="never">לעולם לא עוצר</option>
+      </select>
+      <button class="btn" id="runBJ" onclick="runBlackjack()">הרץ</button>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="bjProg"></div></div>
+    <div class="stats-grid" id="bjStats">
+      <div class="s-card"><b class="bl" id="bjHandsN">—</b><span>ידיים</span></div>
+      <div class="s-card"><b class="up" id="bjWinPct">—</b><span>ניצח %</span></div>
+      <div class="s-card"><b class="dn" id="bjLosePct">—</b><span>הפסיד %</span></div>
+      <div class="s-card"><b class="nu" id="bjPushPct">—</b><span>שווה %</span></div>
+      <div class="s-card"><b class="dn" id="bjEdge">—</b><span>יתרון בית</span></div>
+      <div class="s-card"><b id="bjReturn">—</b><span>תשואה ל-1000 ₪</span></div>
+      <div class="s-card"><b id="bjBJPct">—</b><span>בלאק ג'ק %</span></div>
+      <div class="s-card"><b id="bjBust">—</b><span>פוצץ %</span></div>
+    </div>
+    <canvas id="bjChart"></canvas>
+  </section>
+
+  <!-- ============ HOUSE EDGE TABLE ============ -->
+  <section>
+    <h2><span>📊</span> יתרון בית — מדריך מהיר</h2>
+    <div class="edge-list">
+      <div class="edge-item">
+        <div class="eg">1.06%</div>
+        <div class="en">באקרט — בנקר</div>
+        <div class="ed">הימור ה-EV הטוב ביותר בקזינו</div>
+      </div>
+      <div class="edge-item">
+        <div class="eg">1.24%</div>
+        <div class="en">באקרט — שחקן</div>
+        <div class="ed">פשוט, ללא עמלה</div>
+      </div>
+      <div class="edge-item">
+        <div class="eg">14.4%</div>
+        <div class="en">באקרט — תיקו</div>
+        <div class="ed">נראה טוב, EV גרוע</div>
+      </div>
+      <div class="edge-item">
+        <div class="eg">0.5%</div>
+        <div class="en">בלאק ג'ק — אסטרטגיה בסיסית</div>
+        <div class="ed">הנמוכה ביותר אפשרית</div>
+      </div>
+      <div class="edge-item">
+        <div class="eg">2–4%</div>
+        <div class="en">בלאק ג'ק — שחקן ממוצע</div>
+        <div class="ed">טעויות באסטרטגיה עולות</div>
+      </div>
+      <div class="edge-item">
+        <div class="eg">5.26%</div>
+        <div class="en">רולטה אמריקאית</div>
+        <div class="ed">0 וגם 00</div>
+      </div>
+    </div>
+    <p style="font-size:12px;color:var(--muted);margin-top:14px;line-height:1.6">
+      <b style="color:var(--text)">מה זה אומר?</b> יתרון בית של 1% = על כל ₪100 שמהמרים, מצפים להפסיד ₪1 בממוצע לטווח ארוך.
+      לטווח קצר — הכל אפשרי. ה-EV (ערך מצופה) מתגלה רק על אלפי סבבים.
+    </p>
+  </section>
+
+</div>
+
+<a class="home" href="../index.html">🏠 הביתה</a>
+
+<script>
+"use strict";
+
+/* ============ BACCARAT SIMULATION ============ */
+const SUITS=["♠","♣","♥","♦"];
+const RANKS=["A","2","3","4","5","6","7","8","9","10","J","Q","K"];
+
+function buildShoe(decks=8){
+  const s=[];
+  for(let d=0;d<decks;d++)
+    for(const su of SUITS)
+      for(const r of RANKS)
+        s.push(r);
+  return s;
+}
+function shuffleArr(a){
+  for(let i=a.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+function bVal(r){ if(r==="A")return 1; if(["10","J","Q","K"].includes(r))return 0; return parseInt(r); }
+function bTotal(cards){ return cards.reduce((s,c)=>s+bVal(c),0)%10; }
+
+function simulateBaccaratRound(shoe,idx){
+  const draw=()=>shoe[idx++];
+  const p=[draw(),draw()];
+  const b=[draw(),draw()];
+  const pT=bTotal(p), bT=bTotal(b);
+
+  let pi=idx;
+  let pCards=[...p], bCards=[...b];
+
+  if(pT<8 && bT<8){
+    let pThird=null;
+    if(pT<=5){ pCards.push(shoe[pi++]); pThird=bVal(pCards[2]); }
+    const bNew=bTotal(bCards);
+    let bDraw=false;
+    if(pThird===null){ bDraw=bNew<=5; }
+    else if(bNew<=2) bDraw=true;
+    else if(bNew===3) bDraw=pThird!==8;
+    else if(bNew===4) bDraw=[2,3,4,5,6,7].includes(pThird);
+    else if(bNew===5) bDraw=[4,5,6,7].includes(pThird);
+    else if(bNew===6) bDraw=[6,7].includes(pThird);
+    if(bDraw) bCards.push(shoe[pi++]);
+  }
+  const pFin=bTotal(pCards), bFin=bTotal(bCards);
+  let w= pFin>bFin?"player": bFin>pFin?"banker":"tie";
+  return {w,pi};
+}
+
+async function runBaccarat(){
+  const n=parseInt(document.getElementById("bRounds").value);
+  const betOn=document.getElementById("bBet").value;
+  document.getElementById("runBacc").disabled=true;
+
+  const shoe=shuffleArr(buildShoe(8));
+  const BET=100;
+  let bank=0, banker=0, player=0, tie=0;
+  let idx=0;
+  let maxLoss=0, curLoss=0;
+  const samples=[];
+  const sampleEvery=Math.max(1,Math.floor(n/200));
+  const CHUNK=5000;
+
+  for(let i=0;i<n;i++){
+    if(idx>shoe.length-20){ shuffleArr(shoe); idx=0; }
+    const {w,pi}=simulateBaccaratRound(shoe,idx);
+    idx=pi;
+    if(w==="banker") banker++; else if(w==="player") player++; else tie++;
+
+    let net=0;
+    if(betOn==="banker"){ net= w==="banker"? Math.floor(BET*0.95): w==="tie"?0:-BET; }
+    else if(betOn==="player"){ net= w==="player"?BET: w==="tie"?0:-BET; }
+    else { net= w==="tie"?BET*8:-BET; }
+    bank+=net;
+
+    if(net<0){ curLoss++; maxLoss=Math.max(maxLoss,curLoss); } else curLoss=0;
+
+    if(i%sampleEvery===0) samples.push(bank);
+    if(i%CHUNK===0){
+      document.getElementById("bProg").style.width=(i/n*100)+"%";
+      await sleep(0);
+    }
+  }
+  document.getElementById("bProg").style.width="100%";
+
+  const total=n*BET;
+  const edge=(-bank/total*100).toFixed(2);
+  const retPer1k=(bank/total*1000).toFixed(1);
+
+  document.getElementById("bRoundsN").textContent=n.toLocaleString();
+  document.getElementById("bBankerPct").textContent=(banker/n*100).toFixed(2)+"%";
+  document.getElementById("bPlayerPct").textContent=(player/n*100).toFixed(2)+"%";
+  document.getElementById("bTiePct").textContent=(tie/n*100).toFixed(2)+"%";
+  document.getElementById("bEdge").textContent=edge+"%";
+  document.getElementById("bReturn").textContent=(parseFloat(retPer1k)>0?"+":"")+retPer1k+" ₪";
+  document.getElementById("bNet").textContent=(bank>0?"+":"")+bank.toLocaleString()+" ₪";
+  document.getElementById("bMaxStreak").textContent=maxLoss+" ידיים";
+
+  drawLineChart("bChart", samples, bank>=0?"#34d399":"#ff5470");
+  document.getElementById("runBacc").disabled=false;
+}
+
+/* ============ BLACKJACK SIMULATION ============ */
+function bjVal(r){ if(r==="A")return 11; if(["J","Q","K","10"].includes(r))return 10; return parseInt(r); }
+function bjTotal(cards){
+  let t=0,aces=0;
+  for(const c of cards){ t+=bjVal(c); if(c==="A")aces++; }
+  while(t>21&&aces>0){t-=10;aces--;}
+  return t;
+}
+function bjIsNat(cards){ return cards.length===2&&bjTotal(cards)===21; }
+
+function bjDecide(strat, playerCards, dealerUp){
+  const t=bjTotal(playerCards);
+  if(strat==="never") return t<21?"hit":"stand";
+  if(strat==="random") return Math.random()<0.5?"hit":"stand";
+  // basic strategy (simplified)
+  if(t>=17) return "stand";
+  if(t<=11) return "hit";
+  if(t===12) return (dealerUp>=4&&dealerUp<=6)?"stand":"hit";
+  if(t>=13&&t<=16) return (dealerUp>=2&&dealerUp<=6)?"stand":"hit";
+  return "stand";
+}
+
+async function runBlackjack(){
+  const n=parseInt(document.getElementById("bjRounds").value);
+  const strat=document.getElementById("bjStrat").value;
+  document.getElementById("runBJ").disabled=true;
+
+  const shoe=shuffleArr(buildShoe(6));
+  let idx=0;
+  const draw=()=>{ if(idx>=shoe.length-10){shuffleArr(shoe);idx=0;} return shoe[idx++]; };
+
+  let win=0,lose=0,push=0,bjCount=0,bust=0,bank=0;
+  const BET=100;
+  const samples=[];
+  const sampleEvery=Math.max(1,Math.floor(n/200));
+  const CHUNK=5000;
+
+  for(let i=0;i<n;i++){
+    const p=[draw(),draw()];
+    const d=[draw(),draw()];
+    const dealerUp=bjVal(d[0]);
+
+    // player plays
+    let outcome;
+    if(bjIsNat(p)){
+      bjCount++;
+      if(bjIsNat(d)){ outcome="push"; }
+      else { outcome="bj"; } // pays 3:2
+    } else {
+      while(bjTotal(p)<21 && bjDecide(strat,p,dealerUp)==="hit"){
+        p.push(draw());
+      }
+      const pT=bjTotal(p);
+      if(pT>21){ outcome="bust"; bust++; }
+      else {
+        // dealer plays
+        while(bjTotal(d)<17) d.push(draw());
+        const dT=bjTotal(d);
+        if(dT>21||pT>dT) outcome="win";
+        else if(pT===dT) outcome="push";
+        else outcome="lose";
+      }
+    }
+
+    let net=0;
+    if(outcome==="bj"){ net=Math.floor(BET*1.5); win++; }
+    else if(outcome==="win"){ net=BET; win++; }
+    else if(outcome==="push"){ net=0; push++; }
+    else if(outcome==="bust"){ net=-BET; lose++; }
+    else { net=-BET; lose++; }
+    bank+=net;
+
+    if(i%sampleEvery===0) samples.push(bank);
+    if(i%CHUNK===0){
+      document.getElementById("bjProg").style.width=(i/n*100)+"%";
+      await sleep(0);
+    }
+  }
+  document.getElementById("bjProg").style.width="100%";
+
+  const total=n*BET;
+  const edge=(-bank/total*100).toFixed(2);
+  const retPer1k=(bank/total*1000).toFixed(1);
+
+  document.getElementById("bjHandsN").textContent=n.toLocaleString();
+  document.getElementById("bjWinPct").textContent=(win/n*100).toFixed(2)+"%";
+  document.getElementById("bjLosePct").textContent=(lose/n*100).toFixed(2)+"%";
+  document.getElementById("bjPushPct").textContent=(push/n*100).toFixed(2)+"%";
+  document.getElementById("bjEdge").textContent=edge+"%";
+  document.getElementById("bjReturn").textContent=(parseFloat(retPer1k)>0?"+":"")+retPer1k+" ₪";
+  document.getElementById("bjBJPct").textContent=(bjCount/n*100).toFixed(2)+"%";
+  document.getElementById("bjBust").textContent=(bust/n*100).toFixed(2)+"%";
+
+  drawLineChart("bjChart", samples, bank>=0?"#34d399":"#ff5470");
+  document.getElementById("runBJ").disabled=false;
+}
+
+/* ============ CHART ============ */
+function drawLineChart(canvasId, data, color){
+  const canvas=document.getElementById(canvasId);
+  const ctx=canvas.getContext("2d");
+  const dpr=window.devicePixelRatio||1;
+  const W=canvas.offsetWidth*dpr;
+  const H=160*dpr;
+  canvas.width=W; canvas.height=H;
+  ctx.scale(dpr,dpr);
+  const w=canvas.offsetWidth, h=160;
+
+  ctx.clearRect(0,0,w,h);
+  ctx.fillStyle="rgba(0,0,0,.25)";
+  ctx.fillRect(0,0,w,h);
+
+  if(data.length<2) return;
+  const mn=Math.min(...data), mx=Math.max(...data);
+  const range=mx-mn||1;
+
+  // zero line
+  const zy=h-((0-mn)/range*h);
+  ctx.strokeStyle="rgba(255,255,255,.15)";
+  ctx.lineWidth=1;
+  ctx.setLineDash([4,4]);
+  ctx.beginPath(); ctx.moveTo(0,zy); ctx.lineTo(w,zy); ctx.stroke();
+  ctx.setLineDash([]);
+
+  // gradient fill
+  const grad=ctx.createLinearGradient(0,0,0,h);
+  grad.addColorStop(0, color+"55");
+  grad.addColorStop(1, color+"00");
+  ctx.fillStyle=grad;
+  ctx.beginPath();
+  ctx.moveTo(0,h);
+  data.forEach((v,i)=>{
+    const x=i/(data.length-1)*w;
+    const y=h-((v-mn)/range*h);
+    i===0?ctx.lineTo(x,y):ctx.lineTo(x,y);
+  });
+  ctx.lineTo(w,h); ctx.closePath(); ctx.fill();
+
+  // line
+  ctx.strokeStyle=color;
+  ctx.lineWidth=2;
+  ctx.beginPath();
+  data.forEach((v,i)=>{
+    const x=i/(data.length-1)*w;
+    const y=h-((v-mn)/range*h);
+    i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+  });
+  ctx.stroke();
+}
+
+function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
+</script>
+</body>
+</html>
