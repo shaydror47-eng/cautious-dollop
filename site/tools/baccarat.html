@@ -34,8 +34,10 @@ h1{font-family:'Rubik';font-weight:900;font-size:30px;letter-spacing:-.5px;
 .bal b{display:block;font-family:'Rubik';font-weight:900;font-size:22px;color:var(--gold)}
 .bal span{font-size:11px;color:var(--muted)}
 .mini{background:rgba(255,255,255,.07);border:1px solid var(--line);color:var(--text);
-  border-radius:12px;padding:9px 13px;font:700 13px 'Heebo';cursor:pointer;transition:.15s}
+  border-radius:12px;padding:9px 13px;font:700 13px 'Heebo';cursor:pointer;transition:.15s;
+  -webkit-appearance:none;appearance:none}
 .mini:hover{border-color:var(--gold)}
+select.mini option{background:#1a1030;color:var(--text)}
 
 /* table */
 .table{background:radial-gradient(120% 90% at 50% 0%,var(--felt0),var(--felt1));
@@ -68,7 +70,10 @@ h1{font-family:'Rubik';font-weight:900;font-size:30px;letter-spacing:-.5px;
 /* bet zones */
 .bet-zones{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:16px 0 10px}
 .zone{border:2px solid var(--line);border-radius:16px;padding:12px 8px;text-align:center;
-  cursor:pointer;transition:.2s;position:relative;overflow:hidden}
+  cursor:pointer;transition:.2s;position:relative;overflow:hidden;
+  background:none;color:var(--text);font-family:'Heebo',system-ui,sans-serif;
+  -webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;
+  width:100%}
 .zone:hover{border-color:rgba(255,255,255,.3)}
 .zone.sel-player{border-color:#46d6ff;box-shadow:0 0 14px rgba(70,214,255,.3)}
 .zone.sel-banker{border-color:var(--red);box-shadow:0 0 14px rgba(255,84,112,.3)}
@@ -91,6 +96,7 @@ h1{font-family:'Rubik';font-weight:900;font-size:30px;letter-spacing:-.5px;
 .c25{background:radial-gradient(circle at 35% 30%,#6e6,#15803d)}
 .c100{background:radial-gradient(circle at 35% 30%,#888,#1f2937)}
 .c500{background:radial-gradient(circle at 35% 30%,#c9f,#7c3aed)}
+.c1k{background:radial-gradient(circle at 35% 30%,#fa9,#b91c1c)}
 
 .actions{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:10px}
 .act{border:0;font-family:'Rubik';font-weight:900;font-size:15px;border-radius:14px;
@@ -136,7 +142,14 @@ h1{font-family:'Rubik';font-weight:900;font-size:30px;letter-spacing:-.5px;
 
   <div class="topbar">
     <div class="bal"><b id="balance">0</b><span>היתרה שלי (₪)</span></div>
-    <button class="mini" id="addMoney">➕ טען 1000</button>
+    <select class="mini" id="addAmt" style="padding:9px 8px">
+      <option value="500">+500</option>
+      <option value="1000" selected>+1,000</option>
+      <option value="2000">+2,000</option>
+      <option value="5000">+5,000</option>
+      <option value="10000">+10,000</option>
+    </select>
+    <button class="mini" id="addMoney">➕ טען</button>
     <button class="mini" id="resetMoney">איפוס</button>
   </div>
 
@@ -157,21 +170,21 @@ h1{font-family:'Rubik';font-weight:900;font-size:30px;letter-spacing:-.5px;
   <div class="banner" id="banner"></div>
 
   <div class="bet-zones" id="betZones">
-    <div class="zone z-player" id="zPlayer" onclick="selectZone('player')">
+    <button class="zone z-player" id="zPlayer" onclick="selectZone('player')">
       <div class="zname">שחקן</div>
       <div class="zodds">משלם 1:1</div>
-      <div class="zbetamt" id="betPlayer">0</div>
-    </div>
-    <div class="zone z-tie" id="zTie" onclick="selectZone('tie')">
+      <div class="zbetamt" id="betPlayer"></div>
+    </button>
+    <button class="zone z-tie" id="zTie" onclick="selectZone('tie')">
       <div class="zname">תיקו</div>
       <div class="zodds">משלם 8:1</div>
-      <div class="zbetamt" id="betTie">0</div>
-    </div>
-    <div class="zone z-banker" id="zBanker" onclick="selectZone('banker')">
+      <div class="zbetamt" id="betTie"></div>
+    </button>
+    <button class="zone z-banker" id="zBanker" onclick="selectZone('banker')">
       <div class="zname">בנקר</div>
       <div class="zodds">משלם 0.95:1</div>
-      <div class="zbetamt" id="betBanker">0</div>
-    </div>
+      <div class="zbetamt" id="betBanker"></div>
+    </button>
   </div>
 
   <div class="chips" id="chips">
@@ -179,6 +192,7 @@ h1{font-family:'Rubik';font-weight:900;font-size:30px;letter-spacing:-.5px;
     <button class="chipbtn c25"  data-v="25">25</button>
     <button class="chipbtn c100" data-v="100">100</button>
     <button class="chipbtn c500" data-v="500">500</button>
+    <button class="chipbtn c1k"  data-v="1000">1K</button>
   </div>
 
   <div class="actions" id="betActions">
@@ -486,7 +500,7 @@ document.querySelectorAll(".chipbtn").forEach(b=>{
 $("dealBtn").addEventListener("click",deal);
 $("clearBtn").addEventListener("click",clearBets);
 $("againBtn").addEventListener("click",newRound);
-$("addMoney").addEventListener("click",()=>{ balance+=1000; renderBalance(); save(); });
+$("addMoney").addEventListener("click",()=>{ const amt=parseInt($("addAmt").value)||1000; balance+=amt; renderBalance(); save(); toast(`נטענו ₪${amt.toLocaleString()}`); });
 $("resetMoney").addEventListener("click",()=>{
   if(!confirm("לאפס את היתרה ל-1000?")) return;
   balance=1000; renderBalance(); save();
