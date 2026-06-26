@@ -97,6 +97,19 @@ select.mini option{background:#07120d;color:var(--text)}
 .c100{background:radial-gradient(circle at 35% 30%,#888,#1f2937)}
 .c500{background:radial-gradient(circle at 35% 30%,#c9f,#7c3aed)}
 .c1k{background:radial-gradient(circle at 35% 30%,#fa9,#b91c1c)}
+.c5k{background:radial-gradient(circle at 35% 30%,#ffd,#b8860b)}
+.c10k{background:radial-gradient(circle at 35% 30%,#ffe,#d4a017)}
+.callin{background:linear-gradient(135deg,#ff5470,#7f0022);border-style:solid;font-size:11px;letter-spacing:-.3px}
+.ccustom{background:linear-gradient(135deg,#1e3a5f,#0a1628);border-style:solid;font-size:10px;position:relative}
+.chip-row2{display:flex;gap:8px;justify-content:center;align-items:center;margin:6px 0 2px;flex-wrap:wrap}
+.custom-in{display:flex;gap:6px;justify-content:center;align-items:center;margin:4px 0 8px}
+.custom-in input{background:rgba(255,255,255,.08);border:1px solid var(--line);color:var(--text);
+  border-radius:12px;padding:8px 10px;font:700 14px 'Rubik';width:110px;text-align:center;
+  -webkit-appearance:none}
+.custom-in input::placeholder{color:var(--muted);font-size:12px}
+.custom-in button{background:var(--chip);border:1px solid var(--line);color:var(--text);
+  border-radius:12px;padding:8px 14px;font:700 13px 'Heebo';cursor:pointer;white-space:nowrap}
+.custom-in button:hover{border-color:var(--gold)}
 .hint{text-align:center;color:var(--muted);font-size:12.5px;margin:8px 0;min-height:18px}
 
 /* action buttons */
@@ -167,6 +180,13 @@ select.mini option{background:#07120d;color:var(--text)}
     <button class="chipbtn c100" data-v="100">100</button>
     <button class="chipbtn c500" data-v="500">500</button>
     <button class="chipbtn c1k"  data-v="1000">1K</button>
+    <button class="chipbtn c5k"  data-v="5000">5K</button>
+    <button class="chipbtn c10k" data-v="10000">10K</button>
+    <button class="chipbtn callin" id="bjAllIn">All In</button>
+  </div>
+  <div class="custom-in">
+    <input type="number" id="bjCustomVal" placeholder="סכום ידני" min="1" max="9999999">
+    <button id="bjCustomSet">🎯 הגדר ז'יטון</button>
   </div>
 
   <div class="actions" id="betActions">
@@ -623,13 +643,25 @@ function fairnessTest(rounds){
 }
 
 /* ---------- wiring ---------- */
-function selectChip(v){
+function selectChip(v, activeEl){
   selChip=v;
-  document.querySelectorAll(".chipbtn").forEach(c=>c.classList.toggle("sel", +c.dataset.v===v));
+  document.querySelectorAll(".chipbtn").forEach(c=>c.classList.remove("sel"));
+  if(activeEl) activeEl.classList.add("sel");
+  else document.querySelectorAll(".chipbtn[data-v]").forEach(c=>{
+    if(+c.dataset.v===v) c.classList.add("sel");
+  });
 }
-document.querySelectorAll(".chipbtn").forEach(c=>{
+document.querySelectorAll(".chipbtn[data-v]").forEach(c=>{
   c.onclick=()=>selectChip(+c.dataset.v);
 });
+$("bjAllIn").onclick=function(){ selectChip(balance, this); };
+$("bjCustomSet").onclick=function(){
+  const v=parseInt($("bjCustomVal").value);
+  if(!v||v<1){ toast("הכנס סכום תקין"); return; }
+  selectChip(v, this);
+  toast(`ז'יטון: ₪${v.toLocaleString()}`);
+};
+$("bjCustomVal").addEventListener("keydown",e=>{ if(e.key==="Enter") $("bjCustomSet").click(); });
 $("dealBtn").onclick=dealRound;
 $("nextBtn").onclick=newRound;
 $("clearBtn").onclick=clearAll;
