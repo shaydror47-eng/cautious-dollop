@@ -206,12 +206,42 @@ select.mini option{background:#07120d;color:var(--text)}
   </div>
 </div>
 
-<a class="home" href="../index.html">🏠 הביתה</a>
+<a class="home" id="homeBtn" href="../index.html">🏠 הביתה</a>
 <button class="fair" id="fairBtn">🛡️ בדיקת הגינות</button>
+<div id="playerBanner" style="display:none;position:fixed;top:12px;right:12px;z-index:999;
+  background:rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.15);border-radius:20px;
+  padding:6px 14px;font:700 13px Heebo;color:#f0f2ff;backdrop-filter:blur(10px)"></div>
 <div class="toast" id="toast"></div>
 
 <script>
 "use strict";
+
+/* ---------- player session ---------- */
+const _urlParams = new URLSearchParams(window.location.search);
+const _pid = _urlParams.get('pid');
+(function initPlayerSession(){
+  if(!_pid) return;
+  try {
+    const data = JSON.parse(localStorage.getItem('casinoPlayers')||'{"players":[]}');
+    const player = data.players.find(p=>p.id===_pid);
+    if(!player) return;
+    const banner = document.getElementById('playerBanner');
+    banner.style.display = 'block';
+    banner.textContent = player.emoji + ' ' + player.name;
+    document.getElementById('homeBtn').href = '../casino-lobby.html';
+    document.getElementById('homeBtn').textContent = '← לובי';
+  } catch(e){}
+})();
+function recordGameResult(result){
+  if(!_pid) return;
+  try {
+    const data = JSON.parse(localStorage.getItem('casinoPlayers')||'{"players":[]}');
+    const player = data.players.find(p=>p.id===_pid);
+    if(!player) return;
+    player.games.push({type:'blackjack', result, date:new Date().toISOString()});
+    localStorage.setItem('casinoPlayers', JSON.stringify(data));
+  } catch(e){}
+}
 
 /* ---------- fair randomness ---------- */
 // אקראיות אמיתית מהדפדפן — בלי שום הטיה לאף צד.
@@ -576,6 +606,7 @@ function settle(){
     });
   });
   save();
+  recordGameResult(net>0?'win':net<0?'loss':'tie');
 
   const bn=$("banner");
   if(net>0){ bn.textContent=`רווח של ₪${net} 🎉`; bn.className="banner g"; }
