@@ -319,6 +319,13 @@ td.pct{color:var(--gold);font:900 15px 'Rubik'}
           <div class="gb-desc">שחקן מול בנקר</div>
         </div>
       </button>
+      <button class="game-btn" id="btnCRAPS" onclick="launchGame('craps')">
+        <span class="gb-ico">🎲</span>
+        <div class="gb-text">
+          <div class="gb-name">קראפס</div>
+          <div class="gb-desc">Pass Line · Field · Place Bets</div>
+        </div>
+      </button>
     </div>
     <button class="ghost-btn" id="btnMyStats" onclick="openMyStats()">📊 הסטטיסטיקות שלי</button>
     <button class="ghost-btn" style="color:var(--red)" onclick="closeOverlayById('overlayGame')">ביטול ✕</button>
@@ -467,9 +474,9 @@ function selectPlayer(pid){
 
 function launchGame(type){
   closeOverlayById('overlayGame');
-  const url = type==='blackjack'
-    ? 'tools/blackjack.html'
-    : 'tools/baccarat.html';
+  const url = type==='blackjack' ? 'tools/blackjack.html'
+            : type==='baccarat'  ? 'tools/baccarat.html'
+            : 'tools/craps.html';
   const params = currentPid ? `?pid=${encodeURIComponent(currentPid)}` : '';
   window.location.href = url + params;
 }
@@ -515,8 +522,8 @@ function renderPlayerStats(pid){
                       d.toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'});
       const rCls = g.result==='win'?'w':g.result==='loss'?'l':'t';
       const rTxt = g.result==='win'?'WIN':g.result==='loss'?'LOSS':'TIE';
-      const gameIco = g.type==='blackjack'?'🃏':'🎴';
-      const gameName = g.type==='blackjack'?'בלאק ג\'ק':'באקרט';
+      const gameIco = g.type==='blackjack'?'🃏':g.type==='craps'?'🎲':'🎴';
+      const gameName = g.type==='blackjack'?'בלאק ג\'ק':g.type==='craps'?'קראפס':'באקרט';
       return `
         <div class="history-item">
           <div class="hi-result ${rCls}">${rTxt}</div>

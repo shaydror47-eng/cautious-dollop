@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>קראפס 🎲</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@500;700;900&family=Heebo:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#060b08; --text:#f0f4f1; --muted:#7a9088; --line:rgba(255,255,255,.09);
+  --felt:#0b2e18; --felt2:#092513; --felt3:#06180e;
+  --gold:#ffce3a; --green:#34d399; --red:#ff5470; --blue:#46d6ff;
+  --chip:rgba(255,255,255,.07);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;
+  -webkit-user-select:none;user-select:none}
+input{-webkit-user-select:text;user-select:text}
+body{
+  background:radial-gradient(900px at 50% -10%,#0e3a2088,transparent 60%),
+             linear-gradient(160deg,#071510,var(--bg));
+  background-attachment:fixed;
+  color:var(--text);font-family:'Heebo',system-ui,sans-serif;
+  min-height:100vh;padding:12px 12px 90px;overflow-x:hidden;
+}
+.wrap{max-width:780px;margin:0 auto}
+
+/* ── HEADER ── */
+header{text-align:center;padding:6px 0 10px}
+h1{font-family:'Rubik';font-weight:900;font-size:28px;
+  background:linear-gradient(90deg,#ff9a3c,var(--gold),var(--green));
+  -webkit-background-clip:text;background-clip:text;color:transparent}
+.tag{color:var(--muted);font-size:13px;margin-top:2px}
+
+/* ── TOP BAR ── */
+.topbar{display:flex;align-items:center;gap:10px;margin:8px 0 12px;flex-wrap:wrap;justify-content:center}
+.bal{background:var(--chip);border:1px solid var(--line);border-radius:14px;padding:9px 16px;text-align:center}
+.bal b{display:block;font-family:'Rubik';font-weight:900;font-size:22px;color:var(--gold)}
+.bal span{font-size:11px;color:var(--muted)}
+.mini{background:var(--chip);border:1px solid var(--line);color:var(--text);
+  border-radius:12px;padding:9px 13px;font:700 13px 'Heebo';cursor:pointer;transition:.15s;
+  -webkit-appearance:none;appearance:none}
+.mini:hover{border-color:var(--gold)}
+select.mini option{background:#061008}
+
+/* ── DICE AREA ── */
+.dice-area{
+  display:flex;align-items:center;justify-content:center;gap:24px;
+  padding:20px;margin-bottom:12px;
+  background:radial-gradient(ellipse at 50% 0%,#0e3a2088,transparent 70%);
+}
+.dice-pair{display:flex;gap:16px;align-items:center}
+.die{
+  width:84px;height:84px;background:#f7f7ff;border-radius:14px;
+  display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);
+  padding:10px;gap:4px;
+  box-shadow:0 6px 24px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.4);
+  transition:.1s;
+}
+.die.rolling{animation:diceRoll .5s ease}
+@keyframes diceRoll{
+  0%{transform:rotate(0) scale(1)}
+  20%{transform:rotate(-20deg) scale(1.1)}
+  40%{transform:rotate(18deg) scale(.95)}
+  60%{transform:rotate(-12deg) scale(1.05)}
+  80%{transform:rotate(8deg) scale(.98)}
+  100%{transform:rotate(0) scale(1)}
+}
+.pip{background:#13140f;border-radius:50%;width:18px;height:18px;
+  justify-self:center;align-self:center}
+.pip-empty{width:18px;height:18px}
+
+.dice-info{text-align:center}
+.dice-sum{font-family:'Rubik';font-weight:900;font-size:40px;color:var(--gold);line-height:1}
+.dice-sum-label{font-size:11px;color:var(--muted);margin-top:2px}
+
+/* ── POINT PUCK ── */
+.point-row{display:flex;align-items:center;justify-content:center;gap:14px;margin-bottom:14px}
+.puck{
+  width:52px;height:52px;border-radius:50%;font-family:'Rubik';font-weight:900;
+  font-size:13px;display:grid;place-items:center;transition:.3s;flex-shrink:0;
+  box-shadow:0 4px 12px rgba(0,0,0,.4);
+}
+.puck.off{background:#1a1a2a;border:3px solid #444;color:#666}
+.puck.on{background:#f7f7ff;border:3px solid var(--gold);color:#1a0d00;font-size:20px}
+.point-label{font-size:14px;color:var(--muted);font-weight:700}
+.point-label b{color:var(--text)}
+
+/* ── CRAPS TABLE ── */
+.table{
+  background:linear-gradient(180deg,var(--felt),var(--felt2));
+  border:1px solid rgba(255,255,255,.1);border-radius:22px;
+  padding:14px 12px;margin-bottom:12px;
+  box-shadow:inset 0 0 60px rgba(0,0,0,.5),0 16px 40px -10px #000;
+}
+.table-section{margin-bottom:10px}
+.table-section:last-child{margin-bottom:0}
+.section-label{font-size:10px;color:rgba(255,255,255,.35);font-weight:700;
+  letter-spacing:.8px;text-align:center;margin-bottom:6px}
+
+/* BET ZONE GRID */
+.bet-row{display:grid;gap:8px;margin-bottom:8px}
+.row2{grid-template-columns:1fr 1fr}
+.row3{grid-template-columns:1fr 1fr 1fr}
+.row6{grid-template-columns:repeat(6,1fr)}
+
+.bzone{
+  background:rgba(0,0,0,.3);border:2px solid rgba(255,255,255,.12);
+  border-radius:14px;padding:10px 6px;text-align:center;cursor:pointer;
+  transition:.18s;position:relative;
+  display:flex;flex-direction:column;align-items:center;gap:3px;
+  min-height:64px;justify-content:center;
+}
+.bzone:active{transform:scale(.96)}
+.bzone.has-bet{border-color:var(--gold);background:rgba(255,206,58,.08)}
+.bzone.locked{opacity:.4;cursor:not-allowed;pointer-events:none}
+.bzone.pass-style{border-color:rgba(52,211,153,.3)}
+.bzone.pass-style.has-bet{border-color:var(--green);background:rgba(52,211,153,.08)}
+.bzone.dont-style{border-color:rgba(255,84,112,.2)}
+.bzone.dont-style.has-bet{border-color:var(--red);background:rgba(255,84,112,.08)}
+.bzone.field-style.has-bet{border-color:var(--blue);background:rgba(70,214,255,.08)}
+.bzone.place-style{min-height:56px}
+.bzone.place-style.has-bet{border-color:var(--purple,#a78bfa);background:rgba(167,139,250,.08)}
+
+.bz-name{font-family:'Rubik';font-weight:900;font-size:13px}
+.bz-odds{font-size:10px;color:var(--muted);line-height:1.3}
+.bz-bet{font:900 14px 'Rubik';color:var(--gold);min-height:16px}
+.bz-num{font-family:'Rubik';font-weight:900;font-size:18px}
+
+/* ── ROLL HISTORY ── */
+.roll-history{display:flex;gap:5px;flex-wrap:wrap;justify-content:center;margin:10px 0 4px}
+.rh-pill{display:inline-block;padding:3px 9px;border-radius:20px;font:900 12px 'Rubik'}
+.rh-7{background:rgba(255,84,112,.2);color:var(--red);border:1px solid var(--red)}
+.rh-11{background:rgba(52,211,153,.2);color:var(--green);border:1px solid var(--green)}
+.rh-craps{background:rgba(255,84,112,.1);color:#ff886a;border:1px solid #ff886a}
+.rh-pt{background:rgba(70,214,255,.15);color:var(--blue);border:1px solid var(--blue)}
+.rh-other{background:rgba(255,255,255,.06);color:var(--muted);border:1px solid var(--line)}
+
+/* ── CHIPS ── */
+.chips{display:flex;gap:8px;justify-content:center;margin:10px 0 4px;flex-wrap:wrap}
+.chipbtn{width:50px;height:50px;border-radius:50%;border:3px dashed rgba(255,255,255,.5);
+  font-family:'Rubik';font-weight:900;font-size:13px;cursor:pointer;color:#fff;
+  display:grid;place-items:center;transition:.12s;box-shadow:0 4px 12px rgba(0,0,0,.4);
+  -webkit-user-select:none}
+.chipbtn:active{transform:scale(.88)}
+.chipbtn.sel{outline:3px solid var(--gold);outline-offset:2px}
+.c5{background:radial-gradient(circle at 35% 30%,#9ad,#2563eb)}
+.c25{background:radial-gradient(circle at 35% 30%,#6e6,#15803d)}
+.c100{background:radial-gradient(circle at 35% 30%,#888,#1f2937)}
+.c500{background:radial-gradient(circle at 35% 30%,#c9f,#7c3aed)}
+.c1k{background:radial-gradient(circle at 35% 30%,#fa9,#b91c1c)}
+.c5k{background:radial-gradient(circle at 35% 30%,#ffd,#b8860b)}
+.c10k{background:radial-gradient(circle at 35% 30%,#ffe,#d4a017)}
+.callin{background:linear-gradient(135deg,#ff5470,#7f0022);border-style:solid;font-size:10px}
+
+.custom-in{display:flex;gap:6px;justify-content:center;align-items:center;margin:4px 0 8px}
+.custom-in input{background:rgba(255,255,255,.08);border:1px solid var(--line);color:var(--text);
+  border-radius:12px;padding:8px 10px;font:700 14px 'Rubik';width:110px;text-align:center}
+.custom-in input::placeholder{color:var(--muted);font-size:12px}
+.custom-in button{background:var(--chip);border:1px solid var(--line);color:var(--text);
+  border-radius:12px;padding:8px 14px;font:700 13px 'Heebo';cursor:pointer}
+.custom-in button:hover{border-color:var(--gold)}
+
+/* ── ACTIONS ── */
+.roll-btn{
+  display:block;width:100%;border:none;border-radius:18px;padding:18px;
+  font-family:'Rubik';font-weight:900;font-size:20px;cursor:pointer;transition:.18s;
+  background:linear-gradient(135deg,#ff9a3c,var(--gold));color:#1a0800;
+  margin:10px 0 6px;box-shadow:0 8px 24px rgba(255,154,60,.3);
+}
+.roll-btn:active{transform:scale(.98)}
+.roll-btn:disabled{opacity:.35;cursor:not-allowed;box-shadow:none}
+.clear-btn{
+  display:block;width:100%;border:1px solid var(--line);border-radius:14px;padding:12px;
+  font:700 14px 'Heebo';background:var(--chip);color:var(--muted);cursor:pointer;transition:.15s;
+}
+.clear-btn:hover{border-color:var(--gold);color:var(--text)}
+
+/* ── BANNER ── */
+.banner{text-align:center;font-family:'Rubik';font-weight:900;font-size:18px;
+  min-height:26px;margin:8px 0 4px}
+.banner.g{color:var(--green)} .banner.r{color:var(--red)} .banner.y{color:var(--gold)} .banner.b{color:var(--blue)}
+
+/* ── FIXED ELEMENTS ── */
+.home{position:fixed;bottom:18px;left:18px;z-index:9999;
+  background:linear-gradient(135deg,#1a4a28,#0a2514);color:#a0d4b0;border:1px solid #1a4a28;
+  border-radius:30px;padding:10px 18px;font:700 14px Heebo;text-decoration:none;
+  box-shadow:0 8px 24px rgba(0,0,0,.5)}
+.toast{position:fixed;bottom:74px;left:50%;transform:translateX(-50%) translateY(20px);
+  background:var(--text);color:#06150e;padding:11px 20px;border-radius:30px;
+  font:700 14px 'Heebo';opacity:0;transition:.3s;z-index:90;pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>קראפס 🎲</h1>
+    <div class="tag">זוג קוביות · Pass Line · Field · Place bets · נהל את ההימורים</div>
+  </header>
+
+  <div class="topbar">
+    <div class="bal"><b id="balance">0</b><span>יתרה (₪)</span></div>
+    <select class="mini" id="addAmt"><option value="500">+500</option><option value="1000" selected>+1,000</option><option value="2000">+2,000</option><option value="5000">+5,000</option><option value="10000">+10,000</option></select>
+    <button class="mini" id="addMoney">➕ טען</button>
+    <button class="mini" id="resetMoney">איפוס</button>
+  </div>
+
+  <!-- Dice -->
+  <div class="dice-area">
+    <div class="dice-pair">
+      <div class="die" id="die1"></div>
+      <div class="die" id="die2"></div>
+    </div>
+    <div class="dice-info">
+      <div class="dice-sum" id="diceSum">—</div>
+      <div class="dice-sum-label">סכום</div>
+    </div>
+  </div>
+
+  <!-- Point puck -->
+  <div class="point-row">
+    <div class="puck off" id="puck">OFF</div>
+    <div class="point-label" id="pointLabel">עדיין אין נקודה · <b>Come-Out Roll</b></div>
+  </div>
+
+  <!-- Banner -->
+  <div class="banner" id="banner"></div>
+
+  <!-- Table -->
+  <div class="table">
+
+    <!-- Pass / Don't Pass -->
+    <div class="table-section">
+      <div class="section-label">הימורי טור</div>
+      <div class="bet-row row2">
+        <button class="bzone pass-style" id="bz-pass" onclick="addBet('pass')">
+          <div class="bz-name" style="color:#34d399">PASS LINE</div>
+          <div class="bz-odds">1:1 · עם הקוביות</div>
+          <div class="bz-bet" id="amt-pass"></div>
+        </button>
+        <button class="bzone dont-style" id="bz-dont" onclick="addBet('dont')">
+          <div class="bz-name" style="color:#ff5470">DON'T PASS</div>
+          <div class="bz-odds">1:1 · נגד (12=push)</div>
+          <div class="bz-bet" id="amt-dont"></div>
+        </button>
+      </div>
+    </div>
+
+    <!-- Field + Any7 + Any Craps -->
+    <div class="table-section">
+      <div class="section-label">הימורי גלגול יחיד</div>
+      <div class="bet-row row3">
+        <button class="bzone field-style" id="bz-field" onclick="addBet('field')">
+          <div class="bz-name" style="color:#46d6ff">FIELD</div>
+          <div class="bz-odds">3,4,9,10,11→1:1<br>2→2:1 · 12→3:1</div>
+          <div class="bz-bet" id="amt-field"></div>
+        </button>
+        <button class="bzone" id="bz-any7" onclick="addBet('any7')">
+          <div class="bz-name" style="color:#ff5470">ANY 7</div>
+          <div class="bz-odds">4:1</div>
+          <div class="bz-bet" id="amt-any7"></div>
+        </button>
+        <button class="bzone" id="bz-craps" onclick="addBet('craps')">
+          <div class="bz-name" style="color:#ff886a">ANY CRAPS</div>
+          <div class="bz-odds">7:1 (2,3,12)</div>
+          <div class="bz-bet" id="amt-craps"></div>
+        </button>
+      </div>
+    </div>
+
+    <!-- Place Bets -->
+    <div class="table-section">
+      <div class="section-label">PLACE BETS (פעיל רק לאחר נקודה)</div>
+      <div class="bet-row row6">
+        <button class="bzone place-style locked" id="bz-p4" onclick="addBet('p4')">
+          <div class="bz-num" style="color:#a78bfa">4</div>
+          <div class="bz-odds">9:5</div>
+          <div class="bz-bet" id="amt-p4"></div>
+        </button>
+        <button class="bzone place-style locked" id="bz-p5" onclick="addBet('p5')">
+          <div class="bz-num" style="color:#a78bfa">5</div>
+          <div class="bz-odds">7:5</div>
+          <div class="bz-bet" id="amt-p5"></div>
+        </button>
+        <button class="bzone place-style locked" id="bz-p6" onclick="addBet('p6')">
+          <div class="bz-num" style="color:#a78bfa">6</div>
+          <div class="bz-odds">7:6</div>
+          <div class="bz-bet" id="amt-p6"></div>
+        </button>
+        <button class="bzone place-style locked" id="bz-p8" onclick="addBet('p8')">
+          <div class="bz-num" style="color:#a78bfa">8</div>
+          <div class="bz-odds">7:6</div>
+          <div class="bz-bet" id="amt-p8"></div>
+        </button>
+        <button class="bzone place-style locked" id="bz-p9" onclick="addBet('p9')">
+          <div class="bz-num" style="color:#a78bfa">9</div>
+          <div class="bz-odds">7:5</div>
+          <div class="bz-bet" id="amt-p9"></div>
+        </button>
+        <button class="bzone place-style locked" id="bz-p10" onclick="addBet('p10')">
+          <div class="bz-num" style="color:#a78bfa">10</div>
+          <div class="bz-odds">9:5</div>
+          <div class="bz-bet" id="amt-p10"></div>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Roll history -->
+  <div class="roll-history" id="rollHistory"></div>
+
+  <!-- Chips -->
+  <div class="chips">
+    <button class="chipbtn c5"   data-v="5">5</button>
+    <button class="chipbtn c25"  data-v="25">25</button>
+    <button class="chipbtn c100" data-v="100">100</button>
+    <button class="chipbtn c500" data-v="500">500</button>
+    <button class="chipbtn c1k"  data-v="1000">1K</button>
+    <button class="chipbtn c5k"  data-v="5000">5K</button>
+    <button class="chipbtn c10k" data-v="10000">10K</button>
+    <button class="chipbtn callin" id="allInBtn">All In</button>
+  </div>
+  <div class="custom-in">
+    <input type="number" id="customVal" placeholder="סכום ידני" min="1">
+    <button id="customSet">🎯 הגדר ז'יטון</button>
+  </div>
+
+  <button class="roll-btn" id="rollBtn" onclick="rollDice()">🎲 זרוק קוביות</button>
+  <button class="clear-btn" id="clearBtn" onclick="clearBets()">נקה הימורים</button>
+</div>
+
+<a class="home" id="homeBtn" href="../index.html">🏠 הביתה</a>
+<div id="playerBanner" style="display:none;position:fixed;top:12px;right:12px;z-index:999;
+  background:rgba(0,0,0,.7);border:1px solid rgba(255,255,255,.15);border-radius:20px;
+  padding:6px 14px;font:700 13px Heebo;color:#f0f2ff;backdrop-filter:blur(10px)"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+"use strict";
+
+/* ── PLAYER SESSION ── */
+const _p = new URLSearchParams(window.location.search);
+const _pid = _p.get('pid');
+(function(){
+  if(!_pid) return;
+  try{
+    const d=JSON.parse(localStorage.getItem('casinoPlayers')||'{"players":[]}');
+    const pl=d.players.find(p=>p.id===_pid);
+    if(!pl) return;
+    const b=document.getElementById('playerBanner');
+    b.style.display='block'; b.textContent=pl.emoji+' '+pl.name;
+    document.getElementById('homeBtn').href='../casino-lobby.html';
+    document.getElementById('homeBtn').textContent='← לובי';
+  }catch(e){}
+})();
+function recordResult(result){
+  if(!_pid) return;
+  try{
+    const d=JSON.parse(localStorage.getItem('casinoPlayers')||'{"players":[]}');
+    const pl=d.players.find(p=>p.id===_pid);
+    if(!pl) return;
+    pl.games.push({type:'craps',result,date:new Date().toISOString()});
+    localStorage.setItem('casinoPlayers',JSON.stringify(d));
+  }catch(e){}
+}
+
+/* ── DICE ── */
+const PIP_MAPS={
+  1:[[0,0,0],[0,1,0],[0,0,0]],
+  2:[[0,0,1],[0,0,0],[1,0,0]],
+  3:[[0,0,1],[0,1,0],[1,0,0]],
+  4:[[1,0,1],[0,0,0],[1,0,1]],
+  5:[[1,0,1],[0,1,0],[1,0,1]],
+  6:[[1,0,1],[1,0,1],[1,0,1]]
+};
+function renderDie(el,val){
+  if(val===0){el.innerHTML='';return;}
+  const rows=PIP_MAPS[val];
+  el.innerHTML=rows.map(r=>r.map(p=>`<div class="${p?'pip':'pip-empty'}"></div>`).join('')).join('');
+}
+
+/* ── STATE ── */
+let balance=0, selChip=25;
+let phase='come-out'; // 'come-out' | 'point'
+let point=null;
+let dice=[1,1];
+let rolling=false;
+let rollHistory=[];
+let balanceBefore=0; // track per-game net for result recording
+
+const bets={pass:0,dont:0,field:0,any7:0,craps:0,p4:0,p5:0,p6:0,p8:0,p9:0,p10:0};
+
+/* ── PERSIST ── */
+function save(){try{localStorage.setItem('crapsBalance',JSON.stringify({balance}));}catch(e){}}
+function load(){
+  try{
+    const s=JSON.parse(localStorage.getItem('crapsBalance'));
+    if(s&&typeof s.balance==='number') balance=s.balance; else balance=1000;
+  }catch(e){balance=1000;}
+}
+
+/* ── CHIP SELECT ── */
+function selectChip(v,el){
+  selChip=v;
+  document.querySelectorAll('.chipbtn').forEach(b=>b.classList.remove('sel'));
+  if(el) el.classList.add('sel');
+  else document.querySelectorAll('.chipbtn[data-v]').forEach(b=>{
+    if(+b.dataset.v===v) b.classList.add('sel');
+  });
+}
+
+/* ── BET ZONES ── */
+function addBet(key){
+  if(rolling) return;
+  if(!selChip||selChip<1){toast('בחר ז\'יטון');return;}
+  // Pass/Don't locked after point is set
+  if((key==='pass'||key==='dont')&&phase==='point'){toast('לא ניתן להוסיף Pass/Don\'t לאחר הנקודה');return;}
+  // Place bets only after point
+  if(key.startsWith('p')&&phase==='come-out'){toast('Place bets זמינים רק אחרי שנקבעה נקודה');return;}
+  if(balance<selChip){toast('אין מספיק יתרה');return;}
+  const totalBet=Object.values(bets).reduce((s,v)=>s+v,0);
+  if(totalBet+selChip>balance){toast('ההימור חורג מהיתרה');return;}
+  bets[key]+=selChip;
+  renderBets();
+}
+
+function clearBets(){
+  if(rolling) return;
+  Object.keys(bets).forEach(k=>bets[k]=0);
+  renderBets();
+  setBanner('','');
+}
+
+/* ── RENDER ── */
+const $=id=>document.getElementById(id);
+function renderBalance(){$('balance').textContent=balance.toLocaleString('he-IL');}
+function renderBets(){
+  Object.keys(bets).forEach(k=>{
+    const amt=$('amt-'+k);
+    const zone=$('bz-'+k);
+    if(!amt||!zone) return;
+    amt.textContent=bets[k]>0?'₪'+bets[k].toLocaleString():'';
+    zone.classList.toggle('has-bet',bets[k]>0);
+  });
+}
+function setBanner(msg,cls){
+  const b=$('banner'); b.textContent=msg; b.className='banner'+(cls?' '+cls:'');
+}
+function renderDice(v1,v2){
+  renderDie($('die1'),v1); renderDie($('die2'),v2);
+  $('diceSum').textContent=v1&&v2?v1+v2:'—';
+}
+function updatePuck(){
+  const pk=$('puck');
+  const lbl=$('pointLabel');
+  if(phase==='come-out'){
+    pk.className='puck off'; pk.textContent='OFF';
+    lbl.innerHTML='עדיין אין נקודה · <b>Come-Out Roll</b>';
+  } else {
+    pk.className='puck on'; pk.textContent=point;
+    lbl.innerHTML=`הנקודה היא <b>${point}</b> · זרוק ${point} כדי לנצח!`;
+  }
+  // lock/unlock place bets
+  ['p4','p5','p6','p8','p9','p10'].forEach(k=>{
+    $('bz-'+k).classList.toggle('locked',phase==='come-out');
+  });
+  // lock pass/dont after point
+  ['pass','dont'].forEach(k=>{
+    $('bz-'+k).classList.toggle('locked',phase==='point');
+  });
+}
+function addToHistory(total){
+  let cls='rh-other';
+  if(total===7) cls='rh-7';
+  else if(total===11) cls='rh-11';
+  else if([2,3,12].includes(total)) cls='rh-craps';
+  else if(total===point) cls='rh-pt';
+  rollHistory.unshift(total);
+  if(rollHistory.length>30) rollHistory.pop();
+  $('rollHistory').innerHTML=rollHistory.map(n=>`<span class="rh-pill ${
+    n===7?'rh-7':n===11?'rh-11':[2,3,12].includes(n)?'rh-craps':'rh-other'
+  }">${n}</span>`).join('');
+}
+
+/* ── TOAST ── */
+let toastT;
+function toast(msg){
+  const t=$('toast'); t.textContent=msg; t.classList.add('show');
+  clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('show'),2400);
+}
+
+/* ── CORE: ROLL ── */
+function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
+
+async function rollDice(){
+  if(rolling) return;
+  const totalBet=Object.values(bets).reduce((s,v)=>s+v,0);
+  if(totalBet===0){toast('שים לפחות הימור אחד');return;}
+  if(balance<totalBet){toast('אין מספיק יתרה');return;}
+
+  rolling=true;
+  $('rollBtn').disabled=true;
+
+  // Deduct bets
+  if(phase==='come-out') balanceBefore=balance;
+  balance-=totalBet;
+  renderBalance(); save();
+
+  // Animate dice
+  const d1=$('die1'), d2=$('die2');
+  d1.classList.add('rolling'); d2.classList.add('rolling');
+  await sleep(500);
+  d1.classList.remove('rolling'); d2.classList.remove('rolling');
+
+  // Roll
+  const r1=Math.ceil(Math.random()*6);
+  const r2=Math.ceil(Math.random()*6);
+  const total=r1+r2;
+  dice=[r1,r2];
+  renderDice(r1,r2);
+  addToHistory(total);
+
+  setBanner('','');
+  let msgs=[];
+  let netGain=0;
+
+  /* ── SINGLE-ROLL BETS (resolved every roll) ── */
+  // Field
+  if(bets.field>0){
+    if([3,4,9,10,11].includes(total)){
+      const g=bets.field; netGain+=g; balance+=bets.field*2;
+      msgs.push(`Field WIN +₪${g}`);
+    } else if(total===2){
+      const g=bets.field*2; netGain+=g; balance+=bets.field*3;
+      msgs.push(`Field 2x +₪${g}`);
+    } else if(total===12){
+      const g=bets.field*3; netGain+=g; balance+=bets.field*4;
+      msgs.push(`Field 3x +₪${g}`);
+    } else {
+      msgs.push(`Field LOSS`);
+    }
+    bets.field=0;
+  }
+  // Any 7
+  if(bets.any7>0){
+    if(total===7){ const g=bets.any7*4; netGain+=g; balance+=bets.any7*5; msgs.push(`Any 7 WIN +₪${g}`); }
+    else msgs.push('Any 7 LOSS');
+    bets.any7=0;
+  }
+  // Any Craps
+  if(bets.craps>0){
+    if([2,3,12].includes(total)){ const g=bets.craps*7; netGain+=g; balance+=bets.craps*8; msgs.push(`Any Craps WIN +₪${g}`); }
+    else msgs.push('Any Craps LOSS');
+    bets.craps=0;
+  }
+
+  /* ── PHASE LOGIC ── */
+  if(phase==='come-out'){
+    if(total===7||total===11){
+      // Natural — Pass wins, Don't Pass loses
+      if(bets.pass>0){ const g=bets.pass; netGain+=g; balance+=bets.pass*2; msgs.push(`Pass Line WIN +₪${g} 🎉`); }
+      if(bets.dont>0){ msgs.push(`Don't Pass LOSS`); }
+      bets.pass=0; bets.dont=0;
+      const net=balance-balanceBefore;
+      recordResult(net>0?'win':net<0?'loss':'tie');
+      setBanner(total===7?`Natural 7! ${msgs.join(' · ')}`:`Natural 11! ${msgs.join(' · ')}`,'g');
+      resetAfterRound();
+    } else if([2,3,12].includes(total)){
+      // Craps — Pass loses, Don't Pass wins (12=push)
+      if(bets.pass>0) msgs.push(`Pass Line LOSS`);
+      if(bets.dont>0){
+        if(total===12){ balance+=bets.dont; msgs.push(`Don't Pass PUSH`); }
+        else { const g=bets.dont; netGain+=g; balance+=bets.dont*2; msgs.push(`Don't Pass WIN +₪${g}`); }
+      }
+      bets.pass=0; bets.dont=0;
+      const net=balance-balanceBefore;
+      recordResult(net>0?'win':net<0?'loss':'tie');
+      setBanner(`Craps ${total}! ${msgs.join(' · ')}`,'r');
+      resetAfterRound();
+    } else {
+      // Set the point
+      point=total; phase='point';
+      updatePuck();
+      const m=msgs.length>0?` · ${msgs.join(' · ')}`:'';
+      setBanner(`נקודה: ${point}${m}`,'b');
+      renderBets(); save();
+      rolling=false; $('rollBtn').disabled=false;
+      return;
+    }
+  } else {
+    // POINT PHASE
+    // Place bets — win if number matches
+    const PLACE_ODDS={p4:[9,5],p5:[7,5],p6:[7,6],p8:[7,6],p9:[7,5],p10:[9,5]};
+    const PLACE_NUMS={p4:4,p5:5,p6:6,p8:8,p9:9,p10:10};
+
+    for(const [k,[num,den]] of Object.entries(PLACE_ODDS)){
+      if(bets[k]>0&&total===PLACE_NUMS[k]){
+        const g=Math.floor(bets[k]*num/den);
+        netGain+=g; balance+=bets[k]+g;
+        msgs.push(`Place ${PLACE_NUMS[k]} WIN +₪${g}`);
+        bets[k]=0;
+      }
+    }
+
+    if(total===point){
+      // Hit the point — Pass wins, Don't Pass loses
+      if(bets.pass>0){ const g=bets.pass; netGain+=g; balance+=bets.pass*2; msgs.push(`Pass Line WIN +₪${g} 🎉`); }
+      if(bets.dont>0) msgs.push(`Don't Pass LOSS`);
+      // Remaining place bets returned (off on come-out) — just return them
+      for(const k of ['p4','p5','p6','p8','p9','p10']){
+        if(bets[k]>0){ balance+=bets[k]; bets[k]=0; }
+      }
+      bets.pass=0; bets.dont=0;
+      const net=balance-balanceBefore;
+      recordResult(net>0?'win':net<0?'loss':'tie');
+      setBanner(`Point ${point} HIT! ${msgs.join(' · ')}`,'g');
+      resetAfterRound();
+    } else if(total===7){
+      // Seven-out — Pass loses, Don't Pass wins, all place bets lose
+      if(bets.pass>0) msgs.push(`Pass Line LOSS`);
+      if(bets.dont>0){ const g=bets.dont; netGain+=g; balance+=bets.dont*2; msgs.push(`Don't Pass WIN +₪${g}`); }
+      for(const k of ['p4','p5','p6','p8','p9','p10']){
+        if(bets[k]>0) msgs.push(`Place ${PLACE_NUMS[k]} LOSS`);
+        bets[k]=0;
+      }
+      bets.pass=0; bets.dont=0;
+      const PLACE_NUMS2={p4:4,p5:5,p6:6,p8:8,p9:9,p10:10};
+      const net=balance-balanceBefore;
+      recordResult(net>0?'win':net<0?'loss':'tie');
+      setBanner(`Seven-Out 💥 ${msgs.join(' · ')}`,'r');
+      resetAfterRound();
+    } else {
+      // Keep rolling
+      const m=msgs.length>0?msgs.join(' · '):`זרק ${total} — ממשיכים...`;
+      setBanner(m, msgs.some(x=>x.includes('WIN'))?'g':'');
+      renderBets(); renderBalance(); save();
+      rolling=false; $('rollBtn').disabled=false;
+    }
+    return;
+  }
+}
+
+function resetAfterRound(){
+  phase='come-out'; point=null;
+  Object.keys(bets).forEach(k=>bets[k]=0);
+  updatePuck(); renderBets(); renderBalance(); save();
+  rolling=false; $('rollBtn').disabled=false;
+}
+
+/* ── INIT ── */
+load();
+renderDice(0,0);
+renderBalance();
+renderBets();
+updatePuck();
+selectChip(25);
+
+document.querySelectorAll('.chipbtn[data-v]').forEach(b=>{
+  b.onclick=()=>selectChip(+b.dataset.v);
+});
+$('allInBtn').onclick=function(){ selectChip(balance,this); };
+$('customSet').onclick=function(){
+  const v=parseInt($('customVal').value);
+  if(!v||v<1){toast('הכנס סכום תקין');return;}
+  selectChip(v,this); toast(`ז'יטון: ₪${v.toLocaleString()}`);
+};
+$('customVal').addEventListener('keydown',e=>{if(e.key==='Enter')$('customSet').click();});
+
+$('addMoney').onclick=()=>{
+  const amt=parseInt($('addAmt').value)||1000;
+  balance+=amt; renderBalance(); save(); toast(`נטענו ₪${amt.toLocaleString()}`);
+};
+$('resetMoney').onclick=()=>{
+  if(!confirm('לאפס יתרה ל-1000?')) return;
+  balance=1000; clearBets(); renderBalance(); save(); toast('אופס ל-₪1000');
+};
+</script>
+</body>
+</html>
