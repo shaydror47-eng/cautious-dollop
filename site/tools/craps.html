@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>קראפס 🎲</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@500;700;900&family=Heebo:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#060b08; --text:#f0f4f1; --muted:#7a9088; --line:rgba(255,255,255,.09);
+  --felt:#0d4a22; --felt2:#0a3a1a; --wood:#4a2008; --wood2:#2e1205;
+  --gold:#ffce3a; --green:#34d399; --red:#ff5470; --blue:#46d6ff;
+  --chip:rgba(255,255,255,.07);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;
+  -webkit-user-select:none;user-select:none}
+input{-webkit-user-select:text;user-select:text}
+body{
+  background:radial-gradient(900px at 50% -10%,#0e3a2088,transparent 60%),
+             linear-gradient(160deg,#071510,var(--bg));
+  background-attachment:fixed;
+  color:var(--text);font-family:'Heebo',system-ui,sans-serif;
+  min-height:100vh;padding:12px 10px 90px;overflow-x:hidden;
+}
+.wrap{max-width:840px;margin:0 auto}
+
+/* ── HEADER ── */
+header{text-align:center;padding:6px 0 10px}
+h1{font-family:'Rubik';font-weight:900;font-size:28px;
+  background:linear-gradient(90deg,#ff9a3c,var(--gold),var(--green));
+  -webkit-background-clip:text;background-clip:text;color:transparent}
+.tag{color:var(--muted);font-size:13px;margin-top:2px}
+
+/* ── TOP BAR ── */
+.topbar{display:flex;align-items:center;gap:10px;margin:8px 0 12px;flex-wrap:wrap;justify-content:center}
+.bal{background:var(--chip);border:1px solid var(--line);border-radius:14px;padding:9px 16px;text-align:center}
+.bal b{display:block;font-family:'Rubik';font-weight:900;font-size:22px;color:var(--gold)}
+.bal span{font-size:11px;color:var(--muted)}
+.mini{background:var(--chip);border:1px solid var(--line);color:var(--text);
+  border-radius:12px;padding:9px 13px;font:700 13px 'Heebo';cursor:pointer;transition:.15s;
+  -webkit-appearance:none;appearance:none}
+.mini:hover{border-color:var(--gold)}
+select.mini option{background:#061008}
+
+/* ── DICE AREA ── */
+.dice-area{
+  display:flex;align-items:center;justify-content:center;gap:24px;
+  padding:18px;margin-bottom:10px;
+  background:radial-gradient(ellipse at 50% 0%,#0e3a2088,transparent 70%);
+}
+.dice-pair{display:flex;gap:16px;align-items:center}
+.die{
+  width:80px;height:80px;background:#f7f7ff;border-radius:13px;
+  display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);
+  padding:9px;gap:4px;
+  box-shadow:0 6px 24px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.4);
+  transition:.1s;
+}
+.die.rolling{animation:diceRoll .5s ease}
+@keyframes diceRoll{
+  0%{transform:rotate(0) scale(1)}
+  20%{transform:rotate(-20deg) scale(1.1)}
+  40%{transform:rotate(18deg) scale(.95)}
+  60%{transform:rotate(-12deg) scale(1.05)}
+  80%{transform:rotate(8deg) scale(.98)}
+  100%{transform:rotate(0) scale(1)}
+}
+.pip{background:#13140f;border-radius:50%;width:17px;height:17px;
+  justify-self:center;align-self:center}
+.pip-empty{width:17px;height:17px}
+
+.dice-info{text-align:center}
+.dice-sum{font-family:'Rubik';font-weight:900;font-size:38px;color:var(--gold);line-height:1}
+.dice-sum-label{font-size:11px;color:var(--muted);margin-top:2px}
+
+/* ── POINT PUCK ── */
+.point-row{display:flex;align-items:center;justify-content:center;gap:14px;margin-bottom:10px}
+.puck{
+  width:50px;height:50px;border-radius:50%;font-family:'Rubik';font-weight:900;
+  font-size:12px;display:grid;place-items:center;transition:.3s;flex-shrink:0;
+  box-shadow:0 4px 12px rgba(0,0,0,.4);
+}
+.puck.off{background:#1a1a2a;border:3px solid #444;color:#666}
+.puck.on{background:#f7f7ff;border:3px solid var(--gold);color:#1a0d00;font-size:19px}
+.point-label{font-size:13px;color:var(--muted);font-weight:700}
+.point-label b{color:var(--text)}
+
+/* ── BANNER ── */
+.banner{text-align:center;font-family:'Rubik';font-weight:900;font-size:17px;
+  min-height:24px;margin:6px 0}
+.banner.g{color:var(--green)}.banner.r{color:var(--red)}.banner.y{color:var(--gold)}.banner.b{color:var(--blue)}
+
+/* ═══════════════════════════════
+   CASINO TABLE
+═══════════════════════════════ */
+.casino-table{
+  direction:ltr;
+  background:linear-gradient(180deg, var(--felt), var(--felt2));
+  border:5px solid var(--wood);
+  border-radius:20px;
+  box-shadow:
+    0 0 0 2px #7a3510,
+    0 0 0 5px #2e1205,
+    0 20px 50px -10px rgba(0,0,0,.8),
+    inset 0 1px 0 rgba(255,255,255,.06);
+  overflow:hidden;
+  margin-bottom:12px;
+}
+
+/* ── TOP: DON'T COME BAR + PLACE NUMBERS ── */
+.ct-top{
+  display:flex;
+  border-bottom:2px dashed rgba(255,255,255,.2);
+}
+.dc-bar{
+  writing-mode:vertical-rl;
+  text-orientation:mixed;
+  transform:rotate(180deg);
+  font:700 9px/1.2 'Rubik';
+  letter-spacing:1.5px;
+  color:rgba(255,255,255,.65);
+  padding:10px 5px;
+  border-left:1px dashed rgba(255,255,255,.18);
+  flex-shrink:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:rgba(0,0,0,.15);
+}
+.place-row{
+  flex:1;
+  display:grid;
+  grid-template-columns:repeat(6,1fr);
+}
+.place-cell{
+  background:transparent;
+  border:none;
+  border-left:1px dashed rgba(255,255,255,.13);
+  color:#fff;
+  cursor:pointer;
+  padding:10px 4px 8px;
+  display:flex;flex-direction:column;align-items:center;gap:2px;
+  transition:.15s;min-height:72px;justify-content:center;
+}
+.place-cell:first-child{border-left:none}
+.place-cell:active{background:rgba(255,255,255,.08)}
+.place-cell.locked{opacity:.3;cursor:not-allowed;pointer-events:none}
+.place-cell.has-bet{background:rgba(167,139,250,.1);border-left-color:rgba(167,139,250,.35)}
+.pn{font-family:'Rubik';font-weight:900;font-size:clamp(16px,3.5vw,24px);color:#fff;line-height:1}
+.po{font-size:clamp(8px,1.8vw,10px);color:rgba(255,255,255,.55);font-weight:700;letter-spacing:.3px}
+.place-chip{font-family:'Rubik';font-weight:900;font-size:11px;color:var(--gold);min-height:13px}
+
+/* ── COME AREA (decorative) ── */
+.ct-come{
+  border-bottom:2px dashed rgba(255,255,255,.2);
+  display:flex;align-items:center;justify-content:center;
+  padding:18px 16px;
+  background:rgba(0,0,0,.08);
+  position:relative;
+}
+.come-label{
+  font-family:'Rubik';font-weight:900;
+  font-size:clamp(28px,7vw,52px);
+  color:rgba(255,255,255,.88);
+  letter-spacing:clamp(6px,2vw,18px);
+  text-shadow:0 2px 16px rgba(0,0,0,.5);
+}
+
+/* ── FIELD BET ── */
+.ct-field{
+  width:100%;border:none;
+  border-bottom:2px dashed rgba(255,255,255,.2);
+  background:rgba(0,0,0,.12);
+  color:#fff;cursor:pointer;
+  padding:14px 12px 10px;
+  transition:.15s;text-align:center;
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+}
+.ct-field:active{background:rgba(255,255,255,.05)}
+.ct-field.has-bet{background:rgba(70,214,255,.06)}
+.field-top{
+  display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;
+}
+.field-lbl{
+  font-family:'Rubik';font-weight:900;
+  font-size:clamp(10px,2.5vw,15px);
+  letter-spacing:2px;
+  color:rgba(255,255,255,.7);
+  flex-shrink:0;
+}
+.field-nums{
+  display:flex;gap:clamp(3px,1vw,7px);align-items:center;flex-wrap:nowrap;
+}
+.fn{
+  font-family:'Rubik';font-weight:900;
+  font-size:clamp(14px,3.2vw,22px);
+  color:#fff;
+  background:rgba(255,255,255,.08);
+  border:1.5px solid rgba(255,255,255,.2);
+  border-radius:7px;
+  padding:2px clamp(4px,1.5vw,9px);
+  min-width:clamp(22px,5vw,34px);
+  text-align:center;line-height:1.3;
+}
+.fn.b2x{color:#ffa040;border-color:rgba(255,160,64,.6);background:rgba(255,160,64,.12);position:relative}
+.fn.b3x{color:var(--gold);border-color:rgba(255,206,58,.6);background:rgba(255,206,58,.12);position:relative}
+.fn.b2x::after{content:"2×";position:absolute;top:-7px;right:-4px;
+  font-size:7px;background:#ffa040;color:#000;border-radius:4px;padding:0 3px;font-weight:900}
+.fn.b3x::after{content:"3×";position:absolute;top:-7px;right:-4px;
+  font-size:7px;background:var(--gold);color:#000;border-radius:4px;padding:0 3px;font-weight:900}
+.field-pay{font-size:10px;color:rgba(255,255,255,.45);font-weight:700;letter-spacing:.3px}
+.field-chip{font-family:'Rubik';font-weight:900;font-size:13px;color:var(--gold)}
+
+/* ── DON'T PASS BAR ── */
+.ct-dontpass{
+  width:100%;border:none;
+  border-bottom:1.5px dashed rgba(255,255,255,.15);
+  background:rgba(0,0,0,.18);
+  color:rgba(255,255,255,.78);cursor:pointer;
+  padding:13px 18px;
+  display:flex;align-items:center;justify-content:space-between;
+  transition:.15s;
+}
+.ct-dontpass:active{background:rgba(255,84,112,.07)}
+.ct-dontpass.has-bet{background:rgba(255,84,112,.09);border-bottom-color:rgba(255,84,112,.3)}
+.ct-dontpass.locked{opacity:.3;cursor:not-allowed;pointer-events:none}
+
+/* ── PASS LINE ── */
+.ct-pass{
+  width:100%;border:none;
+  background:rgba(0,0,0,.08);
+  color:#fff;cursor:pointer;
+  padding:16px 18px;
+  display:flex;align-items:center;justify-content:space-between;
+  transition:.15s;
+}
+.ct-pass:active{background:rgba(52,211,153,.07)}
+.ct-pass.has-bet{background:rgba(52,211,153,.09)}
+.ct-pass.locked{opacity:.3;cursor:not-allowed;pointer-events:none}
+
+.strip-lbl{
+  font-family:'Rubik';font-weight:900;
+  font-size:clamp(13px,3.5vw,20px);
+  letter-spacing:clamp(1px,1vw,4px);
+}
+.strip-sub{font-size:10px;color:rgba(255,255,255,.45);font-weight:700;letter-spacing:.5px;display:block;margin-top:1px}
+.strip-chip{font-family:'Rubik';font-weight:900;font-size:14px;color:var(--gold)}
+.bar-marks{font-size:11px;opacity:.45;margin-left:4px}
+
+/* ═══════════════════════════════
+   PROP BETS
+═══════════════════════════════ */
+.prop-grid{
+  display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;
+}
+.prop-btn{
+  background:rgba(0,0,0,.28);
+  border:2px solid rgba(255,255,255,.1);
+  border-radius:14px;color:#fff;cursor:pointer;
+  padding:14px 10px;text-align:center;transition:.15s;
+}
+.prop-btn:active{transform:scale(.96)}
+.prop-btn.has-bet{border-color:var(--gold);background:rgba(255,206,58,.06)}
+.prop-name{font-family:'Rubik';font-weight:900;font-size:16px}
+.prop-odds{font-size:11px;color:rgba(255,255,255,.5);font-weight:700;margin-top:2px}
+.prop-chip{font-family:'Rubik';font-weight:900;font-size:13px;color:var(--gold);margin-top:3px}
+
+/* ── ROLL HISTORY ── */
+.roll-history{display:flex;gap:5px;flex-wrap:wrap;justify-content:center;margin:10px 0 4px}
+.rh-pill{display:inline-block;padding:3px 9px;border-radius:20px;font:900 12px 'Rubik'}
+.rh-7{background:rgba(255,84,112,.2);color:var(--red);border:1px solid var(--red)}
+.rh-11{background:rgba(52,211,153,.2);color:var(--green);border:1px solid var(--green)}
+.rh-craps{background:rgba(255,84,112,.1);color:#ff886a;border:1px solid #ff886a}
+.rh-pt{background:rgba(70,214,255,.15);color:var(--blue);border:1px solid var(--blue)}
+.rh-other{background:rgba(255,255,255,.06);color:var(--muted);border:1px solid var(--line)}
+
+/* ── CHIPS ── */
+.chips{display:flex;gap:8px;justify-content:center;margin:10px 0 4px;flex-wrap:wrap}
+.chipbtn{width:50px;height:50px;border-radius:50%;border:3px dashed rgba(255,255,255,.5);
+  font-family:'Rubik';font-weight:900;font-size:13px;cursor:pointer;color:#fff;
+  display:grid;place-items:center;transition:.12s;box-shadow:0 4px 12px rgba(0,0,0,.4)}
+.chipbtn:active{transform:scale(.88)}
+.chipbtn.sel{outline:3px solid var(--gold);outline-offset:2px}
+.c5{background:radial-gradient(circle at 35% 30%,#9ad,#2563eb)}
+.c25{background:radial-gradient(circle at 35% 30%,#6e6,#15803d)}
+.c100{background:radial-gradient(circle at 35% 30%,#888,#1f2937)}
+.c500{background:radial-gradient(circle at 35% 30%,#c9f,#7c3aed)}
+.c1k{background:radial-gradient(circle at 35% 30%,#fa9,#b91c1c)}
+.c5k{background:radial-gradient(circle at 35% 30%,#ffd,#b8860b)}
+.c10k{background:radial-gradient(circle at 35% 30%,#ffe,#d4a017)}
+.callin{background:linear-gradient(135deg,#ff5470,#7f0022);border-style:solid;font-size:10px}
+
+.custom-in{display:flex;gap:6px;justify-content:center;align-items:center;margin:4px 0 8px}
+.custom-in input{background:rgba(255,255,255,.08);border:1px solid var(--line);color:var(--text);
+  border-radius:12px;padding:8px 10px;font:700 14px 'Rubik';width:110px;text-align:center}
+.custom-in input::placeholder{color:var(--muted);font-size:12px}
+.custom-in button{background:var(--chip);border:1px solid var(--line);color:var(--text);
+  border-radius:12px;padding:8px 14px;font:700 13px 'Heebo';cursor:pointer}
+.custom-in button:hover{border-color:var(--gold)}
+
+/* ── ACTIONS ── */
+.roll-btn{
+  display:block;width:100%;border:none;border-radius:18px;padding:18px;
+  font-family:'Rubik';font-weight:900;font-size:20px;cursor:pointer;transition:.18s;
+  background:linear-gradient(135deg,#ff9a3c,var(--gold));color:#1a0800;
+  margin:10px 0 6px;box-shadow:0 8px 24px rgba(255,154,60,.3);
+}
+.roll-btn:active{transform:scale(.98)}
+.roll-btn:disabled{opacity:.35;cursor:not-allowed;box-shadow:none}
+.clear-btn{
+  display:block;width:100%;border:1px solid var(--line);border-radius:14px;padding:12px;
+  font:700 14px 'Heebo';background:var(--chip);color:var(--muted);cursor:pointer;transition:.15s;
+}
+.clear-btn:hover{border-color:var(--gold);color:var(--text)}
+
+/* ── FIXED ── */
+.home{position:fixed;bottom:18px;left:18px;z-index:9999;
+  background:linear-gradient(135deg,#1a4a28,#0a2514);color:#a0d4b0;border:1px solid #1a4a28;
+  border-radius:30px;padding:10px 18px;font:700 14px Heebo;text-decoration:none;
+  box-shadow:0 8px 24px rgba(0,0,0,.5)}
+.toast{position:fixed;bottom:74px;left:50%;transform:translateX(-50%) translateY(20px);
+  background:var(--text);color:#06150e;padding:11px 20px;border-radius:30px;
+  font:700 14px 'Heebo';opacity:0;transition:.3s;z-index:90;pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>קראפס 🎲</h1>
+    <div class="tag">Pass Line · Field · Place Bets · לחץ על אזור הימור → זרוק קוביות</div>
+  </header>
+
+  <!-- Top Bar -->
+  <div class="topbar">
+    <div class="bal"><b id="balance">0</b><span>יתרה (₪)</span></div>
+    <select class="mini" id="addAmt">
+      <option value="500">+500</option>
+      <option value="1000" selected>+1,000</option>
+      <option value="2000">+2,000</option>
+      <option value="5000">+5,000</option>
+      <option value="10000">+10,000</option>
+    </select>
+    <button class="mini" id="addMoney">➕ טען</button>
+    <button class="mini" id="resetMoney">איפוס</button>
+  </div>
+
+  <!-- Dice -->
+  <div class="dice-area">
+    <div class="dice-pair">
+      <div class="die" id="die1"></div>
+      <div class="die" id="die2"></div>
+    </div>
+    <div class="dice-info">
+      <div class="dice-sum" id="diceSum">—</div>
+      <div class="dice-sum-label">סכום</div>
+    </div>
+  </div>
+
+  <!-- Point Puck -->
+  <div class="point-row">
+    <div class="puck off" id="puck">OFF</div>
+    <div class="point-label" id="pointLabel">עדיין אין נקודה · <b>Come-Out Roll</b></div>
+  </div>
+
+  <!-- Banner -->
+  <div class="banner" id="banner"></div>
+
+  <!-- ═══ CASINO TABLE ═══ -->
+  <div class="casino-table" dir="ltr">
+
+    <!-- Row 1: DON'T COME BAR + Place Numbers -->
+    <div class="ct-top">
+      <div class="dc-bar">DON'T COME BAR</div>
+      <div class="place-row">
+        <button class="place-cell locked" id="bz-p4" onclick="addBet('p4')">
+          <span class="pn">4</span>
+          <span class="po">9:5</span>
+          <span class="place-chip" id="amt-p4"></span>
+        </button>
+        <button class="place-cell locked" id="bz-p5" onclick="addBet('p5')">
+          <span class="pn">5</span>
+          <span class="po">7:5</span>
+          <span class="place-chip" id="amt-p5"></span>
+        </button>
+        <button class="place-cell locked" id="bz-p6" onclick="addBet('p6')">
+          <span class="pn">SIX</span>
+          <span class="po">7:6</span>
+          <span class="place-chip" id="amt-p6"></span>
+        </button>
+        <button class="place-cell locked" id="bz-p8" onclick="addBet('p8')">
+          <span class="pn">8</span>
+          <span class="po">7:6</span>
+          <span class="place-chip" id="amt-p8"></span>
+        </button>
+        <button class="place-cell locked" id="bz-p9" onclick="addBet('p9')">
+          <span class="pn">NINE</span>
+          <span class="po">7:5</span>
+          <span class="place-chip" id="amt-p9"></span>
+        </button>
+        <button class="place-cell locked" id="bz-p10" onclick="addBet('p10')">
+          <span class="pn">10</span>
+          <span class="po">9:5</span>
+          <span class="place-chip" id="amt-p10"></span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Row 2: COME (decorative) -->
+    <div class="ct-come">
+      <span class="come-label">COME</span>
+    </div>
+
+    <!-- Row 3: FIELD -->
+    <button class="ct-field" id="bz-field" onclick="addBet('field')">
+      <div class="field-top">
+        <span class="field-lbl">FIELD</span>
+        <div class="field-nums">
+          <span class="fn b2x">2</span>
+          <span class="fn">3</span>
+          <span class="fn">4</span>
+          <span class="fn">9</span>
+          <span class="fn">10</span>
+          <span class="fn">11</span>
+          <span class="fn b3x">12</span>
+        </div>
+      </div>
+      <div class="field-pay">2→pays 2:1 · 12→pays 3:1 · rest→1:1 · (5 6 7 8 = lose)</div>
+      <div class="field-chip" id="amt-field"></div>
+    </button>
+
+    <!-- Row 4: DON'T PASS BAR -->
+    <button class="ct-dontpass" id="bz-dont" onclick="addBet('dont')">
+      <div>
+        <span class="strip-lbl">DON'T PASS BAR<span class="bar-marks"> ‖‖</span></span>
+        <span class="strip-sub">1:1 against · 12 = push</span>
+      </div>
+      <span class="strip-chip" id="amt-dont"></span>
+    </button>
+
+    <!-- Row 5: PASS LINE -->
+    <button class="ct-pass" id="bz-pass" onclick="addBet('pass')">
+      <div>
+        <span class="strip-lbl">PASS LINE</span>
+        <span class="strip-sub">1:1 with the shooter</span>
+      </div>
+      <span class="strip-chip" id="amt-pass"></span>
+    </button>
+
+  </div><!-- /casino-table -->
+
+  <!-- Prop Bets -->
+  <div class="prop-grid">
+    <button class="prop-btn" id="bz-any7" onclick="addBet('any7')">
+      <div class="prop-name" style="color:#ff5470">ANY 7</div>
+      <div class="prop-odds">5 for 1</div>
+      <div class="prop-chip" id="amt-any7"></div>
+    </button>
+    <button class="prop-btn" id="bz-craps" onclick="addBet('craps')">
+      <div class="prop-name" style="color:#ff886a">ANY CRAPS</div>
+      <div class="prop-odds">8 for 1 · (2, 3, 12)</div>
+      <div class="prop-chip" id="amt-craps"></div>
+    </button>
+  </div>
+
+  <!-- Roll History -->
+  <div class="roll-history" id="rollHistory"></div>
+
+  <!-- Chips -->
+  <div class="chips">
+    <button class="chipbtn c5"   data-v="5">5</button>
+    <button class="chipbtn c25"  data-v="25">25</button>
+    <button class="chipbtn c100" data-v="100">100</button>
+    <button class="chipbtn c500" data-v="500">500</button>
+    <button class="chipbtn c1k"  data-v="1000">1K</button>
+    <button class="chipbtn c5k"  data-v="5000">5K</button>
+    <button class="chipbtn c10k" data-v="10000">10K</button>
+    <button class="chipbtn callin" id="allInBtn">All In</button>
+  </div>
+  <div class="custom-in">
+    <input type="number" id="customVal" placeholder="סכום ידני" min="1">
+    <button id="customSet">🎯 הגדר ז'יטון</button>
+  </div>
+
+  <button class="roll-btn" id="rollBtn" onclick="rollDice()">🎲 זרוק קוביות</button>
+  <button class="clear-btn" id="clearBtn" onclick="clearBets()">נקה הימורים</button>
+</div>
+
+<a class="home" id="homeBtn" href="../index.html">🏠 הביתה</a>
+<div id="playerBanner" style="display:none;position:fixed;top:12px;right:12px;z-index:999;
+  background:rgba(0,0,0,.7);border:1px solid rgba(255,255,255,.15);border-radius:20px;
+  padding:6px 14px;font:700 13px Heebo;color:#f0f2ff;backdrop-filter:blur(10px)"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+"use strict";
+
+/* ── PLAYER SESSION ── */
+const _p = new URLSearchParams(window.location.search);
+const _pid = _p.get('pid');
+(function(){
+  if(!_pid) return;
+  try{
+    const d=JSON.parse(localStorage.getItem('casinoPlayers')||'{"players":[]}');
+    const pl=d.players.find(p=>p.id===_pid);
+    if(!pl) return;
+    const b=document.getElementById('playerBanner');
+    b.style.display='block'; b.textContent=pl.emoji+' '+pl.name;
+    document.getElementById('homeBtn').href='../casino-lobby.html';
+    document.getElementById('homeBtn').textContent='← לובי';
+  }catch(e){}
+})();
+function recordResult(result){
+  if(!_pid) return;
+  try{
+    const d=JSON.parse(localStorage.getItem('casinoPlayers')||'{"players":[]}');
+    const pl=d.players.find(p=>p.id===_pid);
+    if(!pl) return;
+    pl.games.push({type:'craps',result,date:new Date().toISOString()});
+    localStorage.setItem('casinoPlayers',JSON.stringify(d));
+  }catch(e){}
+}
+
+/* ── DICE PIPS ── */
+const PIP_MAPS={
+  1:[[0,0,0],[0,1,0],[0,0,0]],
+  2:[[0,0,1],[0,0,0],[1,0,0]],
+  3:[[0,0,1],[0,1,0],[1,0,0]],
+  4:[[1,0,1],[0,0,0],[1,0,1]],
+  5:[[1,0,1],[0,1,0],[1,0,1]],
+  6:[[1,0,1],[1,0,1],[1,0,1]]
+};
+function renderDie(el,val){
+  if(!val){el.innerHTML='';return;}
+  el.innerHTML=PIP_MAPS[val].map(r=>r.map(p=>`<div class="${p?'pip':'pip-empty'}"></div>`).join('')).join('');
+}
+
+/* ── STATE ── */
+let balance=0, selChip=25;
+let phase='come-out';
+let point=null;
+let rolling=false;
+let rollHistory=[];
+let balanceBefore=0;
+
+const bets={pass:0,dont:0,field:0,any7:0,craps:0,p4:0,p5:0,p6:0,p8:0,p9:0,p10:0};
+const PLACE_NUMS={p4:4,p5:5,p6:6,p8:8,p9:9,p10:10};
+const PLACE_ODDS={p4:[9,5],p5:[7,5],p6:[7,6],p8:[7,6],p9:[7,5],p10:[9,5]};
+
+/* ── PERSIST ── */
+function save(){try{localStorage.setItem('crapsBalance',JSON.stringify({balance}));}catch(e){}}
+function load(){
+  try{
+    const s=JSON.parse(localStorage.getItem('crapsBalance'));
+    balance=(s&&typeof s.balance==='number')?s.balance:1000;
+  }catch(e){balance=1000;}
+}
+
+/* ── CHIP SELECT ── */
+function selectChip(v,el){
+  selChip=v;
+  document.querySelectorAll('.chipbtn').forEach(b=>b.classList.remove('sel'));
+  if(el) el.classList.add('sel');
+  else document.querySelectorAll('.chipbtn[data-v]').forEach(b=>{
+    if(+b.dataset.v===v) b.classList.add('sel');
+  });
+}
+
+/* ── BET ── */
+function addBet(key){
+  if(rolling) return;
+  if(!selChip||selChip<1){toast("בחר ז'יטון");return;}
+  if((key==='pass'||key==='dont')&&phase==='point'){toast("לא ניתן להוסיף Pass/Don't לאחר הנקודה");return;}
+  if(key.startsWith('p')&&phase==='come-out'){toast('Place bets זמינים רק אחרי שנקבעה נקודה');return;}
+  if(balance<selChip){toast('אין מספיק יתרה');return;}
+  const total=Object.values(bets).reduce((s,v)=>s+v,0);
+  if(total+selChip>balance){toast('ההימור חורג מהיתרה');return;}
+  bets[key]+=selChip;
+  renderBets();
+}
+function clearBets(){
+  if(rolling) return;
+  Object.keys(bets).forEach(k=>bets[k]=0);
+  renderBets(); setBanner('','');
+}
+
+/* ── RENDER ── */
+const $=id=>document.getElementById(id);
+function renderBalance(){$('balance').textContent=balance.toLocaleString('he-IL');}
+function renderBets(){
+  Object.keys(bets).forEach(k=>{
+    const amt=$('amt-'+k);
+    const zone=$('bz-'+k);
+    if(!amt||!zone) return;
+    amt.textContent=bets[k]>0?'₪'+bets[k].toLocaleString():'';
+    zone.classList.toggle('has-bet',bets[k]>0);
+  });
+}
+function setBanner(msg,cls){
+  const b=$('banner'); b.textContent=msg; b.className='banner'+(cls?' '+cls:'');
+}
+function renderDice(v1,v2){
+  renderDie($('die1'),v1); renderDie($('die2'),v2);
+  $('diceSum').textContent=v1&&v2?v1+v2:'—';
+}
+function updatePuck(){
+  const pk=$('puck'), lbl=$('pointLabel');
+  if(phase==='come-out'){
+    pk.className='puck off'; pk.textContent='OFF';
+    lbl.innerHTML='עדיין אין נקודה · <b>Come-Out Roll</b>';
+  } else {
+    pk.className='puck on'; pk.textContent=point;
+    lbl.innerHTML=`הנקודה: <b>${point}</b> · זרוק ${point} לניצחון!`;
+  }
+  ['p4','p5','p6','p8','p9','p10'].forEach(k=>{
+    $('bz-'+k).classList.toggle('locked',phase==='come-out');
+  });
+  ['pass','dont'].forEach(k=>{
+    $('bz-'+k).classList.toggle('locked',phase==='point');
+  });
+}
+function addToHistory(total){
+  rollHistory.unshift(total);
+  if(rollHistory.length>30) rollHistory.pop();
+  $('rollHistory').innerHTML=rollHistory.map(n=>{
+    let cls='rh-other';
+    if(n===7) cls='rh-7';
+    else if(n===11) cls='rh-11';
+    else if([2,3,12].includes(n)) cls='rh-craps';
+    else if(n===point) cls='rh-pt';
+    return `<span class="rh-pill ${cls}">${n}</span>`;
+  }).join('');
+}
+
+/* ── TOAST ── */
+let toastT;
+function toast(msg){
+  const t=$('toast'); t.textContent=msg; t.classList.add('show');
+  clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('show'),2400);
+}
+
+/* ── ROLL ── */
+function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
+
+async function rollDice(){
+  if(rolling) return;
+  const totalBet=Object.values(bets).reduce((s,v)=>s+v,0);
+  if(totalBet===0){toast('שים לפחות הימור אחד');return;}
+  if(balance<totalBet){toast('אין מספיק יתרה');return;}
+
+  rolling=true; $('rollBtn').disabled=true;
+
+  if(phase==='come-out') balanceBefore=balance;
+  balance-=totalBet;
+  renderBalance(); save();
+
+  const d1=$('die1'), d2=$('die2');
+  d1.classList.add('rolling'); d2.classList.add('rolling');
+  await sleep(500);
+  d1.classList.remove('rolling'); d2.classList.remove('rolling');
+
+  const r1=Math.ceil(Math.random()*6), r2=Math.ceil(Math.random()*6);
+  const total=r1+r2;
+  renderDice(r1,r2);
+  addToHistory(total);
+  setBanner('','');
+
+  let msgs=[], netGain=0;
+
+  /* Single-roll bets */
+  if(bets.field>0){
+    if([3,4,9,10,11].includes(total)){
+      const g=bets.field; netGain+=g; balance+=bets.field*2; msgs.push(`Field WIN +₪${g}`);
+    } else if(total===2){
+      const g=bets.field*2; netGain+=g; balance+=bets.field*3; msgs.push(`Field 2× +₪${g}`);
+    } else if(total===12){
+      const g=bets.field*3; netGain+=g; balance+=bets.field*4; msgs.push(`Field 3× +₪${g}`);
+    } else {
+      msgs.push('Field LOSS');
+    }
+    bets.field=0;
+  }
+  if(bets.any7>0){
+    if(total===7){const g=bets.any7*4;netGain+=g;balance+=bets.any7*5;msgs.push(`Any 7 WIN +₪${g}`);}
+    else msgs.push('Any 7 LOSS');
+    bets.any7=0;
+  }
+  if(bets.craps>0){
+    if([2,3,12].includes(total)){const g=bets.craps*7;netGain+=g;balance+=bets.craps*8;msgs.push(`Any Craps WIN +₪${g}`);}
+    else msgs.push('Any Craps LOSS');
+    bets.craps=0;
+  }
+
+  /* Phase logic */
+  if(phase==='come-out'){
+    if(total===7||total===11){
+      if(bets.pass>0){const g=bets.pass;netGain+=g;balance+=bets.pass*2;msgs.push(`Pass WIN +₪${g} 🎉`);}
+      if(bets.dont>0) msgs.push("Don't Pass LOSS");
+      bets.pass=0; bets.dont=0;
+      recordResult((balance-balanceBefore)>0?'win':(balance-balanceBefore)<0?'loss':'tie');
+      setBanner(`${total===7?'Natural 7':'Natural 11'}! ${msgs.join(' · ')}`,'g');
+      resetAfterRound();
+    } else if([2,3,12].includes(total)){
+      if(bets.pass>0) msgs.push('Pass LOSS');
+      if(bets.dont>0){
+        if(total===12){balance+=bets.dont;msgs.push("Don't Pass PUSH");}
+        else{const g=bets.dont;netGain+=g;balance+=bets.dont*2;msgs.push(`Don't Pass WIN +₪${g}`);}
+      }
+      bets.pass=0; bets.dont=0;
+      recordResult((balance-balanceBefore)>0?'win':(balance-balanceBefore)<0?'loss':'tie');
+      setBanner(`Craps ${total}! ${msgs.join(' · ')}`,'r');
+      resetAfterRound();
+    } else {
+      point=total; phase='point'; updatePuck();
+      setBanner(`נקודה: ${point}${msgs.length?` · ${msgs.join(' · ')}`:''}` ,'b');
+      renderBets(); save();
+      rolling=false; $('rollBtn').disabled=false;
+    }
+  } else {
+    /* Place bets — individual wins on match */
+    for(const [k,[num,den]] of Object.entries(PLACE_ODDS)){
+      if(bets[k]>0&&total===PLACE_NUMS[k]){
+        const g=Math.floor(bets[k]*num/den);
+        netGain+=g; balance+=bets[k]+g;
+        msgs.push(`Place ${PLACE_NUMS[k]} WIN +₪${g}`);
+        bets[k]=0;
+      }
+    }
+
+    if(total===point){
+      if(bets.pass>0){const g=bets.pass;netGain+=g;balance+=bets.pass*2;msgs.push(`Pass WIN +₪${g} 🎉`);}
+      if(bets.dont>0) msgs.push("Don't Pass LOSS");
+      for(const k of ['p4','p5','p6','p8','p9','p10']){
+        if(bets[k]>0){balance+=bets[k];bets[k]=0;}
+      }
+      bets.pass=0; bets.dont=0;
+      recordResult((balance-balanceBefore)>0?'win':(balance-balanceBefore)<0?'loss':'tie');
+      setBanner(`Point ${point} HIT! ${msgs.join(' · ')}`,'g');
+      resetAfterRound();
+    } else if(total===7){
+      if(bets.pass>0) msgs.push('Pass LOSS');
+      if(bets.dont>0){const g=bets.dont;netGain+=g;balance+=bets.dont*2;msgs.push(`Don't Pass WIN +₪${g}`);}
+      for(const k of ['p4','p5','p6','p8','p9','p10']){
+        if(bets[k]>0){msgs.push(`Place ${PLACE_NUMS[k]} LOSS`);bets[k]=0;}
+      }
+      bets.pass=0; bets.dont=0;
+      recordResult((balance-balanceBefore)>0?'win':(balance-balanceBefore)<0?'loss':'tie');
+      setBanner(`Seven-Out 💥 ${msgs.join(' · ')}`,'r');
+      resetAfterRound();
+    } else {
+      setBanner(msgs.length?msgs.join(' · '):`זרק ${total} — ממשיכים...`, msgs.some(x=>x.includes('WIN'))?'g':'');
+      renderBets(); renderBalance(); save();
+      rolling=false; $('rollBtn').disabled=false;
+    }
+  }
+}
+
+function resetAfterRound(){
+  phase='come-out'; point=null;
+  Object.keys(bets).forEach(k=>bets[k]=0);
+  updatePuck(); renderBets(); renderBalance(); save();
+  rolling=false; $('rollBtn').disabled=false;
+}
+
+/* ── INIT ── */
+load();
+renderDice(0,0);
+renderBalance();
+renderBets();
+updatePuck();
+selectChip(25);
+
+document.querySelectorAll('.chipbtn[data-v]').forEach(b=>{
+  b.onclick=()=>selectChip(+b.dataset.v);
+});
+$('allInBtn').onclick=function(){selectChip(balance,this);};
+$('customSet').onclick=function(){
+  const v=parseInt($('customVal').value);
+  if(!v||v<1){toast('הכנס סכום תקין');return;}
+  selectChip(v,this); toast(`ז'יטון: ₪${v.toLocaleString()}`);
+};
+$('customVal').addEventListener('keydown',e=>{if(e.key==='Enter')$('customSet').click();});
+
+$('addMoney').onclick=()=>{
+  const amt=parseInt($('addAmt').value)||1000;
+  balance+=amt; renderBalance(); save(); toast(`נטענו ₪${amt.toLocaleString()}`);
+};
+$('resetMoney').onclick=()=>{
+  if(!confirm('לאפס יתרה ל-1000?')) return;
+  balance=1000; clearBets(); renderBalance(); save(); toast('אופס ל-₪1,000');
+};
+</script>
+</body>
+</html>

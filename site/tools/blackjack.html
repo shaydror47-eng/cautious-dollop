@@ -35,8 +35,10 @@ h1{font-family:'Rubik';font-weight:900;font-size:30px;letter-spacing:-.5px;
 .bal b{display:block;font-family:'Rubik';font-weight:900;font-size:22px;color:var(--gold)}
 .bal span{font-size:11px;color:var(--muted)}
 .mini{background:var(--chip);border:1px solid var(--line);color:var(--text);
-  border-radius:12px;padding:9px 13px;font:700 13px 'Heebo';cursor:pointer;transition:.15s}
+  border-radius:12px;padding:9px 13px;font:700 13px 'Heebo';cursor:pointer;transition:.15s;
+  -webkit-appearance:none;appearance:none}
 .mini:hover{border-color:var(--gold)}
+select.mini option{background:#07120d;color:var(--text)}
 
 /* table */
 .table{background:radial-gradient(120% 90% at 50% 0%,var(--felt0),var(--felt1));
@@ -62,8 +64,9 @@ h1{font-family:'Rubik';font-weight:900;font-size:30px;letter-spacing:-.5px;
   border:2px solid #2c4ea0}
 
 /* boxes */
-.boxes{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:14px}
-@media(max-width:560px){.boxes{gap:4px}}
+.boxes-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin-top:14px;padding-bottom:4px}
+.boxes{display:grid;grid-template-columns:repeat(5,minmax(110px,1fr));gap:6px;min-width:560px}
+@media(min-width:600px){.boxes-wrap{overflow-x:visible}.boxes{min-width:0}}
 .box{background:rgba(0,0,0,.22);border:1.5px solid var(--line);border-radius:14px;
   padding:8px 5px;display:flex;flex-direction:column;align-items:center;gap:6px;min-height:150px;
   transition:.18s;cursor:pointer}
@@ -93,6 +96,20 @@ h1{font-family:'Rubik';font-weight:900;font-size:30px;letter-spacing:-.5px;
 .c25{background:radial-gradient(circle at 35% 30%,#6e6,#15803d)}
 .c100{background:radial-gradient(circle at 35% 30%,#888,#1f2937)}
 .c500{background:radial-gradient(circle at 35% 30%,#c9f,#7c3aed)}
+.c1k{background:radial-gradient(circle at 35% 30%,#fa9,#b91c1c)}
+.c5k{background:radial-gradient(circle at 35% 30%,#ffd,#b8860b)}
+.c10k{background:radial-gradient(circle at 35% 30%,#ffe,#d4a017)}
+.callin{background:linear-gradient(135deg,#ff5470,#7f0022);border-style:solid;font-size:11px;letter-spacing:-.3px}
+.ccustom{background:linear-gradient(135deg,#1e3a5f,#0a1628);border-style:solid;font-size:10px;position:relative}
+.chip-row2{display:flex;gap:8px;justify-content:center;align-items:center;margin:6px 0 2px;flex-wrap:wrap}
+.custom-in{display:flex;gap:6px;justify-content:center;align-items:center;margin:4px 0 8px}
+.custom-in input{background:rgba(255,255,255,.08);border:1px solid var(--line);color:var(--text);
+  border-radius:12px;padding:8px 10px;font:700 14px 'Rubik';width:110px;text-align:center;
+  -webkit-appearance:none}
+.custom-in input::placeholder{color:var(--muted);font-size:12px}
+.custom-in button{background:var(--chip);border:1px solid var(--line);color:var(--text);
+  border-radius:12px;padding:8px 14px;font:700 13px 'Heebo';cursor:pointer;white-space:nowrap}
+.custom-in button:hover{border-color:var(--gold)}
 .hint{text-align:center;color:var(--muted);font-size:12.5px;margin:8px 0;min-height:18px}
 
 /* action buttons */
@@ -133,8 +150,15 @@ h1{font-family:'Rubik';font-weight:900;font-size:30px;letter-spacing:-.5px;
 
   <div class="topbar">
     <div class="bal"><b id="balance">0</b><span>היתרה שלי</span></div>
-    <button class="mini" id="addMoney">➕ טען 1000</button>
-    <button class="mini" id="resetMoney">איפוס ל-1000</button>
+    <select class="mini" id="addAmt" style="padding:9px 8px">
+      <option value="500">+500</option>
+      <option value="1000" selected>+1,000</option>
+      <option value="2000">+2,000</option>
+      <option value="5000">+5,000</option>
+      <option value="10000">+10,000</option>
+    </select>
+    <button class="mini" id="addMoney">➕ טען</button>
+    <button class="mini" id="resetMoney">איפוס</button>
   </div>
 
   <div class="table">
@@ -144,17 +168,25 @@ h1{font-family:'Rubik';font-weight:900;font-size:30px;letter-spacing:-.5px;
       <div class="handval" id="dealerVal">—</div>
     </div>
 
-    <div class="boxes" id="boxes"></div>
+    <div class="boxes-wrap"><div class="boxes" id="boxes"></div></div>
   </div>
 
   <div class="banner" id="banner"></div>
   <div class="hint" id="hint"></div>
 
   <div class="chips" id="chips">
-    <button class="chipbtn c5"  data-v="5">5</button>
-    <button class="chipbtn c25" data-v="25">25</button>
+    <button class="chipbtn c5"   data-v="5">5</button>
+    <button class="chipbtn c25"  data-v="25">25</button>
     <button class="chipbtn c100" data-v="100">100</button>
     <button class="chipbtn c500" data-v="500">500</button>
+    <button class="chipbtn c1k"  data-v="1000">1K</button>
+    <button class="chipbtn c5k"  data-v="5000">5K</button>
+    <button class="chipbtn c10k" data-v="10000">10K</button>
+    <button class="chipbtn callin" id="bjAllIn">All In</button>
+  </div>
+  <div class="custom-in">
+    <input type="number" id="bjCustomVal" placeholder="סכום ידני" min="1" max="9999999">
+    <button id="bjCustomSet">🎯 הגדר ז'יטון</button>
   </div>
 
   <div class="actions" id="betActions">
@@ -174,12 +206,42 @@ h1{font-family:'Rubik';font-weight:900;font-size:30px;letter-spacing:-.5px;
   </div>
 </div>
 
-<a class="home" href="../index.html">🏠 הביתה</a>
+<a class="home" id="homeBtn" href="../index.html">🏠 הביתה</a>
 <button class="fair" id="fairBtn">🛡️ בדיקת הגינות</button>
+<div id="playerBanner" style="display:none;position:fixed;top:12px;right:12px;z-index:999;
+  background:rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.15);border-radius:20px;
+  padding:6px 14px;font:700 13px Heebo;color:#f0f2ff;backdrop-filter:blur(10px)"></div>
 <div class="toast" id="toast"></div>
 
 <script>
 "use strict";
+
+/* ---------- player session ---------- */
+const _urlParams = new URLSearchParams(window.location.search);
+const _pid = _urlParams.get('pid');
+(function initPlayerSession(){
+  if(!_pid) return;
+  try {
+    const data = JSON.parse(localStorage.getItem('casinoPlayers')||'{"players":[]}');
+    const player = data.players.find(p=>p.id===_pid);
+    if(!player) return;
+    const banner = document.getElementById('playerBanner');
+    banner.style.display = 'block';
+    banner.textContent = player.emoji + ' ' + player.name;
+    document.getElementById('homeBtn').href = '../casino-lobby.html';
+    document.getElementById('homeBtn').textContent = '← לובי';
+  } catch(e){}
+})();
+function recordGameResult(result){
+  if(!_pid) return;
+  try {
+    const data = JSON.parse(localStorage.getItem('casinoPlayers')||'{"players":[]}');
+    const player = data.players.find(p=>p.id===_pid);
+    if(!player) return;
+    player.games.push({type:'blackjack', result, date:new Date().toISOString()});
+    localStorage.setItem('casinoPlayers', JSON.stringify(data));
+  } catch(e){}
+}
 
 /* ---------- fair randomness ---------- */
 // אקראיות אמיתית מהדפדפן — בלי שום הטיה לאף צד.
@@ -544,6 +606,7 @@ function settle(){
     });
   });
   save();
+  recordGameResult(net>0?'win':net<0?'loss':'tie');
 
   const bn=$("banner");
   if(net>0){ bn.textContent=`רווח של ₪${net} 🎉`; bn.className="banner g"; }
@@ -611,13 +674,25 @@ function fairnessTest(rounds){
 }
 
 /* ---------- wiring ---------- */
-function selectChip(v){
+function selectChip(v, activeEl){
   selChip=v;
-  document.querySelectorAll(".chipbtn").forEach(c=>c.classList.toggle("sel", +c.dataset.v===v));
+  document.querySelectorAll(".chipbtn").forEach(c=>c.classList.remove("sel"));
+  if(activeEl) activeEl.classList.add("sel");
+  else document.querySelectorAll(".chipbtn[data-v]").forEach(c=>{
+    if(+c.dataset.v===v) c.classList.add("sel");
+  });
 }
-document.querySelectorAll(".chipbtn").forEach(c=>{
+document.querySelectorAll(".chipbtn[data-v]").forEach(c=>{
   c.onclick=()=>selectChip(+c.dataset.v);
 });
+$("bjAllIn").onclick=function(){ selectChip(balance, this); };
+$("bjCustomSet").onclick=function(){
+  const v=parseInt($("bjCustomVal").value);
+  if(!v||v<1){ toast("הכנס סכום תקין"); return; }
+  selectChip(v, this);
+  toast(`ז'יטון: ₪${v.toLocaleString()}`);
+};
+$("bjCustomVal").addEventListener("keydown",e=>{ if(e.key==="Enter") $("bjCustomSet").click(); });
 $("dealBtn").onclick=dealRound;
 $("nextBtn").onclick=newRound;
 $("clearBtn").onclick=clearAll;
@@ -626,7 +701,7 @@ $("standBtn").onclick=stand;
 $("doubleBtn").onclick=double;
 $("splitBtn").onclick=split;
 
-$("addMoney").onclick=()=>{ balance+=1000; save(); render(); toast("נטענו ₪1000"); if(phase==="bet")updateHint(); };
+$("addMoney").onclick=()=>{ const amt=parseInt($("addAmt").value)||1000; balance+=amt; save(); render(); toast(`נטענו ₪${amt.toLocaleString()}`); if(phase==="bet")updateHint(); };
 $("resetMoney").onclick=()=>{
   if(confirm("לאפס את היתרה ל-₪1000?")){ balance=1000; save();
     if(phase!=="bet") newRound(); else { render(); updateHint(); }
