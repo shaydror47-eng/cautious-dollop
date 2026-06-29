@@ -223,9 +223,9 @@ input[type=range].range-b::-moz-range-thumb{background:var(--b);}
       <div class="field">
         <label class="lbl" for="t1-total">משקל כולל רצוי</label>
         <div class="input-row">
-          <input type="number" id="t1-total" min="1" max="50" step="0.1" value="10">
+          <input type="number" id="t1-total" min="1" max="100" step="0.1" value="10">
           <span class="unit">גרם</span>
-          <input type="range" id="t1-total-sl" min="1" max="50" step="0.1" value="10">
+          <input type="range" id="t1-total-sl" min="1" max="100" step="0.1" value="10">
         </div>
         <div class="msg error" id="t1-total-err"></div>
       </div>
@@ -272,9 +272,9 @@ input[type=range].range-b::-moz-range-thumb{background:var(--b);}
       <div class="field">
         <label class="lbl" for="t2-grams" id="t2-grams-lbl">כמה גרם יש לך מרכיב A?</label>
         <div class="input-row">
-          <input type="number" id="t2-grams" min="0.01" max="50" step="0.1" value="9">
+          <input type="number" id="t2-grams" min="0.01" max="100" step="0.1" value="9">
           <span class="unit">גרם</span>
-          <input type="range" id="t2-grams-sl" min="0.1" max="50" step="0.1" value="9">
+          <input type="range" id="t2-grams-sl" min="0.1" max="100" step="0.1" value="9">
         </div>
         <div class="msg error" id="t2-grams-err"></div>
       </div>
@@ -300,7 +300,7 @@ input[type=range].range-b::-moz-range-thumb{background:var(--b);}
 
   <!-- ═══════════ RESULTS ═══════════ -->
   <div style="margin-top:18px;">
-    <div class="banner" id="over-banner">⚠️ התוצאה גדולה מהמגבלה של 50 גרם</div>
+    <div class="banner" id="over-banner">⚠️ התוצאה גדולה מהמגבלה של 100 גרם</div>
 
     <div id="results-area" class="results" style="display:none;">
 
@@ -427,7 +427,7 @@ function validateTotal(v) {
   const n = parseFloat(v);
   if (!isFinite(n)) return 'יש להזין מספר תקין';
   if (n < 1)   return 'משקל מינימלי: 1 גרם';
-  if (n > 50)  return 'משקל מקסימלי: 50 גרם';
+  if (n > 100) return 'משקל מקסימלי: 100 גרם';
   return '';
 }
 function validatePct(v) {
@@ -544,7 +544,7 @@ function calcTab2() {
 
   S.knownGrams = knownGrams; S.knownPct = knownPct;
   saveLS();
-  const overLimit = total > 50;
+  const overLimit = total > 100;
   showResults(pctA, pctB, aGrams, bGrams, parseFloat(total.toFixed(2)), overLimit);
 }
 
