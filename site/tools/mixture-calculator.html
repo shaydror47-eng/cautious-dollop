@@ -132,6 +132,14 @@ input[type=range].range-b::-moz-range-thumb{background:var(--b);}
 .rc-b{background:var(--b-dim);border:1.5px solid rgba(56,189,248,.4);}
 .rc-total{background:rgba(255,255,255,.05);border:1.5px solid var(--line);}
 
+.rc-add{background:linear-gradient(135deg,rgba(52,211,153,.15),rgba(52,211,153,.08));
+  border:2px solid rgba(52,211,153,.5);text-align:center;padding:22px 20px;}
+.rc-add-label{font-size:14px;font-weight:700;color:var(--ok);margin-bottom:6px;}
+.rc-add-val{font-family:"Rubik",sans-serif;font-weight:900;font-size:44px;
+  line-height:1;letter-spacing:-1.5px;color:var(--ok);}
+.rc-add-unit{font-size:17px;font-weight:600;color:rgba(52,211,153,.7);margin-right:4px;}
+.rc-add-name{font-size:15px;font-weight:800;color:rgba(52,211,153,.85);margin-top:6px;}
+
 .rc-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
 .rc-name{font-family:"Rubik",sans-serif;font-weight:900;font-size:16px;}
 .rc-name.col-a{color:var(--a);}
@@ -303,6 +311,16 @@ input[type=range].range-b::-moz-range-thumb{background:var(--b);}
     <div class="banner" id="over-banner">⚠️ התוצאה גדולה מהמגבלה של 100 גרם</div>
 
     <div id="results-area" class="results" style="display:none;">
+
+      <!-- "How much to add" hero card (Tab 2 only) -->
+      <div class="result-card rc-add" id="add-card" style="display:none;">
+        <div class="rc-add-label" id="add-label">תוסיף:</div>
+        <div>
+          <span class="rc-add-val" id="add-val">0</span>
+          <span class="rc-add-unit">גרם</span>
+        </div>
+        <div class="rc-add-name" id="add-name">מרכיב B</div>
+      </div>
 
       <!-- Ratio bar -->
       <div class="card" style="padding:16px 20px;">
@@ -489,7 +507,7 @@ function calcTab1() {
 
   S.total = total; S.pctA = pctA;
   saveLS();
-  showResults(pctA, pctB, aDisp, bDisp, total, false);
+  showResults(pctA, pctB, aDisp, bDisp, total, false, null);
 }
 
 // ── Tab 2 logic ───────────────────────────────────────────────────────────────
@@ -545,11 +563,17 @@ function calcTab2() {
   S.knownGrams = knownGrams; S.knownPct = knownPct;
   saveLS();
   const overLimit = total > 100;
-  showResults(pctA, pctB, aGrams, bGrams, parseFloat(total.toFixed(2)), overLimit);
+  const nameA = document.getElementById('name-a').value || 'רכיב A';
+  const nameB = document.getElementById('name-b').value || 'רכיב B';
+  const addInfo = {
+    grams: parseFloat(secondGrams.toFixed(2)),
+    name: knownComp === 'a' ? nameB : nameA
+  };
+  showResults(pctA, pctB, aGrams, bGrams, parseFloat(total.toFixed(2)), overLimit, addInfo);
 }
 
 // ── display results ───────────────────────────────────────────────────────────
-function showResults(pctA, pctB, aGrams, bGrams, total, overLimit) {
+function showResults(pctA, pctB, aGrams, bGrams, total, overLimit, addInfo) {
   document.getElementById('over-banner').className = 'banner' + (overLimit ? ' show' : '');
   document.getElementById('results-area').style.display = 'flex';
 
@@ -565,6 +589,16 @@ function showResults(pctA, pctB, aGrams, bGrams, total, overLimit) {
   document.getElementById('bar-a').style.width = pctA + '%';
   setText('bar-label-a', nameA + ' · ' + fmt(pctA) + '%');
   setText('bar-label-b', nameB + ' · ' + fmt(pctB) + '%');
+
+  const addCard = document.getElementById('add-card');
+  if (addInfo) {
+    addCard.style.display = 'block';
+    setText('add-val', fmt(addInfo.grams));
+    setText('add-name', 'מ' + addInfo.name);
+    setText('add-label', 'תוסיף:');
+  } else {
+    addCard.style.display = 'none';
+  }
 }
 
 function hideResults() {
