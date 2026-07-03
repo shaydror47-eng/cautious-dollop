@@ -196,6 +196,51 @@ input[type=range].range-b::-moz-range-thumb{background:var(--b);}
 /* ── empty state ── */
 .empty{text-align:center;padding:26px 10px;color:var(--ink-soft);font-size:14px;}
 
+/* ── save bar ── */
+.save-bar{display:none;margin-top:10px;}
+.save-bar.show{display:flex;flex-direction:column;gap:8px;}
+.save-note{width:100%;font-family:inherit;font-size:13px;color:var(--ink);
+  background:#0e1220;border:1.5px solid var(--line);border-radius:11px;
+  padding:10px 12px;outline:none;resize:none;min-height:38px;max-height:80px;}
+.save-note:focus{border-color:var(--ok);}
+.save-note::placeholder{color:var(--ink-soft);}
+.btn-save{border:0;border-radius:13px;padding:13px;font-family:inherit;
+  font-weight:800;font-size:15px;cursor:pointer;
+  background:linear-gradient(135deg,var(--ok),#10b981);color:#fff;transition:.15s;}
+.btn-save:active{filter:brightness(.88);}
+.saved-toast{text-align:center;color:var(--ok);font-size:13px;font-weight:700;
+  min-height:18px;margin-top:4px;}
+
+/* ── history ── */
+.history-section{margin-top:28px;}
+.history-title{font-family:"Rubik",sans-serif;font-weight:900;font-size:18px;
+  margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;}
+.history-title .count{font-size:13px;font-weight:700;color:var(--ink-soft);
+  background:var(--paper);border-radius:20px;padding:3px 10px;}
+.history-list{display:flex;flex-direction:column;gap:10px;}
+.h-entry{background:var(--paper);border:1.5px solid var(--line);border-radius:16px;
+  padding:16px;position:relative;transition:border-color .15s;}
+.h-entry:hover{border-color:rgba(255,255,255,.2);}
+.h-date{font-size:11px;color:var(--ink-soft);font-weight:600;margin-bottom:8px;}
+.h-mix{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px;}
+.h-chip{font-size:12px;font-weight:700;padding:4px 10px;border-radius:8px;}
+.h-chip-a{background:var(--a-dim);color:var(--a);}
+.h-chip-b{background:var(--b-dim);color:var(--b);}
+.h-chip-t{background:rgba(255,255,255,.06);color:var(--ink-soft);}
+.h-note{font-size:13px;color:var(--ink-soft);font-weight:500;
+  font-style:italic;margin-top:6px;line-height:1.4;}
+.h-del{position:absolute;top:12px;left:12px;background:transparent;border:0;
+  color:var(--ink-soft);font-size:16px;cursor:pointer;padding:4px;opacity:.5;transition:.15s;}
+.h-del:hover{opacity:1;color:var(--err);}
+.h-bar{height:6px;border-radius:4px;overflow:hidden;display:flex;margin-top:8px;}
+.h-bar-a{background:var(--a);}
+.h-bar-b{background:var(--b);flex:1;}
+.history-empty{text-align:center;color:var(--ink-soft);font-size:13px;
+  padding:20px 10px;background:var(--paper);border-radius:14px;border:1.5px dashed var(--line);}
+.btn-clear-all{background:transparent;border:1px solid var(--line);color:var(--ink-soft);
+  border-radius:10px;padding:6px 12px;font:700 11px "Heebo";cursor:pointer;transition:.15s;}
+.btn-clear-all:hover{border-color:var(--err);color:var(--err);}
+
 /* ── responsive ── */
 @media(max-width:380px){
   h1{font-size:23px;}
@@ -373,6 +418,27 @@ input[type=range].range-b::-moz-range-thumb{background:var(--b);}
         </div>
       </div>
 
+      <!-- Save bar -->
+      <div class="save-bar" id="save-bar">
+        <textarea class="save-note" id="save-note" placeholder="הערה קצרה (לא חובה)..." rows="1"></textarea>
+        <button class="btn-save" onclick="saveEntry()">💾 שמור לזיכרון</button>
+        <div class="saved-toast" id="saved-toast"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══════════ HISTORY ═══════════ -->
+  <div class="history-section" id="history-section">
+    <div class="history-title">
+      <span>📋 היסטוריה</span>
+      <span class="count" id="history-count">0</span>
+    </div>
+    <div class="history-list" id="history-list">
+      <div class="history-empty" id="history-empty">עדיין לא שמרת שום תערובת</div>
+    </div>
+    <div style="text-align:center;margin-top:10px;">
+      <button class="btn-clear-all" id="clear-all-btn" style="display:none" onclick="clearAllHistory()">🗑 מחק הכל</button>
     </div>
   </div>
 
@@ -599,12 +665,20 @@ function showResults(pctA, pctB, aGrams, bGrams, total, overLimit, addInfo) {
   } else {
     addCard.style.display = 'none';
   }
+
+  lastCalc = {pctA, pctB, aGrams, bGrams, total, nameA, nameB};
+  document.getElementById('save-bar').className = 'save-bar show';
+  document.getElementById('save-note').value = '';
+  document.getElementById('saved-toast').textContent = '';
 }
 
 function hideResults() {
   document.getElementById('results-area').style.display = 'none';
   document.getElementById('over-banner').className = 'banner';
+  document.getElementById('save-bar').className = 'save-bar';
 }
+
+let lastCalc = null;
 
 // ── tabs ──────────────────────────────────────────────────────────────────────
 function switchTab(n) {
@@ -676,11 +750,88 @@ document.getElementById('name-b').addEventListener('input', () => {
   setKnown(knownComp);
 });
 
+// ── history ──────────────────────────────────────────────────────────────────
+function loadHistory() {
+  try { return JSON.parse(localStorage.getItem('mixture_history') || '[]'); }
+  catch(e) { return []; }
+}
+function saveHistory(h) {
+  try { localStorage.setItem('mixture_history', JSON.stringify(h)); } catch(e){}
+}
+
+function saveEntry() {
+  if (!lastCalc) return;
+  const note = document.getElementById('save-note').value.trim();
+  const h = loadHistory();
+  h.unshift({
+    id: Date.now(),
+    date: new Date().toLocaleString('he-IL', {day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}),
+    nameA: lastCalc.nameA,
+    nameB: lastCalc.nameB,
+    pctA: lastCalc.pctA,
+    pctB: lastCalc.pctB,
+    grA: lastCalc.aGrams,
+    grB: lastCalc.bGrams,
+    total: lastCalc.total,
+    note: note
+  });
+  saveHistory(h);
+  renderHistory();
+  document.getElementById('saved-toast').textContent = '✓ נשמר';
+  setTimeout(() => { document.getElementById('saved-toast').textContent = ''; }, 2000);
+}
+
+function deleteEntry(id) {
+  const h = loadHistory().filter(e => e.id !== id);
+  saveHistory(h);
+  renderHistory();
+}
+
+function clearAllHistory() {
+  if (!confirm('למחוק את כל ההיסטוריה?')) return;
+  saveHistory([]);
+  renderHistory();
+}
+
+function renderHistory() {
+  const h = loadHistory();
+  const list = document.getElementById('history-list');
+  const empty = document.getElementById('history-empty');
+  const countEl = document.getElementById('history-count');
+  const clearBtn = document.getElementById('clear-all-btn');
+
+  countEl.textContent = h.length;
+  clearBtn.style.display = h.length > 0 ? 'inline-block' : 'none';
+
+  if (h.length === 0) {
+    list.innerHTML = '';
+    list.appendChild(empty);
+    empty.style.display = 'block';
+    return;
+  }
+
+  empty.style.display = 'none';
+  list.innerHTML = h.map(e => `
+    <div class="h-entry">
+      <button class="h-del" onclick="deleteEntry(${e.id})" title="מחק">×</button>
+      <div class="h-date">${e.date}</div>
+      <div class="h-mix">
+        <span class="h-chip h-chip-a">${e.nameA} · ${fmt(e.pctA)}% · ${fmt(e.grA)} ג׳</span>
+        <span class="h-chip h-chip-b">${e.nameB} · ${fmt(e.pctB)}% · ${fmt(e.grB)} ג׳</span>
+        <span class="h-chip h-chip-t">סה״כ ${fmt(e.total)} ג׳</span>
+      </div>
+      <div class="h-bar"><div class="h-bar-a" style="width:${e.pctA}%"></div><div class="h-bar-b"></div></div>
+      ${e.note ? `<div class="h-note">"${e.note.replace(/</g,'&lt;')}"</div>` : ''}
+    </div>
+  `).join('');
+}
+
 // init display
 knownComp = S.knownComp;
 updatePctB1();
 setKnown(S.knownComp);
 switchTab(S.tab);
+renderHistory();
 </script>
 </body>
 </html>
