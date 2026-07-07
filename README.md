@@ -39,6 +39,7 @@ Building and improving small utilities for delivery decisions, phone workflow, d
 | `IDEAS.md` | Future projects and improvements |
 | `FINISHED.md` | Completed work and stable releases |
 | `WORLD.md` | Resources, learning, observations |
+| `CAMERA_AUDIO_SETUP.md` | 360 camera + helmet intercom audio setup guide |
 
 ## The Agents (הסוכנים) — how to use them
 

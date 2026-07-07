@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>מקליט נסיעה</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@500;700;900&family=Heebo:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0b0d14;--text:#f4f6fb;--muted:#9aa3b5;--card:#141826;--line:rgba(255,255,255,.08);
+--accent:#f9763b;--accent2:#e8453c;--ok:#34d399;--red:#ef4444}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Heebo',system-ui,sans-serif;min-height:100vh;
+ -webkit-user-select:none;user-select:none}
+.wrap{max-width:560px;margin:0 auto;padding:24px 16px 110px}
+h1{font-family:'Rubik';font-weight:900;font-size:28px;text-align:center;padding:14px 0 4px;
+ background:linear-gradient(92deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.sub{text-align:center;color:var(--muted);font-size:14px;margin-bottom:22px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:18px;margin-top:16px}
+.card h2{font-family:'Rubik';font-weight:700;font-size:17px;margin-bottom:12px}
+label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
+select{width:100%;background:#0e1220;border:1px solid var(--line);border-radius:14px;color:var(--text);
+ font:500 15px 'Heebo';padding:13px;outline:none;-webkit-appearance:none;appearance:none}
+select:focus{border-color:var(--accent)}
+
+.level-wrap{margin-top:14px}
+.level-bar{height:14px;background:#0e1220;border-radius:30px;overflow:hidden;border:1px solid var(--line)}
+.level-fill{height:100%;border-radius:30px;transition:width 80ms;min-width:0;
+ background:linear-gradient(90deg,var(--ok),#10b981)}
+.level-fill.hot{background:linear-gradient(90deg,var(--accent),var(--red))}
+.level-label{font-size:12px;color:var(--muted);margin-top:5px;text-align:center}
+
+.rec-btn{display:block;width:100%;border:none;cursor:pointer;color:#fff;font-family:'Rubik';font-weight:900;
+ font-size:28px;border-radius:26px;padding:34px 20px;margin-top:20px;transition:transform .15s;
+ box-shadow:0 14px 34px -12px rgba(233,69,60,.55)}
+.rec-btn:active{transform:scale(.97)}
+.rec-btn.start{background:linear-gradient(135deg,var(--red),#dc2626)}
+.rec-btn.stop{background:linear-gradient(135deg,var(--ok),#047857);box-shadow:0 14px 34px -12px rgba(16,185,129,.5)}
+.rec-btn:disabled{opacity:.4;pointer-events:none}
+
+.timer{text-align:center;margin:18px 0 6px}
+.timer .t{font-family:'Rubik';font-weight:900;font-size:52px;letter-spacing:2px;font-variant-numeric:tabular-nums}
+.timer .s{color:var(--muted);font-size:13.5px;margin-top:2px}
+
+.pulse{display:inline-block;width:14px;height:14px;border-radius:50%;background:var(--red);margin-left:8px;
+ animation:pulse 1s ease infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+.downloads{margin-top:16px}
+.dl-item{display:flex;align-items:center;justify-content:space-between;padding:12px;
+ background:#0e1220;border:1px solid var(--line);border-radius:14px;margin-top:8px}
+.dl-item .info{font-size:14px}
+.dl-item .info .dur{color:var(--muted);font-size:12px}
+.dl-btn{border:none;cursor:pointer;color:#fff;font:700 14px 'Heebo';
+ background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:12px;padding:10px 18px}
+.dl-btn:active{transform:scale(.95)}
+
+.status{text-align:center;padding:10px;border-radius:14px;margin-top:14px;font-size:14px;font-weight:700}
+.status.ok{background:rgba(52,211,153,.12);color:var(--ok)}
+.status.err{background:rgba(239,68,68,.12);color:var(--red)}
+.status.rec{background:rgba(239,68,68,.12);color:var(--red)}
+
+.home{position:fixed;bottom:18px;left:18px;z-index:9;color:#fff;border:none;text-decoration:none;
+ background:linear-gradient(135deg,#8b5cf6,#6d28d9);border-radius:30px;padding:13px 20px;font:800 14.5px 'Heebo';
+ box-shadow:0 10px 24px rgba(109,40,217,.5);transition:transform .15s}
+.home:active{transform:scale(.93)}
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🎙️ מקליט נסיעה</h1>
+  <div class="sub">הקלטת שמע מהדיבורית · לשילוב עם וידאו 360</div>
+
+  <div class="card">
+    <h2>🎧 בחירת מיקרופון</h2>
+    <label>מקור שמע</label>
+    <select id="micSelect"><option value="">טוען מכשירים...</option></select>
+    <div class="level-wrap">
+      <div class="level-bar"><div class="level-fill" id="levelFill"></div></div>
+      <div class="level-label" id="levelLabel">בחר מיקרופון כדי לראות רמת שמע</div>
+    </div>
+  </div>
+
+  <div id="statusBox" class="status hidden"></div>
+
+  <button class="rec-btn start" id="recBtn" disabled>🔴 התחל הקלטה</button>
+
+  <div id="timerBox" class="timer hidden">
+    <div class="t" id="timerDisplay">00:00:00</div>
+    <div class="s"><span class="pulse"></span>מקליט מהדיבורית</div>
+  </div>
+
+  <div class="card downloads hidden" id="dlBox">
+    <h2>📁 הקלטות</h2>
+    <div id="dlList"></div>
+  </div>
+</div>
+
+<a class="home" href="../index.html">🏠 ראשי</a>
+
+<script>
+const micSelect = document.getElementById('micSelect');
+const recBtn = document.getElementById('recBtn');
+const levelFill = document.getElementById('levelFill');
+const levelLabel = document.getElementById('levelLabel');
+const timerBox = document.getElementById('timerBox');
+const timerDisplay = document.getElementById('timerDisplay');
+const statusBox = document.getElementById('statusBox');
+const dlBox = document.getElementById('dlBox');
+const dlList = document.getElementById('dlList');
+
+let stream = null;
+let audioCtx = null;
+let analyser = null;
+let animFrame = null;
+let recorder = null;
+let chunks = [];
+let recording = false;
+let startTime = 0;
+let timerInterval = null;
+let recordings = [];
+
+function showStatus(msg, type) {
+  statusBox.textContent = msg;
+  statusBox.className = 'status ' + type;
+  statusBox.classList.remove('hidden');
+}
+
+function hideStatus() {
+  statusBox.classList.add('hidden');
+}
+
+async function loadDevices() {
+  try {
+    await navigator.mediaDevices.getUserMedia({ audio: true });
+    const devices = await navigator.mediaDevices.enumerateDevices();
+    const audioInputs = devices.filter(d => d.kind === 'audioinput');
+    micSelect.innerHTML = '';
+    if (audioInputs.length === 0) {
+      micSelect.innerHTML = '<option value="">לא נמצאו מיקרופונים</option>';
+      return;
+    }
+    audioInputs.forEach((d, i) => {
+      const opt = document.createElement('option');
+      opt.value = d.deviceId;
+      opt.textContent = d.label || ('מיקרופון ' + (i + 1));
+      micSelect.appendChild(opt);
+    });
+    showStatus('מיקרופון מוכן', 'ok');
+    recBtn.disabled = false;
+    startMonitor(audioInputs[0].deviceId);
+  } catch (e) {
+    showStatus('אין הרשאת מיקרופון — אשר גישה ונסה שוב', 'err');
+  }
+}
+
+async function startMonitor(deviceId) {
+  stopMonitor();
+  if (!deviceId) return;
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({
+      audio: { deviceId: { exact: deviceId }, echoCancellation: false, noiseSuppression: false, autoGainControl: false }
+    });
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const source = audioCtx.createMediaStreamSource(stream);
+    analyser = audioCtx.createAnalyser();
+    analyser.fftSize = 256;
+    source.connect(analyser);
+    drawLevel();
+  } catch (e) {
+    showStatus('שגיאה בגישה למיקרופון', 'err');
+  }
+}
+
+function drawLevel() {
+  if (!analyser) return;
+  const data = new Uint8Array(analyser.frequencyBinCount);
+  analyser.getByteFrequencyData(data);
+  const avg = data.reduce((a, b) => a + b, 0) / data.length;
+  const pct = Math.min(100, (avg / 128) * 100);
+  levelFill.style.width = pct + '%';
+  levelFill.className = 'level-fill' + (pct > 75 ? ' hot' : '');
+  levelLabel.textContent = pct < 2 ? 'אין שמע — בדוק שהדיבורית מחוברת' : 'רמת שמע: ' + Math.round(pct) + '%';
+  animFrame = requestAnimationFrame(drawLevel);
+}
+
+function stopMonitor() {
+  if (animFrame) cancelAnimationFrame(animFrame);
+  if (audioCtx) { audioCtx.close(); audioCtx = null; }
+  if (stream && !recording) { stream.getTracks().forEach(t => t.stop()); stream = null; }
+  analyser = null;
+}
+
+micSelect.addEventListener('change', () => {
+  if (!recording) {
+    recBtn.disabled = !micSelect.value;
+    startMonitor(micSelect.value);
+  }
+});
+
+function formatTime(ms) {
+  const s = Math.floor(ms / 1000);
+  const h = String(Math.floor(s / 3600)).padStart(2, '0');
+  const m = String(Math.floor((s % 3600) / 60)).padStart(2, '0');
+  const sec = String(s % 60).padStart(2, '0');
+  return h + ':' + m + ':' + sec;
+}
+
+function startRecording() {
+  if (!stream) return;
+  chunks = [];
+  const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus') ? 'audio/webm;codecs=opus'
+    : MediaRecorder.isTypeSupported('audio/mp4') ? 'audio/mp4' : '';
+  recorder = new MediaRecorder(stream, mimeType ? { mimeType } : {});
+  recorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
+  recorder.onstop = () => {
+    const blob = new Blob(chunks, { type: recorder.mimeType });
+    const ext = recorder.mimeType.includes('mp4') ? 'mp4' : 'webm';
+    const now = new Date();
+    const name = 'ride-audio_' + now.toISOString().slice(0, 10) + '_' + now.toTimeString().slice(0, 8).replace(/:/g, '-') + '.' + ext;
+    const dur = formatTime(Date.now() - startTime);
+    recordings.unshift({ blob, name, dur });
+    renderDownloads();
+  };
+  recorder.start(1000);
+  recording = true;
+  startTime = Date.now();
+  recBtn.textContent = '⏹ עצור הקלטה';
+  recBtn.className = 'rec-btn stop';
+  timerBox.classList.remove('hidden');
+  showStatus('מקליט...', 'rec');
+  timerInterval = setInterval(() => {
+    timerDisplay.textContent = formatTime(Date.now() - startTime);
+  }, 500);
+}
+
+function stopRecording() {
+  if (recorder && recorder.state !== 'inactive') recorder.stop();
+  recording = false;
+  clearInterval(timerInterval);
+  recBtn.textContent = '🔴 התחל הקלטה';
+  recBtn.className = 'rec-btn start';
+  timerBox.classList.add('hidden');
+  showStatus('הקלטה נשמרה!', 'ok');
+  startMonitor(micSelect.value);
+}
+
+recBtn.addEventListener('click', () => {
+  if (!recording) startRecording();
+  else stopRecording();
+});
+
+function renderDownloads() {
+  if (recordings.length === 0) { dlBox.classList.add('hidden'); return; }
+  dlBox.classList.remove('hidden');
+  dlList.innerHTML = '';
+  recordings.forEach(r => {
+    const div = document.createElement('div');
+    div.className = 'dl-item';
+    div.innerHTML = '<div class="info"><div>' + r.name + '</div><div class="dur">משך: ' + r.dur + '</div></div>';
+    const btn = document.createElement('button');
+    btn.className = 'dl-btn';
+    btn.textContent = '⬇ הורד';
+    btn.onclick = () => {
+      const url = URL.createObjectURL(r.blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = r.name; a.click();
+      URL.revokeObjectURL(url);
+    };
+    div.appendChild(btn);
+    dlList.appendChild(div);
+  });
+}
+
+navigator.mediaDevices.addEventListener('devicechange', loadDevices);
+loadDevices();
+</script>
+</body>
+</html>
