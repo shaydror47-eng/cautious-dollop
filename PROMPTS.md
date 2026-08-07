@@ -208,6 +208,9 @@ adb shell ps | grep wolt  # or other app name
 
 ## AI Prompts for Work
 
+### Task Package (חבילת משימה)
+For any significant task handed to an AI model, don't send a general request — build a full Task Package: target model, goal, project context, current state, materials, requirements, constraints, do-NOT-change list, output structure, success criteria, tests, and what to update in the repo when done. Full template in `MIRACLE_MANAGER.md` (section 5).
+
 ### For Bug Fixes
 ```
 "I have a bug in [app/code]. [Describe issue].

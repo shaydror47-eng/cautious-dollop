@@ -25,6 +25,8 @@ Building and improving small utilities for delivery decisions, phone workflow, d
 
 | File | Purpose |
 |------|----------|
+| `CLAUDE.md` | מנהל הניסים — auto-loaded operating instructions for Claude |
+| `MIRACLE_MANAGER.md` | Full spec of the Miracle Manager system |
 | `RULES.md` | Rules for AI tools working on this repo |
 | `NEXT_ACTIONS.md` | Next practical actions only |
 | `DAILY_LOG.md` | Daily work log template |
@@ -39,6 +41,10 @@ Building and improving small utilities for delivery decisions, phone workflow, d
 | `IDEAS.md` | Future projects and improvements |
 | `FINISHED.md` | Completed work and stable releases |
 | `WORLD.md` | Resources, learning, observations |
+
+## מנהל הניסים (The Miracle Manager)
+
+Every Claude Code chat on this repo runs as **מנהל הניסים** — the main interface between Shay and all his AI systems, projects, files and tools. Speak freely in Hebrew (long, mixed topics, transcription errors — all fine); the manager splits topics, routes each piece to the right file, plans the next step, and builds precise task packages for other models. `CLAUDE.md` holds the operating instructions (auto-loaded), `MIRACLE_MANAGER.md` holds the full spec.
 
 ## The Agents (הסוכנים) — how to use them
 
